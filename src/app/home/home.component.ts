@@ -1,0 +1,321 @@
+import { CommonModule } from '@angular/common';
+import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { firstValueFrom } from 'rxjs';
+import { BACKEND_URL } from '../app.config';
+import {
+  BuzzAcceptedPayload,
+  GuessResultPayload,
+  LibraryInfo,
+  LobbyMode,
+  LobbySnapshot,
+  PausePayload,
+  PlayPayload,
+  RoundEndPayload,
+  RoundStartPayload,
+} from '../models';
+import { ApiService } from '../services/api.service';
+import { AudioService } from '../services/audio.service';
+import { WsService } from '../services/ws.service';
+
+@Component({
+  selector: 'app-home',
+  standalone: true,
+  imports: [CommonModule],
+  templateUrl: './home.component.html',
+  styleUrl: './home.component.scss',
+})
+export class HomeComponent {
+  private readonly api = inject(ApiService);
+  readonly ws = inject(WsService);
+  private readonly audio = inject(AudioService);
+  private readonly destroyRef = inject(DestroyRef);
+
+  readonly libraries = signal<LibraryInfo[]>([]);
+  readonly username = signal('');
+  readonly joinLobbyId = signal('');
+  readonly mode = signal<LobbyMode>('BUZZ');
+  readonly library = signal('');
+  readonly roundDuration = signal(30);
+  readonly maxPlayers = signal(8);
+
+  readonly lobby = signal<LobbySnapshot | null>(null);
+  readonly playerId = signal<string | null>(null);
+  readonly roundStatus = signal<'IDLE' | 'PLAYING' | 'PAUSED' | 'ENDED'>('IDLE');
+  readonly roundStartAt = signal<number | null>(null);
+  readonly roundDurationSec = signal(30);
+  readonly clipDuration = signal(0);
+  readonly pausedOffsetSeconds = signal<number | null>(null);
+  readonly elapsedSeconds = signal(0);
+  readonly activeBuzzPlayerId = signal<string | null>(null);
+  readonly roundResult = signal<RoundEndPayload | null>(null);
+  readonly notifications = signal<string[]>([]);
+  readonly errorMessage = signal<string | null>(null);
+
+  readonly selectedLibraryInfo = computed(
+    () => this.libraries().find((lib) => lib.id === this.library()) ?? null
+  );
+
+  readonly isHost = computed(() => !!this.lobby() && this.lobby()?.hostId === this.playerId());
+  readonly currentPlayer = computed(
+    () => this.lobby()?.players.find((player) => player.id === this.playerId()) ?? null
+  );
+  readonly canBuzz = computed(() => {
+    const lobby = this.lobby();
+    const player = this.currentPlayer();
+    if (!lobby || !player) {
+      return false;
+    }
+    return (
+      lobby.settings.mode === 'BUZZ' && this.roundStatus() === 'PLAYING' && !player.lockedForRound
+    );
+  });
+
+  readonly canGuess = computed(() => {
+    const lobby = this.lobby();
+    if (!lobby) {
+      return false;
+    }
+    if (lobby.settings.mode === 'BUZZ') {
+      return this.activeBuzzPlayerId() === this.playerId();
+    }
+    return this.roundStatus() === 'PLAYING';
+  });
+
+  readonly progressPercent = computed(() => {
+    const duration = this.roundDurationSec();
+    if (!duration) {
+      return 0;
+    }
+    const elapsed = Math.min(duration, this.elapsedSeconds());
+    return Math.min(100, Math.max(0, (elapsed / duration) * 100));
+  });
+
+  guessText = '';
+
+  constructor() {
+    this.loadLibraries();
+    this.ws.messages$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((message) => {
+      this.handleWsMessage(message.type, message.payload);
+    });
+
+    const interval = window.setInterval(() => this.tickElapsed(), 250);
+    this.destroyRef.onDestroy(() => window.clearInterval(interval));
+  }
+
+  async createLobby() {
+    this.errorMessage.set(null);
+    const username = this.username().trim();
+    if (!username) {
+      this.errorMessage.set('Pick a username first.');
+      return;
+    }
+
+    try {
+      const response = await firstValueFrom(
+        this.api.createLobby({
+          username,
+          mode: this.mode(),
+          library: this.library(),
+          roundDuration: this.roundDuration(),
+          maxPlayers: this.maxPlayers(),
+        })
+      );
+      this.handleLobbyResponse(response);
+    } catch (error) {
+      this.errorMessage.set('Failed to create lobby.');
+    }
+  }
+
+  async joinLobby() {
+    this.errorMessage.set(null);
+    const username = this.username().trim();
+    const lobbyId = this.joinLobbyId().trim();
+    if (!username || !lobbyId) {
+      this.errorMessage.set('Username and lobby code are required.');
+      return;
+    }
+
+    try {
+      const response = await firstValueFrom(this.api.joinLobby(lobbyId, username));
+      this.handleLobbyResponse(response);
+    } catch (error) {
+      this.errorMessage.set('Failed to join lobby.');
+    }
+  }
+
+  startGame() {
+    this.ws.send('START_GAME', {});
+  }
+
+  sendBuzz() {
+    this.ws.send('BUZZ', {});
+  }
+
+  sendGuess() {
+    const text = this.guessText.trim();
+    if (!text) {
+      return;
+    }
+    this.ws.send('GUESS', { guessText: text });
+    this.guessText = '';
+  }
+
+  sendSkip() {
+    this.ws.send('SKIP_REQUEST', {});
+  }
+
+  leaveLobby() {
+    this.ws.disconnect();
+    this.lobby.set(null);
+    this.playerId.set(null);
+    this.roundResult.set(null);
+    this.roundStatus.set('IDLE');
+    this.activeBuzzPlayerId.set(null);
+  }
+
+  formatTime(seconds: number) {
+    const safe = Math.max(0, Math.ceil(seconds));
+    return `${safe}s`;
+  }
+
+  private loadLibraries() {
+    this.api
+      .getLibraries()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((libs) => {
+        this.libraries.set(libs);
+        if (!this.library() && libs.length) {
+          this.library.set(libs[0].id);
+        }
+      });
+  }
+
+  private handleLobbyResponse(response: {
+    lobbyId: string;
+    playerId: string;
+    lobbyState: LobbySnapshot;
+  }) {
+    this.lobby.set(response.lobbyState);
+    this.playerId.set(response.playerId);
+    this.joinLobbyId.set(response.lobbyId);
+    this.roundStatus.set('IDLE');
+    this.roundResult.set(null);
+    this.connectSocket(response.lobbyId, response.playerId);
+  }
+
+  private connectSocket(lobbyId: string, playerId: string) {
+    const wsUrl = `${BACKEND_URL}/ws`;
+    this.ws.connect(wsUrl);
+    this.ws.send('JOIN_LOBBY', {
+      lobbyId,
+      playerId,
+      username: this.username().trim(),
+    });
+  }
+
+  private handleWsMessage(type: string, payload: any) {
+    switch (type) {
+      case 'LOBBY_UPDATE':
+        this.lobby.set(payload as LobbySnapshot);
+        break;
+      case 'ROUND_START':
+        this.onRoundStart(payload as RoundStartPayload);
+        break;
+      case 'PLAY':
+        this.onPlay(payload as PlayPayload);
+        break;
+      case 'PAUSE':
+        this.onPause(payload as PausePayload);
+        break;
+      case 'BUZZ_ACCEPTED':
+        this.onBuzzAccepted(payload as BuzzAcceptedPayload);
+        break;
+      case 'GUESS_RESULT':
+        this.onGuessResult(payload as GuessResultPayload);
+        break;
+      case 'ROUND_END':
+        this.onRoundEnd(payload as RoundEndPayload);
+        break;
+      case 'ERROR':
+        this.addNotice(payload?.message ?? 'Unexpected server error.');
+        break;
+      default:
+        break;
+    }
+  }
+
+  private onRoundStart(payload: RoundStartPayload) {
+    this.roundResult.set(null);
+    this.roundStatus.set('PLAYING');
+    this.roundStartAt.set(payload.startAtServerTs);
+    this.roundDurationSec.set(
+      payload.mode === 'ONE_SECOND' ? 1 : this.lobby()?.settings.roundDuration ?? 30
+    );
+    this.clipDuration.set(payload.clipDuration);
+    this.activeBuzzPlayerId.set(null);
+    this.pausedOffsetSeconds.set(null);
+    this.audio.loadClip(payload.clipUrl || null, payload.clipDuration);
+  }
+
+  private onPlay(payload: PlayPayload) {
+    this.roundStatus.set('PLAYING');
+    this.pausedOffsetSeconds.set(null);
+    if (payload.startAtServerTs) {
+      this.roundStartAt.set(payload.startAtServerTs);
+    }
+    this.audio.schedulePlay(
+      payload.startAtServerTs,
+      this.ws.serverOffsetMs(),
+      payload.seekToSeconds ?? 0
+    );
+  }
+
+  private onPause(payload: PausePayload) {
+    this.roundStatus.set('PAUSED');
+    this.pausedOffsetSeconds.set(payload.offsetSeconds);
+    this.audio.pauseAt(payload.offsetSeconds);
+  }
+
+  private onBuzzAccepted(payload: BuzzAcceptedPayload) {
+    this.activeBuzzPlayerId.set(payload.playerId);
+  }
+
+  private onGuessResult(payload: GuessResultPayload) {
+    if (!payload.correct) {
+      const player = this.lobby()?.players.find((p) => p.id === payload.playerId);
+      this.addNotice(`${player?.username ?? 'Player'} missed the guess.`);
+    }
+  }
+
+  private onRoundEnd(payload: RoundEndPayload) {
+    this.roundStatus.set('ENDED');
+    this.roundResult.set(payload);
+    this.activeBuzzPlayerId.set(null);
+    this.audio.stop();
+  }
+
+  private tickElapsed() {
+    const startAt = this.roundStartAt();
+    const duration = this.roundDurationSec();
+    if (!startAt || !duration) {
+      this.elapsedSeconds.set(0);
+      return;
+    }
+
+    const pausedOffset = this.pausedOffsetSeconds();
+    if (pausedOffset !== null) {
+      this.elapsedSeconds.set(Math.min(duration, pausedOffset));
+      return;
+    }
+
+    const nowServer = Date.now() + this.ws.serverOffsetMs();
+    const elapsed = Math.max(0, (nowServer - startAt) / 1000);
+    this.elapsedSeconds.set(Math.min(duration, elapsed));
+  }
+
+  private addNotice(message: string) {
+    const next = [...this.notifications().slice(-3), message];
+    this.notifications.set(next);
+  }
+}

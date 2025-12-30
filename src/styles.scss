@@ -1,1 +1,45 @@
-/* You can add global styles to this file, and also import other style files */
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg: #0d1417;
+  --bg-accent: #18242a;
+  --panel: rgba(17, 24, 30, 0.7);
+  --card: rgba(24, 34, 40, 0.85);
+  --border: rgba(255, 255, 255, 0.08);
+  --text: #f4f3ef;
+  --muted: #b8c2c8;
+  --accent: #f5b14c;
+  --accent-2: #47c8b1;
+  --danger: #f0544f;
+  --dark: #1a1a1a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Space Grotesk', sans-serif;
+  color: var(--text);
+  background: radial-gradient(circle at top, #1a2b32, var(--bg)) fixed;
+  min-height: 100vh;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 10% 20%, rgba(245, 177, 76, 0.18), transparent 45%),
+    radial-gradient(circle at 80% 10%, rgba(71, 200, 177, 0.15), transparent 40%),
+    radial-gradient(circle at 30% 80%, rgba(255, 255, 255, 0.06), transparent 55%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+button,
+input,
+select {
+  font-family: inherit;
+}
