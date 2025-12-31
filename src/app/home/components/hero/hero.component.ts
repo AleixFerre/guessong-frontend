@@ -12,6 +12,8 @@ export class HeroComponent {
   readonly wsStatus = input.required<string>();
   readonly errorMessage = input.required<string | null>();
   readonly leave = output<void>();
+  readonly volume = input.required<number>();
+  readonly volumeChange = output<number>();
   readonly copied = signal(false);
 
   formatStatus(status: string) {
@@ -50,6 +52,14 @@ export class HeroComponent {
       window.setTimeout(() => this.copied.set(false), 1500);
     } catch {
       // noop
+    }
+  }
+
+  onVolumeInput(event: Event) {
+    const target = event.target as HTMLInputElement | null;
+    const value = target ? Number(target.value) : 0;
+    if (!Number.isNaN(value)) {
+      this.volumeChange.emit(value);
     }
   }
 }

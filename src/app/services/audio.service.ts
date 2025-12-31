@@ -8,6 +8,8 @@ export class AudioService {
   private playTimeout?: number;
   private context?: AudioContext;
   private oscillator?: OscillatorNode;
+  private gain?: GainNode;
+  private volume = 0.7;
 
   loadClip(url: string | null, durationSeconds: number) {
     this.durationSeconds = durationSeconds;
@@ -16,6 +18,7 @@ export class AudioService {
     if (!this.useOscillator) {
       const resolved = this.resolveClipUrl(url ?? '');
       this.audio.src = resolved;
+      this.audio.volume = this.volume;
       this.audio.preload = 'auto';
       this.audio.crossOrigin = 'anonymous';
       this.audio.load();
@@ -69,13 +72,14 @@ export class AudioService {
     const gain = this.context.createGain();
     oscillator.type = 'sine';
     oscillator.frequency.value = 440;
-    gain.gain.value = 0.05;
+    gain.gain.value = 0.05 * this.volume;
     oscillator.connect(gain).connect(this.context.destination);
 
     const remaining = Math.max(0.1, this.durationSeconds - seekToSeconds);
     oscillator.start();
     oscillator.stop(this.context.currentTime + remaining);
     this.oscillator = oscillator;
+    this.gain = gain;
   }
 
   private stopOscillator() {
@@ -88,6 +92,7 @@ export class AudioService {
       this.oscillator.disconnect();
       this.oscillator = undefined;
     }
+    this.gain = undefined;
   }
 
   private clearPlayTimeout() {
@@ -106,5 +111,18 @@ export class AudioService {
     } catch {
       return url;
     }
+  }
+
+  setVolume(value: number) {
+    const clamped = Math.min(1, Math.max(0, value));
+    this.volume = clamped;
+    this.audio.volume = clamped;
+    if (this.gain) {
+      this.gain.gain.value = 0.05 * clamped;
+    }
+  }
+
+  getVolume() {
+    return this.volume;
   }
 }

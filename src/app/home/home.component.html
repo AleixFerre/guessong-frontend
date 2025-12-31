@@ -3,6 +3,8 @@
     [lobby]="lobby()"
     [wsStatus]="ws.status()"
     [errorMessage]="errorMessage()"
+    [volume]="volume()"
+    (volumeChange)="updateVolume($event)"
     (leave)="leaveLobby()"
   ></app-home-hero>
 

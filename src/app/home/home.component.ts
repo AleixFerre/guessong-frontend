@@ -63,6 +63,7 @@ export class HomeComponent {
   readonly roundResult = signal<RoundEndPayload | null>(null);
   readonly notifications = signal<string[]>([]);
   readonly errorMessage = signal<string | null>(null);
+  readonly volume = signal(this.audio.getVolume() * 100);
   readonly viewState = computed(() => {
     const lobby = this.lobby();
     if (!lobby) {
@@ -138,6 +139,10 @@ export class HomeComponent {
         error: () => this.libraryTracks.set([]),
       });
       onCleanup(() => sub.unsubscribe());
+    });
+
+    effect(() => {
+      this.audio.setVolume(this.volume() / 100);
     });
 
     const interval = window.setInterval(() => this.tickElapsed(), 250);
@@ -221,6 +226,10 @@ export class HomeComponent {
 
   resetEntryMode() {
     this.entryMode.set(null);
+  }
+
+  updateVolume(value: number) {
+    this.volume.set(value);
   }
 
   private loadLibraries() {
