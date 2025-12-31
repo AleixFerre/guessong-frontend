@@ -1,0 +1,23 @@
+<h2>Lobby y puntuaciones</h2>
+<div *ngIf="lobby as activeLobby; else lobbyEmpty">
+  <div class="players">
+    <div class="player" *ngFor="let player of activeLobby.players">
+      <div>
+        <strong>{{ player.username }}</strong>
+        <span class="tag" *ngIf="player.id === activeLobby.hostId">Host</span>
+        <span class="tag warn" *ngIf="player.lockedForRound">Locked</span>
+      </div>
+      <div class="score">{{ player.score }}</div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="primary" *ngIf="isHost" (click)="startGameRequest.emit()">
+      Empezar ronda
+    </button>
+    <button class="ghost" (click)="skipRequest.emit()">Pedir skip</button>
+  </div>
+</div>
+<ng-template #lobbyEmpty>
+  <p class="muted">Aun no estas en ningun lobby.</p>
+</ng-template>

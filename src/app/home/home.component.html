@@ -1,181 +1,50 @@
 <div class="page">
-  <header class="hero">
-    <div class="hero-copy">
-      <span class="badge">MVP Multiplayer</span>
-      <h1>Adivina la cancion</h1>
-      <p>
-        Compite con tu lobby, pulsa el buzzer y adivina antes de que el tiempo se apague. Todo en
-        tiempo real, con reglas claras y ritmo rapido.
-      </p>
-      <div class="hero-actions">
-        <button class="ghost" (click)="leaveLobby()" [disabled]="!lobby()">Salir</button>
-        <div class="status" [class.connected]="ws.status() === 'connected'">
-          {{ ws.status() }}
-        </div>
-      </div>
-      <p class="error" *ngIf="errorMessage()">{{ errorMessage() }}</p>
-    </div>
-    <div class="hero-card" *ngIf="lobby() as activeLobby; else idleState">
-      <h3>Lobby activo</h3>
-      <div class="row">
-        <span>Codigo</span>
-        <strong>{{ activeLobby.id }}</strong>
-      </div>
-      <div class="row">
-        <span>Modo</span>
-        <strong>{{ activeLobby.settings.mode }}</strong>
-      </div>
-      <div class="row">
-        <span>Biblioteca</span>
-        <strong>{{ activeLobby.settings.library }}</strong>
-      </div>
-      <div class="row">
-        <span>Jugadores</span>
-        <strong>{{ activeLobby.players.length }}/{{ activeLobby.settings.maxPlayers }}</strong>
-      </div>
-    </div>
-    <ng-template #idleState>
-      <div class="hero-card">
-        <h3>Listo para jugar</h3>
-        <p>Elige un nombre, crea un lobby o unete a uno.</p>
-      </div>
-    </ng-template>
-  </header>
+  <app-home-hero
+    [lobby]="lobby()"
+    [wsStatus]="ws.status()"
+    [errorMessage]="errorMessage()"
+    (leave)="leaveLobby()"
+  ></app-home-hero>
 
   <section class="grid">
     <div class="panel">
-      <h2>Configura la sala</h2>
-      <div class="field">
-        <label>Username</label>
-        <input
-          type="text"
-          [value]="username()"
-          (input)="username.set($any($event.target).value)"
-          placeholder="Tu nombre"
-        />
-      </div>
-      <div class="field">
-        <label>Biblioteca</label>
-        <select [value]="library()" (change)="library.set($any($event.target).value)">
-          <option *ngFor="let lib of libraries()" [value]="lib.id">
-            {{ lib.name }} ({{ lib.trackCount }})
-          </option>
-        </select>
-        <small *ngIf="selectedLibraryInfo()">{{ selectedLibraryInfo()?.description }}</small>
-      </div>
-      <div class="field">
-        <label>Modo</label>
-        <div class="pill-row">
-          <button class="pill" [class.active]="mode() === 'BUZZ'" (click)="mode.set('BUZZ')">
-            Buzzer
-          </button>
-          <button class="pill" [class.active]="mode() === 'WRITE'" (click)="mode.set('WRITE')">
-            Escribir
-          </button>
-          <button
-            class="pill"
-            [class.active]="mode() === 'ONE_SECOND'"
-            (click)="mode.set('ONE_SECOND')"
-          >
-            1s
-          </button>
-        </div>
-      </div>
-      <div class="field inline">
-        <div>
-          <label>Duracion ronda (s)</label>
-          <input
-            type="number"
-            min="5"
-            max="60"
-            [value]="roundDuration()"
-            (input)="roundDuration.set(+$any($event.target).value)"
-          />
-        </div>
-        <div>
-          <label>Max jugadores</label>
-          <input
-            type="number"
-            min="2"
-            max="12"
-            [value]="maxPlayers()"
-            (input)="maxPlayers.set(+$any($event.target).value)"
-          />
-        </div>
-      </div>
-      <button class="primary" (click)="createLobby()">Crear lobby</button>
-
-      <div class="divider"></div>
-
-      <h3>Unirse a lobby</h3>
-      <div class="field">
-        <label>Codigo</label>
-        <input
-          type="text"
-          [value]="joinLobbyId()"
-          (input)="joinLobbyId.set($any($event.target).value)"
-          placeholder="UUID"
-        />
-      </div>
-      <button class="secondary" (click)="joinLobby()">Unirse</button>
+      <app-lobby-setup
+        [libraries]="libraries()"
+        [selectedLibraryInfo]="selectedLibraryInfo()"
+        [username]="username"
+        [joinLobbyId]="joinLobbyId"
+        [mode]="mode"
+        [library]="library"
+        [roundDuration]="roundDuration"
+        [maxPlayers]="maxPlayers"
+        (createLobbyRequest)="createLobby()"
+        (joinLobbyRequest)="joinLobby()"
+      ></app-lobby-setup>
     </div>
 
     <div class="panel">
-      <h2>Lobby y puntuaciones</h2>
-      <div *ngIf="lobby() as activeLobby; else lobbyEmpty">
-        <div class="players">
-          <div class="player" *ngFor="let player of activeLobby.players">
-            <div>
-              <strong>{{ player.username }}</strong>
-              <span class="tag" *ngIf="player.id === activeLobby.hostId">Host</span>
-              <span class="tag warn" *ngIf="player.lockedForRound">Locked</span>
-            </div>
-            <div class="score">{{ player.score }}</div>
-          </div>
-        </div>
-
-        <div class="actions">
-          <button class="primary" *ngIf="isHost()" (click)="startGame()">Empezar ronda</button>
-          <button class="ghost" (click)="sendSkip()">Pedir skip</button>
-        </div>
-      </div>
-      <ng-template #lobbyEmpty>
-        <p class="muted">Aun no estas en ningun lobby.</p>
-      </ng-template>
+      <app-lobby-panel
+        [lobby]="lobby()"
+        [isHost]="isHost()"
+        (startGameRequest)="startGame()"
+        (skipRequest)="sendSkip()"
+      ></app-lobby-panel>
     </div>
 
     <div class="panel wide">
-      <h2>En juego</h2>
-      <div class="game">
-        <div class="progress">
-          <div class="bar" [style.width.%]="progressPercent()"></div>
-        </div>
-        <div class="timer">
-          <span>{{ formatTime(roundDurationSec() - elapsedSeconds()) }}</span>
-          <small>{{ roundStatus() }}</small>
-        </div>
-        <div class="controls">
-          <button class="buzz" [disabled]="!canBuzz()" (click)="sendBuzz()">BUZZ</button>
-          <button class="ghost" (click)="sendSkip()">Skip</button>
-        </div>
-        <div class="guess" *ngIf="canGuess()">
-          <input
-            type="text"
-            [value]="guessText"
-            (input)="guessText = $any($event.target).value"
-            placeholder="Escribe tu respuesta"
-          />
-          <button class="primary" (click)="sendGuess()">Enviar</button>
-        </div>
-        <div class="result" *ngIf="roundResult() as result">
-          <h3>Resultado</h3>
-          <p>{{ result.revealedTrackMeta.title }} — {{ result.revealedTrackMeta.artist }}</p>
-          <p *ngIf="result.winnerId">Puntos: {{ result.pointsAwarded }}</p>
-        </div>
-      </div>
-      <div class="notifications" *ngIf="notifications().length">
-        <div class="note" *ngFor="let note of notifications()">{{ note }}</div>
-      </div>
+      <app-game-panel
+        [progressPercent]="progressPercent()"
+        [roundDurationSec]="roundDurationSec()"
+        [elapsedSeconds]="elapsedSeconds()"
+        [roundStatus]="roundStatus()"
+        [canBuzz]="canBuzz()"
+        [canGuess]="canGuess()"
+        [roundResult]="roundResult()"
+        [notifications]="notifications()"
+        (buzzRequest)="sendBuzz()"
+        (skipRequest)="sendSkip()"
+        (guessRequest)="sendGuess($event)"
+      ></app-game-panel>
     </div>
   </section>
 </div>

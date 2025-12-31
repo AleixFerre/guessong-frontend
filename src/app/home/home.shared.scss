@@ -1,0 +1,61 @@
+label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+input,
+select {
+  background: rgba(15, 20, 26, 0.7);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 0.65rem 0.9rem;
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+small {
+  color: var(--muted);
+}
+
+.primary,
+.secondary,
+.ghost,
+.buzz {
+  border: none;
+  padding: 0.7rem 1.2rem;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.primary {
+  background: var(--accent);
+  color: var(--dark);
+}
+
+.secondary {
+  background: var(--accent-2);
+  color: var(--dark);
+}
+
+.ghost {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.buzz {
+  background: var(--danger);
+  color: #fff;
+  font-size: 1rem;
+  padding: 0.9rem 1.8rem;
+  letter-spacing: 0.05em;
+}
+
+.buzz:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

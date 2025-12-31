@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BACKEND_URL } from '../app.config';
+import { BACKEND_URL } from '../config.json';
 import { LibraryInfo, LobbyMode, LobbySnapshot } from '../models';
 
 export interface LobbyResponse {

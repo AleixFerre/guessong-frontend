@@ -1,8 +1,7 @@
-import { CommonModule } from '@angular/common';
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { firstValueFrom } from 'rxjs';
-import { BACKEND_URL } from '../app.config';
+import { BACKEND_URL } from '../config.json';
 import {
   BuzzAcceptedPayload,
   GuessResultPayload,
@@ -17,11 +16,20 @@ import {
 import { ApiService } from '../services/api.service';
 import { AudioService } from '../services/audio.service';
 import { WsService } from '../services/ws.service';
+import { GamePanelComponent } from './components/game-panel/game-panel.component';
+import { HeroComponent } from './components/hero/hero.component';
+import { LobbyPanelComponent } from './components/lobby-panel/lobby-panel.component';
+import { LobbySetupComponent } from './components/lobby-setup/lobby-setup.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule],
+  imports: [
+    GamePanelComponent,
+    HeroComponent,
+    LobbyPanelComponent,
+    LobbySetupComponent,
+  ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
 })
@@ -91,8 +99,6 @@ export class HomeComponent {
     return Math.min(100, Math.max(0, (elapsed / duration) * 100));
   });
 
-  guessText = '';
-
   constructor() {
     this.loadLibraries();
     this.ws.messages$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((message) => {
@@ -152,13 +158,12 @@ export class HomeComponent {
     this.ws.send('BUZZ', {});
   }
 
-  sendGuess() {
-    const text = this.guessText.trim();
+  sendGuess(guessText: string) {
+    const text = guessText.trim();
     if (!text) {
       return;
     }
     this.ws.send('GUESS', { guessText: text });
-    this.guessText = '';
   }
 
   sendSkip() {
@@ -172,11 +177,6 @@ export class HomeComponent {
     this.roundResult.set(null);
     this.roundStatus.set('IDLE');
     this.activeBuzzPlayerId.set(null);
-  }
-
-  formatTime(seconds: number) {
-    const safe = Math.max(0, Math.ceil(seconds));
-    return `${safe}s`;
   }
 
   private loadLibraries() {

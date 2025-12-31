@@ -1,0 +1,70 @@
+.game {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.progress {
+  height: 10px;
+  background: rgba(15, 20, 26, 0.7);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  transition: width 0.2s ease;
+}
+
+.timer {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.timer small {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.controls {
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.guess {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.guess input {
+  flex: 1;
+  min-width: 200px;
+}
+
+.result {
+  padding: 1rem;
+  border-radius: 1rem;
+  background: rgba(10, 20, 25, 0.8);
+  border: 1px solid var(--border);
+}
+
+.notifications {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.note {
+  background: rgba(20, 25, 30, 0.7);
+  border: 1px solid var(--border);
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+}
