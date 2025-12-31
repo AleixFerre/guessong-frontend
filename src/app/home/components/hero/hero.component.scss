@@ -83,10 +83,35 @@
   justify-content: space-between;
   margin-bottom: 0.65rem;
   color: var(--muted);
+  align-items: center;
 }
 
 .row strong {
   color: var(--text);
+}
+
+.code {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.copy {
+  border: 2px solid var(--border);
+  background: #f7fbff;
+  color: #1f355b;
+  border-radius: 999px;
+  padding: 0.25rem 0.7rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.copy:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  box-shadow: 0 6px 12px rgba(31, 140, 255, 0.12);
 }
 
 .error {

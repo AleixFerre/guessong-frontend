@@ -21,7 +21,12 @@
       <h3>Sala activa</h3>
       <div class="row">
         <span>Codigo</span>
-        <strong>{{ activeLobby.id }}</strong>
+        <div class="code">
+          <strong>{{ activeLobby.id }}</strong>
+          <button class="copy" (click)="copyLobbyCode(activeLobby.id)">
+            {{ copied() ? 'Copiado' : 'Copiar' }}
+          </button>
+        </div>
       </div>
       <div class="row">
         <span>Modo</span>

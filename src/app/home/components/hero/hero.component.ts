@@ -1,4 +1,4 @@
-import { Component, input, output } from '@angular/core';
+import { Component, input, output, signal } from '@angular/core';
 import { LobbySnapshot } from '../../../models';
 
 @Component({
@@ -12,6 +12,7 @@ export class HeroComponent {
   readonly wsStatus = input.required<string>();
   readonly errorMessage = input.required<string | null>();
   readonly leave = output<void>();
+  readonly copied = signal(false);
 
   formatStatus(status: string) {
     switch (status) {
@@ -36,6 +37,19 @@ export class HeroComponent {
         return '1s';
       default:
         return mode;
+    }
+  }
+
+  async copyLobbyCode(code: string) {
+    if (!code) {
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(code);
+      this.copied.set(true);
+      window.setTimeout(() => this.copied.set(false), 1500);
+    } catch {
+      // noop
     }
   }
 }

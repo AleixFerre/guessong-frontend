@@ -15,6 +15,12 @@
     @if (viewState() === 'MENU') {
       <div class="panel panel--menu">
         @if (entryMode(); as selectedEntry) {
+          <div class="menu-heading">
+            <button class="icon-button" (click)="resetEntryMode()" aria-label="Volver">
+              ←
+            </button>
+            <h2>Configura la sala</h2>
+          </div>
           <app-lobby-setup
             [entryMode]="selectedEntry"
             [libraries]="libraries()"
@@ -28,9 +34,6 @@
             (createLobbyRequest)="createLobby()"
             (joinLobbyRequest)="joinLobby()"
           ></app-lobby-setup>
-          <div class="menu-actions">
-            <button class="ghost" (click)="resetEntryMode()">Volver</button>
-          </div>
         } @else {
           <h2>Menu principal</h2>
           <p class="menu-description">

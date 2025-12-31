@@ -14,7 +14,8 @@ export class AudioService {
     this.useOscillator = !url;
 
     if (!this.useOscillator) {
-      this.audio.src = url ?? '';
+      const resolved = this.resolveClipUrl(url ?? '');
+      this.audio.src = resolved;
       this.audio.preload = 'auto';
       this.audio.crossOrigin = 'anonymous';
       this.audio.load();
@@ -93,6 +94,17 @@ export class AudioService {
     if (this.playTimeout) {
       window.clearTimeout(this.playTimeout);
       this.playTimeout = undefined;
+    }
+  }
+
+  private resolveClipUrl(url: string) {
+    if (!url) {
+      return '';
+    }
+    try {
+      return new URL(url, window.location.origin).toString();
+    } catch {
+      return url;
     }
   }
 }
