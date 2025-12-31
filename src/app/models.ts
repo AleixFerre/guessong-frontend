@@ -16,9 +16,9 @@ export interface LobbySnapshot {
     library: string;
     roundDuration: number;
     maxPlayers: number;
-    totalRounds?: number;
+    totalRounds: number;
   };
-  currentRound?: number;
+  currentRound: number;
   players: Player[];
   state: 'WAITING' | 'IN_GAME' | 'FINISHED';
   round: null | {

@@ -1,4 +1,4 @@
-import { Component, DestroyRef, computed, effect, inject, signal } from '@angular/core';
+import { Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { firstValueFrom } from 'rxjs';
 import { BACKEND_URL } from '../config.json';
@@ -48,6 +48,7 @@ export class HomeComponent {
   readonly library = signal('');
   readonly roundDuration = signal(30);
   readonly maxPlayers = signal(8);
+  readonly totalRoundsInput = signal(5);
   readonly entryMode = signal<'create' | 'join' | null>(null);
 
   readonly lobby = signal<LobbySnapshot | null>(null);
@@ -66,6 +67,7 @@ export class HomeComponent {
   readonly volume = signal(this.audio.getVolume() * 100);
   readonly audioUnavailable = signal(false);
   readonly autoLeaving = signal(false);
+  readonly dissolveCountdown = signal(0);
   readonly viewState = computed(() => {
     const lobby = this.lobby();
     if (!lobby) {
@@ -84,7 +86,7 @@ export class HomeComponent {
     return [...players].sort((a, b) => b.score - a.score);
   });
   readonly currentRound = computed(() => this.lobby()?.currentRound ?? 0);
-  readonly totalRounds = computed(() => this.lobby()?.settings.totalRounds ?? 0);
+  readonly totalRoundsDisplay = computed(() => this.lobby()?.settings.totalRounds ?? 0);
 
   readonly selectedLibraryInfo = computed(
     () => this.libraries().find((lib) => lib.id === this.library()) ?? null
@@ -153,14 +155,22 @@ export class HomeComponent {
       const lobby = this.lobby();
       if (!lobby || lobby.state !== 'FINISHED') {
         this.autoLeaving.set(false);
+        this.dissolveCountdown.set(0);
         return;
       }
-      if (this.autoLeaving()) {
+      if (untracked(() => this.autoLeaving())) {
         return;
       }
-      this.autoLeaving.set(true);
+      untracked(() => this.autoLeaving.set(true));
+      this.dissolveCountdown.set(10);
+      const timer = window.setInterval(() => {
+        this.dissolveCountdown.update((value) => Math.max(0, value - 1));
+      }, 1000);
       const timeout = window.setTimeout(() => this.leaveLobby(), 10000);
-      onCleanup(() => window.clearTimeout(timeout));
+      onCleanup(() => {
+        window.clearInterval(timer);
+        window.clearTimeout(timeout);
+      });
     });
 
     const interval = window.setInterval(() => this.tickElapsed(), 250);
@@ -183,6 +193,7 @@ export class HomeComponent {
           library: this.library(),
           roundDuration: this.roundDuration(),
           maxPlayers: this.maxPlayers(),
+          totalRounds: this.totalRoundsInput(),
         })
       );
       this.handleLobbyResponse(response);
@@ -234,6 +245,7 @@ export class HomeComponent {
     this.entryMode.set(null);
     this.audioUnavailable.set(false);
     this.autoLeaving.set(false);
+    this.dissolveCountdown.set(0);
   }
 
   selectEntryMode(mode: 'create' | 'join') {

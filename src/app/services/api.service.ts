@@ -28,6 +28,7 @@ export class ApiService {
     library: string;
     roundDuration: number;
     maxPlayers: number;
+    totalRounds: number;
   }) {
     return this.http.post<LobbyResponse>(`${this.baseUrl}/lobbies`, payload);
   }

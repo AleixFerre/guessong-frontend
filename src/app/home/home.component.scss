@@ -97,6 +97,54 @@
   margin: 0.75rem 0 1.25rem;
 }
 
+.end-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(31, 49, 88, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  z-index: 10;
+}
+
+.end-card {
+  width: min(640px, 100%);
+  text-align: center;
+}
+
+.end-players {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 1.5rem 0;
+}
+
+.end-player {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-radius: 1rem;
+  background: #f2f8ff;
+  border: 2px solid var(--border);
+}
+
+.end-rank {
+  font-weight: 700;
+  color: #1f355b;
+}
+
+.end-name {
+  text-align: left;
+}
+
+.end-score {
+  color: #1f355b;
+}
+
 .menu-heading {
   display: flex;
   align-items: center;

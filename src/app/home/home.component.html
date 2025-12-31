@@ -33,6 +33,7 @@
             [library]="library"
             [roundDuration]="roundDuration"
             [maxPlayers]="maxPlayers"
+            [totalRounds]="totalRoundsInput"
             (createLobbyRequest)="createLobby()"
             (joinLobbyRequest)="joinLobby()"
           ></app-lobby-setup>
@@ -76,7 +77,7 @@
           [elapsedSeconds]="elapsedSeconds()"
           [roundStatus]="roundStatus()"
           [currentRound]="currentRound()"
-          [totalRounds]="totalRounds()"
+          [totalRounds]="totalRoundsDisplay()"
           [canBuzz]="canBuzz()"
           [canGuess]="canGuess()"
           [guessTracks]="libraryTracks()"
@@ -89,4 +90,24 @@
       </div>
     }
   </section>
+
+  @if (viewState() === 'FINISHED') {
+    <div class="end-overlay">
+      <div class="panel end-card">
+        <h2>Clasificacion final</h2>
+        <div class="end-players">
+          @for (player of sortedPlayers(); track player.id) {
+            <div class="end-player">
+              <span class="end-rank">#{{ $index + 1 }}</span>
+              <span class="end-name">{{ player.username }}</span>
+              <strong class="end-score">{{ player.score }}</strong>
+            </div>
+          }
+        </div>
+        <p class="muted">
+          La sala se disolvera automaticamente en {{ dissolveCountdown() }}s.
+        </p>
+      </div>
+    </div>
+  }
 </div>
