@@ -49,6 +49,9 @@ export class HomeComponent {
   readonly roundDuration = signal(30);
   readonly maxPlayers = signal(8);
   readonly totalRoundsInput = signal(5);
+  readonly createPassword = signal('');
+  readonly joinPassword = signal('');
+  readonly lobbyPassword = signal('');
   readonly entryMode = signal<'create' | 'join' | null>(null);
 
   readonly lobby = signal<LobbySnapshot | null>(null);
@@ -66,8 +69,9 @@ export class HomeComponent {
   readonly errorMessage = signal<string | null>(null);
   readonly volume = signal(this.audio.getVolume() * 100);
   readonly audioUnavailable = signal(false);
-  readonly autoLeaving = signal(false);
   readonly dissolveCountdown = signal(0);
+  private dissolveIntervalId?: number;
+  private dissolveTimeoutId?: number;
   readonly viewState = computed(() => {
     const lobby = this.lobby();
     if (!lobby) {
@@ -151,37 +155,32 @@ export class HomeComponent {
       this.audio.setVolume(this.volume() / 100);
     });
 
-    effect((onCleanup) => {
+    effect(() => {
       const lobby = this.lobby();
       if (!lobby || lobby.state !== 'FINISHED') {
-        this.autoLeaving.set(false);
-        this.dissolveCountdown.set(0);
+        this.clearDissolveCountdown();
         return;
       }
-      if (untracked(() => this.autoLeaving())) {
-        return;
+      if (!this.dissolveTimeoutId) {
+        this.startDissolveCountdown();
       }
-      untracked(() => this.autoLeaving.set(true));
-      this.dissolveCountdown.set(10);
-      const timer = window.setInterval(() => {
-        this.dissolveCountdown.update((value) => Math.max(0, value - 1));
-      }, 1000);
-      const timeout = window.setTimeout(() => this.leaveLobby(), 10000);
-      onCleanup(() => {
-        window.clearInterval(timer);
-        window.clearTimeout(timeout);
-      });
     });
 
     const interval = window.setInterval(() => this.tickElapsed(), 250);
     this.destroyRef.onDestroy(() => window.clearInterval(interval));
+    this.destroyRef.onDestroy(() => this.clearDissolveCountdown());
   }
 
   async createLobby() {
     this.errorMessage.set(null);
     const username = this.username().trim();
+    const password = this.createPassword().trim();
     if (!username) {
       this.errorMessage.set('Elige un nombre primero.');
+      return;
+    }
+    if (password.length < 5) {
+      this.errorMessage.set('La contraseña debe tener al menos 5 caracteres.');
       return;
     }
 
@@ -189,6 +188,7 @@ export class HomeComponent {
       const response = await firstValueFrom(
         this.api.createLobby({
           username,
+          password,
           mode: this.mode(),
           library: this.library(),
           roundDuration: this.roundDuration(),
@@ -196,6 +196,7 @@ export class HomeComponent {
           totalRounds: this.totalRoundsInput(),
         })
       );
+      this.lobbyPassword.set(password);
       this.handleLobbyResponse(response);
     } catch (error) {
       this.errorMessage.set('No se pudo crear la sala.');
@@ -205,14 +206,20 @@ export class HomeComponent {
   async joinLobby() {
     this.errorMessage.set(null);
     const username = this.username().trim();
+    const password = this.joinPassword().trim();
     const lobbyId = this.joinLobbyId().trim();
     if (!username || !lobbyId) {
       this.errorMessage.set('Se requiere nombre y codigo de sala.');
       return;
     }
+    if (password.length < 5) {
+      this.errorMessage.set('La contraseña debe tener al menos 5 caracteres.');
+      return;
+    }
 
     try {
-      const response = await firstValueFrom(this.api.joinLobby(lobbyId, username));
+      const response = await firstValueFrom(this.api.joinLobby(lobbyId, username, password));
+      this.lobbyPassword.set(password);
       this.handleLobbyResponse(response);
     } catch (error) {
       this.errorMessage.set('No se pudo unir a la sala.');
@@ -237,6 +244,7 @@ export class HomeComponent {
 
   leaveLobby() {
     this.ws.disconnect();
+    this.audio.stop();
     this.lobby.set(null);
     this.playerId.set(null);
     this.roundResult.set(null);
@@ -244,7 +252,28 @@ export class HomeComponent {
     this.activeBuzzPlayerId.set(null);
     this.entryMode.set(null);
     this.audioUnavailable.set(false);
-    this.autoLeaving.set(false);
+    this.clearDissolveCountdown();
+    this.lobbyPassword.set('');
+  }
+
+  private startDissolveCountdown() {
+    this.clearDissolveCountdown();
+    this.dissolveCountdown.set(10);
+    this.dissolveIntervalId = window.setInterval(() => {
+      this.dissolveCountdown.update((value) => Math.max(0, value - 1));
+    }, 1000);
+    this.dissolveTimeoutId = window.setTimeout(() => this.leaveLobby(), 10000);
+  }
+
+  private clearDissolveCountdown() {
+    if (this.dissolveIntervalId) {
+      window.clearInterval(this.dissolveIntervalId);
+      this.dissolveIntervalId = undefined;
+    }
+    if (this.dissolveTimeoutId) {
+      window.clearTimeout(this.dissolveTimeoutId);
+      this.dissolveTimeoutId = undefined;
+    }
     this.dissolveCountdown.set(0);
   }
 
@@ -292,6 +321,7 @@ export class HomeComponent {
       lobbyId,
       playerId,
       username: this.username().trim(),
+      password: this.lobbyPassword().trim(),
     });
   }
 

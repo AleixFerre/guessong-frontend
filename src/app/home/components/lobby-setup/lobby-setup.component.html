@@ -76,6 +76,16 @@
       />
     </div>
   </div>
+  <div class="field">
+    <label>Contraseña de sala</label>
+    <input
+      type="password"
+      minlength="5"
+      [value]="createPassword()()"
+      (input)="createPassword().set($any($event.target).value)"
+      placeholder="Minimo 5 caracteres"
+    />
+  </div>
   <button class="primary" (click)="createLobbyRequest.emit()">Crear sala</button>
 }
 
@@ -86,7 +96,17 @@
       type="text"
       [value]="joinLobbyId()()"
       (input)="joinLobbyId().set($any($event.target).value)"
-      placeholder="Codigo"
+    placeholder="Codigo"
+  />
+  </div>
+  <div class="field">
+    <label>Contraseña</label>
+    <input
+      type="password"
+      minlength="5"
+      [value]="joinPassword()()"
+      (input)="joinPassword().set($any($event.target).value)"
+      placeholder="Contraseña"
     />
   </div>
   <button class="secondary" (click)="joinLobbyRequest.emit()">Unirse</button>
