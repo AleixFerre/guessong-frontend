@@ -1,4 +1,4 @@
-<h2>Lobby y puntuaciones</h2>
+<h2>Sala y puntuaciones</h2>
 @if (lobby(); as activeLobby) {
   <div class="players">
     @for (player of activeLobby.players; track player.id) {
@@ -6,10 +6,10 @@
         <div>
           <strong>{{ player.username }}</strong>
           @if (player.id === activeLobby.hostId) {
-            <span class="tag">Host</span>
+            <span class="tag">Anfitrion</span>
           }
           @if (player.lockedForRound) {
-            <span class="tag warn">Locked</span>
+            <span class="tag warn">Bloqueado</span>
           }
         </div>
         <div class="score">{{ player.score }}</div>
@@ -21,8 +21,8 @@
     @if (isHost()) {
       <button class="primary" (click)="startGameRequest.emit()">Empezar ronda</button>
     }
-    <button class="ghost" (click)="skipRequest.emit()">Pedir skip</button>
+    <button class="ghost" (click)="skipRequest.emit()">Pedir salto</button>
   </div>
 } @else {
-  <p class="muted">Aun no estas en ningun lobby.</p>
+  <p class="muted">Aun no estas en ninguna sala.</p>
 }

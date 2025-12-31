@@ -32,6 +32,21 @@ export class GamePanelComponent {
     return `${safe}s`;
   }
 
+  formatRoundStatus(status: RoundStatus) {
+    switch (status) {
+      case 'IDLE':
+        return 'En espera';
+      case 'PLAYING':
+        return 'Jugando';
+      case 'PAUSED':
+        return 'En pausa';
+      case 'ENDED':
+        return 'Finalizada';
+      default:
+        return status;
+    }
+  }
+
   sendGuess() {
     const text = this.guessText().trim();
     if (!text || !this.isGuessAllowed()) {

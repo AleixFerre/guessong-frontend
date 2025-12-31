@@ -1,15 +1,15 @@
 <header class="hero">
   <div class="hero-copy">
-    <span class="badge">MVP Multiplayer</span>
+    <span class="badge">Multijugador MVP</span>
     <h1>Adivina la cancion</h1>
     <p>
-      Compite con tu lobby, pulsa el buzzer y adivina antes de que el tiempo se apague. Todo en
+      Compite con tu sala, pulsa el timbre y adivina antes de que el tiempo se apague. Todo en
       tiempo real, con reglas claras y ritmo rapido.
     </p>
     <div class="hero-actions">
       <button class="ghost" (click)="leave.emit()" [disabled]="!lobby()">Salir</button>
       <div class="status" [class.connected]="wsStatus() === 'connected'">
-        {{ wsStatus() }}
+        {{ formatStatus(wsStatus()) }}
       </div>
     </div>
     @if (errorMessage(); as message) {
@@ -18,14 +18,14 @@
   </div>
   @if (lobby(); as activeLobby) {
     <div class="hero-card">
-      <h3>Lobby activo</h3>
+      <h3>Sala activa</h3>
       <div class="row">
         <span>Codigo</span>
         <strong>{{ activeLobby.id }}</strong>
       </div>
       <div class="row">
         <span>Modo</span>
-        <strong>{{ activeLobby.settings.mode }}</strong>
+        <strong>{{ formatMode(activeLobby.settings.mode) }}</strong>
       </div>
       <div class="row">
         <span>Biblioteca</span>
@@ -39,7 +39,7 @@
   } @else {
     <div class="hero-card">
       <h3>Listo para jugar</h3>
-      <p>Elige un nombre, crea un lobby o unete a uno.</p>
+      <p>Elige un nombre, crea una sala o unete a una.</p>
     </div>
   }
 </header>

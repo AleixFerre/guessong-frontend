@@ -130,7 +130,7 @@ export class HomeComponent {
     this.errorMessage.set(null);
     const username = this.username().trim();
     if (!username) {
-      this.errorMessage.set('Pick a username first.');
+      this.errorMessage.set('Elige un nombre primero.');
       return;
     }
 
@@ -146,7 +146,7 @@ export class HomeComponent {
       );
       this.handleLobbyResponse(response);
     } catch (error) {
-      this.errorMessage.set('Failed to create lobby.');
+      this.errorMessage.set('No se pudo crear la sala.');
     }
   }
 
@@ -155,7 +155,7 @@ export class HomeComponent {
     const username = this.username().trim();
     const lobbyId = this.joinLobbyId().trim();
     if (!username || !lobbyId) {
-      this.errorMessage.set('Username and lobby code are required.');
+      this.errorMessage.set('Se requiere nombre y codigo de sala.');
       return;
     }
 
@@ -163,7 +163,7 @@ export class HomeComponent {
       const response = await firstValueFrom(this.api.joinLobby(lobbyId, username));
       this.handleLobbyResponse(response);
     } catch (error) {
-      this.errorMessage.set('Failed to join lobby.');
+      this.errorMessage.set('No se pudo unir a la sala.');
     }
   }
 
@@ -255,7 +255,7 @@ export class HomeComponent {
         this.onRoundEnd(payload as RoundEndPayload);
         break;
       case 'ERROR':
-        this.addNotice(payload?.message ?? 'Unexpected server error.');
+        this.addNotice(payload?.message ?? 'Error inesperado del servidor.');
         break;
       default:
         break;
@@ -301,7 +301,7 @@ export class HomeComponent {
   private onGuessResult(payload: GuessResultPayload) {
     if (!payload.correct) {
       const player = this.lobby()?.players.find((p) => p.id === payload.playerId);
-      this.addNotice(`${player?.username ?? 'Player'} missed the guess.`);
+      this.addNotice(`${player?.username ?? 'Jugador'} fallo la respuesta.`);
     }
   }
 

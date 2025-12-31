@@ -1,6 +1,6 @@
 <h2>Configura la sala</h2>
 <div class="field">
-  <label>Username</label>
+  <label>Nombre de usuario</label>
   <input
     type="text"
     [value]="username()()"
@@ -25,7 +25,7 @@
   <label>Modo</label>
   <div class="pill-row">
     <button class="pill" [class.active]="mode()() === 'BUZZ'" (click)="mode().set('BUZZ')">
-      Buzzer
+      Timbre
     </button>
     <button class="pill" [class.active]="mode()() === 'WRITE'" (click)="mode().set('WRITE')">
       Escribir
@@ -41,7 +41,7 @@
 </div>
 <div class="field inline">
   <div>
-    <label>Duracion ronda (s)</label>
+    <label>Duracion de ronda (s)</label>
     <input
       type="number"
       min="5"
@@ -51,7 +51,7 @@
     />
   </div>
   <div>
-    <label>Max jugadores</label>
+    <label>Max. jugadores</label>
     <input
       type="number"
       min="2"
@@ -61,18 +61,18 @@
     />
   </div>
 </div>
-<button class="primary" (click)="createLobbyRequest.emit()">Crear lobby</button>
+<button class="primary" (click)="createLobbyRequest.emit()">Crear sala</button>
 
 <div class="divider"></div>
 
-<h3>Unirse a lobby</h3>
+<h3>Unirse a sala</h3>
 <div class="field">
   <label>Codigo</label>
   <input
     type="text"
     [value]="joinLobbyId()()"
     (input)="joinLobbyId().set($any($event.target).value)"
-    placeholder="UUID"
+    placeholder="Codigo"
   />
 </div>
 <button class="secondary" (click)="joinLobbyRequest.emit()">Unirse</button>

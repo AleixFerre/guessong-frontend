@@ -5,11 +5,11 @@
   </div>
   <div class="timer">
     <span>{{ formatTime(roundDurationSec() - elapsedSeconds()) }}</span>
-    <small>{{ roundStatus() }}</small>
+    <small>{{ formatRoundStatus(roundStatus()) }}</small>
   </div>
   <div class="controls">
-    <button class="buzz" [disabled]="!canBuzz()" (click)="buzzRequest.emit()">BUZZ</button>
-    <button class="ghost" (click)="skipRequest.emit()">Skip</button>
+    <button class="buzz" [disabled]="!canBuzz()" (click)="buzzRequest.emit()">PULSA</button>
+    <button class="ghost" (click)="skipRequest.emit()">Saltar</button>
   </div>
   @if (canGuess()) {
     <div class="guess">
