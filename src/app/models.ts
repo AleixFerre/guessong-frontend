@@ -35,6 +35,13 @@ export interface LibraryInfo {
   trackCount: number;
 }
 
+export interface LibraryTrack {
+  id: string;
+  title: string;
+  artist: string;
+  duration: number;
+}
+
 export interface RoundStartPayload {
   trackId: string;
   clipUrl: string;

@@ -3,33 +3,37 @@
   <label>Username</label>
   <input
     type="text"
-    [value]="username()"
-    (input)="username.set($any($event.target).value)"
+    [value]="username()()"
+    (input)="username().set($any($event.target).value)"
     placeholder="Tu nombre"
   />
 </div>
 <div class="field">
   <label>Biblioteca</label>
-  <select [value]="library()" (change)="library.set($any($event.target).value)">
-    <option *ngFor="let lib of libraries" [value]="lib.id">
+  <select [value]="library()()" (change)="library().set($any($event.target).value)">
+    @for (lib of libraries(); track lib.id) {
+      <option [value]="lib.id">
       {{ lib.name }} ({{ lib.trackCount }})
-    </option>
+      </option>
+    }
   </select>
-  <small *ngIf="selectedLibraryInfo">{{ selectedLibraryInfo?.description }}</small>
+  @if (selectedLibraryInfo(); as info) {
+    <small>{{ info.description }}</small>
+  }
 </div>
 <div class="field">
   <label>Modo</label>
   <div class="pill-row">
-    <button class="pill" [class.active]="mode() === 'BUZZ'" (click)="mode.set('BUZZ')">
+    <button class="pill" [class.active]="mode()() === 'BUZZ'" (click)="mode().set('BUZZ')">
       Buzzer
     </button>
-    <button class="pill" [class.active]="mode() === 'WRITE'" (click)="mode.set('WRITE')">
+    <button class="pill" [class.active]="mode()() === 'WRITE'" (click)="mode().set('WRITE')">
       Escribir
     </button>
     <button
       class="pill"
-      [class.active]="mode() === 'ONE_SECOND'"
-      (click)="mode.set('ONE_SECOND')"
+      [class.active]="mode()() === 'ONE_SECOND'"
+      (click)="mode().set('ONE_SECOND')"
     >
       1s
     </button>
@@ -42,8 +46,8 @@
       type="number"
       min="5"
       max="60"
-      [value]="roundDuration()"
-      (input)="roundDuration.set(+$any($event.target).value)"
+      [value]="roundDuration()()"
+      (input)="roundDuration().set(+$any($event.target).value)"
     />
   </div>
   <div>
@@ -52,8 +56,8 @@
       type="number"
       min="2"
       max="12"
-      [value]="maxPlayers()"
-      (input)="maxPlayers.set(+$any($event.target).value)"
+      [value]="maxPlayers()()"
+      (input)="maxPlayers().set(+$any($event.target).value)"
     />
   </div>
 </div>
@@ -66,8 +70,8 @@
   <label>Codigo</label>
   <input
     type="text"
-    [value]="joinLobbyId()"
-    (input)="joinLobbyId.set($any($event.target).value)"
+    [value]="joinLobbyId()()"
+    (input)="joinLobbyId().set($any($event.target).value)"
     placeholder="UUID"
   />
 </div>

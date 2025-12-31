@@ -7,36 +7,39 @@
       tiempo real, con reglas claras y ritmo rapido.
     </p>
     <div class="hero-actions">
-      <button class="ghost" (click)="leave.emit()" [disabled]="!lobby">Salir</button>
-      <div class="status" [class.connected]="wsStatus === 'connected'">
-        {{ wsStatus }}
+      <button class="ghost" (click)="leave.emit()" [disabled]="!lobby()">Salir</button>
+      <div class="status" [class.connected]="wsStatus() === 'connected'">
+        {{ wsStatus() }}
       </div>
     </div>
-    <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+    @if (errorMessage(); as message) {
+      <p class="error">{{ message }}</p>
+    }
   </div>
-  <div class="hero-card" *ngIf="lobby as activeLobby; else idleState">
-    <h3>Lobby activo</h3>
-    <div class="row">
-      <span>Codigo</span>
-      <strong>{{ activeLobby.id }}</strong>
+  @if (lobby(); as activeLobby) {
+    <div class="hero-card">
+      <h3>Lobby activo</h3>
+      <div class="row">
+        <span>Codigo</span>
+        <strong>{{ activeLobby.id }}</strong>
+      </div>
+      <div class="row">
+        <span>Modo</span>
+        <strong>{{ activeLobby.settings.mode }}</strong>
+      </div>
+      <div class="row">
+        <span>Biblioteca</span>
+        <strong>{{ activeLobby.settings.library }}</strong>
+      </div>
+      <div class="row">
+        <span>Jugadores</span>
+        <strong>{{ activeLobby.players.length }}/{{ activeLobby.settings.maxPlayers }}</strong>
+      </div>
     </div>
-    <div class="row">
-      <span>Modo</span>
-      <strong>{{ activeLobby.settings.mode }}</strong>
-    </div>
-    <div class="row">
-      <span>Biblioteca</span>
-      <strong>{{ activeLobby.settings.library }}</strong>
-    </div>
-    <div class="row">
-      <span>Jugadores</span>
-      <strong>{{ activeLobby.players.length }}/{{ activeLobby.settings.maxPlayers }}</strong>
-    </div>
-  </div>
-  <ng-template #idleState>
+  } @else {
     <div class="hero-card">
       <h3>Listo para jugar</h3>
       <p>Elige un nombre, crea un lobby o unete a uno.</p>
     </div>
-  </ng-template>
+  }
 </header>

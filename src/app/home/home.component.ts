@@ -1,4 +1,4 @@
-import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, computed, effect, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { firstValueFrom } from 'rxjs';
 import { BACKEND_URL } from '../config.json';
@@ -6,6 +6,7 @@ import {
   BuzzAcceptedPayload,
   GuessResultPayload,
   LibraryInfo,
+  LibraryTrack,
   LobbyMode,
   LobbySnapshot,
   PausePayload,
@@ -38,6 +39,7 @@ export class HomeComponent {
   readonly ws = inject(WsService);
   private readonly audio = inject(AudioService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly init = this.setup();
 
   readonly libraries = signal<LibraryInfo[]>([]);
   readonly username = signal('');
@@ -49,6 +51,7 @@ export class HomeComponent {
 
   readonly lobby = signal<LobbySnapshot | null>(null);
   readonly playerId = signal<string | null>(null);
+  readonly libraryTracks = signal<LibraryTrack[]>([]);
   readonly roundStatus = signal<'IDLE' | 'PLAYING' | 'PAUSED' | 'ENDED'>('IDLE');
   readonly roundStartAt = signal<number | null>(null);
   readonly roundDurationSec = signal(30);
@@ -63,6 +66,7 @@ export class HomeComponent {
   readonly selectedLibraryInfo = computed(
     () => this.libraries().find((lib) => lib.id === this.library()) ?? null
   );
+  readonly activeLibraryId = computed(() => this.lobby()?.settings.library ?? this.library());
 
   readonly isHost = computed(() => !!this.lobby() && this.lobby()?.hostId === this.playerId());
   readonly currentPlayer = computed(
@@ -99,10 +103,23 @@ export class HomeComponent {
     return Math.min(100, Math.max(0, (elapsed / duration) * 100));
   });
 
-  constructor() {
+  private setup() {
     this.loadLibraries();
     this.ws.messages$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((message) => {
       this.handleWsMessage(message.type, message.payload);
+    });
+
+    effect((onCleanup) => {
+      const libraryId = this.activeLibraryId();
+      if (!libraryId) {
+        this.libraryTracks.set([]);
+        return;
+      }
+      const sub = this.api.getLibraryTracks(libraryId).subscribe({
+        next: (tracks) => this.libraryTracks.set(tracks),
+        error: () => this.libraryTracks.set([]),
+      });
+      onCleanup(() => sub.unsubscribe());
     });
 
     const interval = window.setInterval(() => this.tickElapsed(), 250);

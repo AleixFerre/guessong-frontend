@@ -1,31 +1,31 @@
-import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { RoundEndPayload } from '../../../models';
+import { Component, input, output, signal } from '@angular/core';
+import { LibraryTrack, RoundEndPayload } from '../../../models';
 
 type RoundStatus = 'IDLE' | 'PLAYING' | 'PAUSED' | 'ENDED';
 
 @Component({
   selector: 'app-game-panel',
   standalone: true,
-  imports: [CommonModule],
   templateUrl: './game-panel.component.html',
   styleUrls: ['../../home.shared.scss', './game-panel.component.scss'],
 })
 export class GamePanelComponent {
-  @Input({ required: true }) progressPercent = 0;
-  @Input({ required: true }) roundDurationSec = 0;
-  @Input({ required: true }) elapsedSeconds = 0;
-  @Input({ required: true }) roundStatus: RoundStatus = 'IDLE';
-  @Input({ required: true }) canBuzz = false;
-  @Input({ required: true }) canGuess = false;
-  @Input({ required: true }) roundResult: RoundEndPayload | null = null;
-  @Input({ required: true }) notifications: string[] = [];
+  readonly progressPercent = input.required<number>();
+  readonly roundDurationSec = input.required<number>();
+  readonly elapsedSeconds = input.required<number>();
+  readonly roundStatus = input.required<RoundStatus>();
+  readonly canBuzz = input.required<boolean>();
+  readonly canGuess = input.required<boolean>();
+  readonly guessTracks = input.required<LibraryTrack[]>();
+  readonly roundResult = input.required<RoundEndPayload | null>();
+  readonly notifications = input.required<string[]>();
 
-  @Output() buzzRequest = new EventEmitter<void>();
-  @Output() skipRequest = new EventEmitter<void>();
-  @Output() guessRequest = new EventEmitter<string>();
+  readonly buzzRequest = output<void>();
+  readonly skipRequest = output<void>();
+  readonly guessRequest = output<string>();
 
-  guessText = '';
+  readonly guessText = signal('');
+  readonly guessListId = 'guess-options';
 
   formatTime(seconds: number) {
     const safe = Math.max(0, Math.ceil(seconds));
@@ -33,11 +33,39 @@ export class GamePanelComponent {
   }
 
   sendGuess() {
-    const text = this.guessText.trim();
-    if (!text) {
+    const text = this.guessText().trim();
+    if (!text || !this.isGuessAllowed()) {
       return;
     }
     this.guessRequest.emit(text);
-    this.guessText = '';
+    this.guessText.set('');
+  }
+
+  formatGuessOption(track: LibraryTrack) {
+    const artist = track.artist.trim();
+    return artist ? `${track.title} - ${artist}` : track.title;
+  }
+
+  isGuessAllowed() {
+    const normalized = this.normalizeGuess(this.guessText());
+    const tracks = this.guessTracks();
+    if (!normalized || !tracks.length) {
+      return false;
+    }
+    return tracks.some((track) => {
+      const title = this.normalizeGuess(track.title);
+      if (!title) {
+        return false;
+      }
+      if (normalized === title) {
+        return true;
+      }
+      const artist = this.normalizeGuess(track.artist);
+      return artist ? normalized === `${title} - ${artist}` : false;
+    });
+  }
+
+  private normalizeGuess(value: string) {
+    return value.trim().toLowerCase();
   }
 }

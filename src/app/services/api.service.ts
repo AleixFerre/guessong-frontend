@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { BACKEND_URL } from '../config.json';
-import { LibraryInfo, LobbyMode, LobbySnapshot } from '../models';
+import { LibraryInfo, LibraryTrack, LobbyMode, LobbySnapshot } from '../models';
 
 export interface LobbyResponse {
   lobbyId: string;
@@ -11,15 +11,15 @@ export interface LobbyResponse {
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
-  private readonly baseUrl: string;
-
-  constructor(private http: HttpClient) {
-    const defaultBase = `${BACKEND_URL}/api`;
-    this.baseUrl = (window as { API_BASE_URL?: string }).API_BASE_URL ?? defaultBase;
-  }
+  private readonly http = inject(HttpClient);
+  private readonly baseUrl = `${BACKEND_URL}/api`;
 
   getLibraries() {
     return this.http.get<LibraryInfo[]>(`${this.baseUrl}/libraries`);
+  }
+
+  getLibraryTracks(libraryId: string) {
+    return this.http.get<LibraryTrack[]>(`${this.baseUrl}/libraries/${libraryId}/tracks`);
   }
 
   createLobby(payload: {
