@@ -6,10 +6,11 @@
 }
 
 .hero-copy h1 {
-  font-family: 'Fraunces', serif;
-  font-size: clamp(2.4rem, 4vw, 3.8rem);
+  font-family: 'Luckiest Guy', cursive;
+  font-size: clamp(2.6rem, 4.5vw, 4rem);
   margin-bottom: 0.75rem;
   letter-spacing: 0.02em;
+  color: #1f355b;
 }
 
 .hero-copy p {
@@ -24,11 +25,11 @@
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  background: linear-gradient(120deg, var(--accent), var(--accent-3));
-  color: var(--dark);
+  background: linear-gradient(120deg, #ffeaa0, #ffd55f);
+  color: #3a2b12;
   font-weight: 600;
   margin-bottom: 1rem;
-  box-shadow: 0 8px 18px rgba(245, 177, 76, 0.3);
+  box-shadow: 0 8px 0 rgba(245, 177, 76, 0.4);
   transform: rotate(-2deg);
 }
 
@@ -42,24 +43,25 @@
 .status {
   padding: 0.35rem 0.75rem;
   border-radius: 999px;
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--muted);
+  background: #fff;
 }
 
 .status.connected {
-  border-color: var(--accent-2);
-  color: var(--accent-2);
+  border-color: var(--accent-3);
+  color: #2a8f6b;
 }
 
 .hero-card {
   background: var(--card);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   padding: 1.5rem;
   border-radius: 1.5rem;
-  backdrop-filter: blur(12px);
+  box-shadow: 0 18px 0 rgba(31, 140, 255, 0.18);
   position: relative;
   overflow: hidden;
 }
@@ -68,7 +70,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.12), transparent 45%);
+  background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.5), transparent 45%);
   pointer-events: none;
 }
 
@@ -90,6 +92,7 @@
 .error {
   color: var(--danger);
   margin-top: 0.75rem;
+  font-weight: 600;
 }
 
 @media (max-width: 720px) {

@@ -5,14 +5,15 @@
 
 .progress {
   height: 10px;
-  background: rgba(15, 20, 26, 0.7);
+  background: #e3f0ff;
   border-radius: 999px;
   overflow: hidden;
+  border: 2px solid var(--border);
 }
 
 .bar {
   height: 100%;
-  background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent));
+  background: linear-gradient(90deg, #ffd55f, #ff8bb3, #8bffcc);
   background-size: 200% 100%;
   transition: width 0.2s ease;
   animation: progress-flow 3s linear infinite;
@@ -26,8 +27,9 @@
   font-weight: 600;
   padding: 0.6rem 1rem;
   border-radius: 1rem;
-  background: rgba(12, 18, 24, 0.7);
-  border: 1px solid var(--border);
+  background: #ffffff;
+  border: 2px solid var(--border);
+  color: #1f355b;
 }
 
 .timer small {
@@ -35,7 +37,7 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--muted);
-  background: rgba(255, 255, 255, 0.04);
+  background: #f1f7ff;
   padding: 0.25rem 0.6rem;
   border-radius: 999px;
 }
@@ -60,9 +62,9 @@
 .result {
   padding: 1rem;
   border-radius: 1rem;
-  background: rgba(10, 20, 25, 0.8);
-  border: 1px solid var(--border);
-  box-shadow: 0 10px 20px rgba(8, 12, 18, 0.3);
+  background: #fff8e1;
+  border: 2px solid rgba(255, 213, 95, 0.6);
+  box-shadow: 0 10px 0 rgba(255, 213, 95, 0.35);
 }
 
 .notifications {
@@ -73,8 +75,8 @@
 }
 
 .note {
-  background: rgba(20, 25, 30, 0.7);
-  border: 1px solid var(--border);
+  background: #ffffff;
+  border: 2px solid var(--border);
   padding: 0.4rem 0.8rem;
   border-radius: 999px;
   font-size: 0.75rem;

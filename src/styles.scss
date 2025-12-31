@@ -1,19 +1,19 @@
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700&family=Luckiest+Guy&display=swap');
 
 :root {
-  --bg: #0d1417;
-  --bg-accent: #18242a;
-  --panel: rgba(17, 24, 30, 0.7);
-  --card: rgba(24, 34, 40, 0.85);
-  --border: rgba(255, 255, 255, 0.08);
-  --text: #f4f3ef;
-  --muted: #b8c2c8;
-  --accent: #f5b14c;
-  --accent-2: #47c8b1;
-  --accent-3: #ff7a8a;
-  --danger: #f0544f;
-  --dark: #1a1a1a;
-  --glow: rgba(245, 177, 76, 0.25);
+  --bg: #4cc6ff;
+  --bg-accent: #1f8cff;
+  --panel: #ffffff;
+  --card: #f6fbff;
+  --border: #cfe3ff;
+  --text: #25314d;
+  --muted: #5a6b8c;
+  --accent: #ffd55f;
+  --accent-2: #ff8bb3;
+  --accent-3: #8bffcc;
+  --danger: #ff6b6b;
+  --dark: #1e2a3a;
+  --glow: rgba(255, 213, 95, 0.45);
 }
 
 * {
@@ -22,13 +22,13 @@
 
 body {
   margin: 0;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Baloo 2', sans-serif;
   color: var(--text);
   background:
-    radial-gradient(circle at 20% 15%, rgba(255, 122, 138, 0.16), transparent 45%),
-    radial-gradient(circle at 85% 10%, rgba(71, 200, 177, 0.18), transparent 40%),
-    radial-gradient(circle at 50% 90%, rgba(245, 177, 76, 0.2), transparent 55%),
-    radial-gradient(circle at top, #1a2b32, var(--bg)) fixed;
+    radial-gradient(circle at 15% 15%, rgba(255, 255, 255, 0.7), transparent 35%),
+    radial-gradient(circle at 90% 10%, rgba(255, 213, 95, 0.55), transparent 45%),
+    radial-gradient(circle at 30% 85%, rgba(139, 255, 204, 0.35), transparent 50%),
+    radial-gradient(circle at top, #82e0ff, var(--bg)) fixed;
   min-height: 100vh;
 }
 
@@ -37,10 +37,11 @@ body::before {
   position: fixed;
   inset: 0;
   background-image:
-    radial-gradient(circle at 12% 22%, rgba(245, 177, 76, 0.2), transparent 45%),
-    radial-gradient(circle at 85% 16%, rgba(71, 200, 177, 0.18), transparent 40%),
-    radial-gradient(circle at 35% 85%, rgba(255, 255, 255, 0.08), transparent 55%),
-    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0 12px, transparent 12px 24px);
+    radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.6), transparent 38%),
+    radial-gradient(circle at 80% 12%, rgba(255, 139, 179, 0.35), transparent 42%),
+    radial-gradient(circle at 20% 85%, rgba(139, 255, 204, 0.3), transparent 50%),
+    radial-gradient(circle at 70% 70%, rgba(255, 255, 255, 0.25), transparent 55%),
+    repeating-linear-gradient(160deg, rgba(255, 255, 255, 0.12) 0 10px, transparent 10px 22px);
   pointer-events: none;
   z-index: -1;
 }
@@ -49,8 +50,8 @@ body::after {
   content: '';
   position: fixed;
   inset: 0;
-  background: radial-gradient(circle at 70% 70%, rgba(255, 122, 138, 0.08), transparent 45%);
-  mix-blend-mode: screen;
+  background: radial-gradient(circle at 80% 80%, rgba(255, 213, 95, 0.2), transparent 45%);
+  mix-blend-mode: soft-light;
   pointer-events: none;
   z-index: -1;
   animation: shimmer 18s ease-in-out infinite;
