@@ -16,6 +16,7 @@ export class LobbySetupComponent {
   readonly library = input.required<WritableSignal<string>>();
   readonly roundDuration = input.required<WritableSignal<number>>();
   readonly maxPlayers = input.required<WritableSignal<number>>();
+  readonly entryMode = input.required<'create' | 'join'>();
 
   readonly createLobbyRequest = output<void>();
   readonly joinLobbyRequest = output<void>();

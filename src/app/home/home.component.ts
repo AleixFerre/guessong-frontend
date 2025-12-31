@@ -32,7 +32,7 @@ import { LobbySetupComponent } from './components/lobby-setup/lobby-setup.compon
     LobbySetupComponent,
   ],
   templateUrl: './home.component.html',
-  styleUrl: './home.component.scss',
+  styleUrls: ['./home.shared.scss', './home.component.scss'],
 })
 export class HomeComponent {
   private readonly api = inject(ApiService);
@@ -48,6 +48,7 @@ export class HomeComponent {
   readonly library = signal('');
   readonly roundDuration = signal(30);
   readonly maxPlayers = signal(8);
+  readonly entryMode = signal<'create' | 'join' | null>(null);
 
   readonly lobby = signal<LobbySnapshot | null>(null);
   readonly playerId = signal<string | null>(null);
@@ -62,6 +63,23 @@ export class HomeComponent {
   readonly roundResult = signal<RoundEndPayload | null>(null);
   readonly notifications = signal<string[]>([]);
   readonly errorMessage = signal<string | null>(null);
+  readonly viewState = computed(() => {
+    const lobby = this.lobby();
+    if (!lobby) {
+      return 'MENU';
+    }
+    if (lobby.state === 'IN_GAME') {
+      return 'IN_GAME';
+    }
+    if (lobby.state === 'FINISHED') {
+      return 'FINISHED';
+    }
+    return 'WAITING';
+  });
+  readonly sortedPlayers = computed(() => {
+    const players = this.lobby()?.players ?? [];
+    return [...players].sort((a, b) => b.score - a.score);
+  });
 
   readonly selectedLibraryInfo = computed(
     () => this.libraries().find((lib) => lib.id === this.library()) ?? null
@@ -194,6 +212,15 @@ export class HomeComponent {
     this.roundResult.set(null);
     this.roundStatus.set('IDLE');
     this.activeBuzzPlayerId.set(null);
+    this.entryMode.set(null);
+  }
+
+  selectEntryMode(mode: 'create' | 'join') {
+    this.entryMode.set(mode);
+  }
+
+  resetEntryMode() {
+    this.entryMode.set(null);
   }
 
   private loadLibraries() {

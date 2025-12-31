@@ -10,7 +10,7 @@
 .grid {
   display: grid;
   gap: 1.5rem;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: 1fr;
 }
 
 .panel {
@@ -29,8 +29,12 @@
   z-index: 1;
 }
 
-.panel.wide {
-  grid-column: 1 / -1;
+.panel--lobby {
+  grid-area: lobby;
+}
+
+.panel--game {
+  grid-area: game;
 }
 
 .panel:hover {
@@ -50,6 +54,91 @@
 
 .panel:nth-child(3) {
   animation-delay: 0.18s;
+}
+
+.grid--menu {
+  grid-template-columns: minmax(0, 560px);
+  justify-content: center;
+}
+
+.grid--waiting {
+  grid-template-columns: minmax(0, 640px);
+  justify-content: center;
+}
+
+.grid--playing {
+  grid-template-columns: minmax(280px, 1fr) minmax(420px, 1.4fr);
+  grid-template-areas: 'lobby game';
+  align-items: start;
+}
+
+.menu-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.menu-actions button {
+  flex: 1 1 200px;
+  min-width: 200px;
+}
+
+.menu-actions .ghost {
+  border-style: solid;
+}
+
+.menu-description {
+  color: var(--muted);
+  margin: 0.75rem 0 1.25rem;
+}
+
+.end-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(31, 49, 88, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  z-index: 10;
+}
+
+.end-card {
+  width: min(640px, 100%);
+  text-align: center;
+}
+
+.end-players {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 1.5rem 0;
+}
+
+.end-player {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-radius: 1rem;
+  background: #f2f8ff;
+  border: 2px solid var(--border);
+}
+
+.end-rank {
+  font-weight: 700;
+  color: #1f355b;
+}
+
+.end-name {
+  text-align: left;
+}
+
+.end-score {
+  color: #1f355b;
 }
 
 .page::before,
@@ -99,5 +188,26 @@
   100% {
     opacity: 1;
     transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 900px) {
+  .grid--menu,
+  .grid--waiting,
+  .grid--playing {
+    grid-template-columns: 1fr;
+    justify-content: stretch;
+  }
+
+  .grid--playing {
+    grid-template-areas:
+      'lobby'
+      'game';
+  }
+}
+
+@media (min-width: 1200px) {
+  .grid--playing {
+    grid-template-columns: minmax(320px, 1fr) minmax(480px, 1.4fr);
   }
 }

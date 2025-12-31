@@ -1,5 +1,5 @@
 import { Component, input, output } from '@angular/core';
-import { LobbySnapshot } from '../../../models';
+import { LobbySnapshot, Player } from '../../../models';
 
 @Component({
   selector: 'app-lobby-panel',
@@ -10,7 +10,13 @@ import { LobbySnapshot } from '../../../models';
 export class LobbyPanelComponent {
   readonly lobby = input.required<LobbySnapshot | null>();
   readonly isHost = input.required<boolean>();
+  readonly playersOverride = input<Player[] | null>(null);
+  readonly showActions = input<boolean>(true);
 
   readonly startGameRequest = output<void>();
   readonly skipRequest = output<void>();
+
+  playersToShow() {
+    return this.playersOverride() ?? this.lobby()?.players ?? [];
+  }
 }

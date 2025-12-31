@@ -1,7 +1,7 @@
 <h2>Sala y puntuaciones</h2>
 @if (lobby(); as activeLobby) {
   <div class="players">
-    @for (player of activeLobby.players; track player.id) {
+    @for (player of playersToShow(); track player.id) {
       <div class="player">
         <div>
           <strong>{{ player.username }}</strong>
@@ -17,12 +17,14 @@
     }
   </div>
 
-  <div class="actions">
-    @if (isHost()) {
-      <button class="primary" (click)="startGameRequest.emit()">Empezar ronda</button>
-    }
-    <button class="ghost" (click)="skipRequest.emit()">Pedir salto</button>
-  </div>
+  @if (showActions()) {
+    <div class="actions">
+      @if (isHost()) {
+        <button class="primary" (click)="startGameRequest.emit()">Empezar ronda</button>
+      }
+      <button class="ghost" (click)="skipRequest.emit()">Pedir salto</button>
+    </div>
+  }
 } @else {
   <p class="muted">Aun no estas en ninguna sala.</p>
 }

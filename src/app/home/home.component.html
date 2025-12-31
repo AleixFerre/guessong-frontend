@@ -6,46 +6,99 @@
     (leave)="leaveLobby()"
   ></app-home-hero>
 
-  <section class="grid">
-    <div class="panel">
-      <app-lobby-setup
-        [libraries]="libraries()"
-        [selectedLibraryInfo]="selectedLibraryInfo()"
-        [username]="username"
-        [joinLobbyId]="joinLobbyId"
-        [mode]="mode"
-        [library]="library"
-        [roundDuration]="roundDuration"
-        [maxPlayers]="maxPlayers"
-        (createLobbyRequest)="createLobby()"
-        (joinLobbyRequest)="joinLobby()"
-      ></app-lobby-setup>
-    </div>
+  <section
+    class="grid"
+    [class.grid--menu]="viewState() === 'MENU'"
+    [class.grid--waiting]="viewState() === 'WAITING'"
+    [class.grid--playing]="viewState() === 'IN_GAME' || viewState() === 'FINISHED'"
+  >
+    @if (viewState() === 'MENU') {
+      <div class="panel panel--menu">
+        @if (entryMode(); as selectedEntry) {
+          <app-lobby-setup
+            [entryMode]="selectedEntry"
+            [libraries]="libraries()"
+            [selectedLibraryInfo]="selectedLibraryInfo()"
+            [username]="username"
+            [joinLobbyId]="joinLobbyId"
+            [mode]="mode"
+            [library]="library"
+            [roundDuration]="roundDuration"
+            [maxPlayers]="maxPlayers"
+            (createLobbyRequest)="createLobby()"
+            (joinLobbyRequest)="joinLobby()"
+          ></app-lobby-setup>
+          <div class="menu-actions">
+            <button class="ghost" (click)="resetEntryMode()">Volver</button>
+          </div>
+        } @else {
+          <h2>Menu principal</h2>
+          <p class="menu-description">
+            Elige si quieres crear una sala nueva o unirte a una partida existente.
+          </p>
+          <div class="menu-actions">
+            <button class="primary" (click)="selectEntryMode('create')">Crear sala</button>
+            <button class="secondary" (click)="selectEntryMode('join')">Unirse a sala</button>
+          </div>
+        }
+      </div>
+    }
 
-    <div class="panel">
-      <app-lobby-panel
-        [lobby]="lobby()"
-        [isHost]="isHost()"
-        (startGameRequest)="startGame()"
-        (skipRequest)="sendSkip()"
-      ></app-lobby-panel>
-    </div>
+    @if (viewState() === 'WAITING') {
+      <div class="panel panel--lobby">
+        <app-lobby-panel
+          [lobby]="lobby()"
+          [isHost]="isHost()"
+          (startGameRequest)="startGame()"
+          (skipRequest)="sendSkip()"
+        ></app-lobby-panel>
+      </div>
+    }
 
-    <div class="panel wide">
-      <app-game-panel
-        [progressPercent]="progressPercent()"
-        [roundDurationSec]="roundDurationSec()"
-        [elapsedSeconds]="elapsedSeconds()"
-        [roundStatus]="roundStatus()"
-        [canBuzz]="canBuzz()"
-        [canGuess]="canGuess()"
-        [guessTracks]="libraryTracks()"
-        [roundResult]="roundResult()"
-        [notifications]="notifications()"
-        (buzzRequest)="sendBuzz()"
-        (skipRequest)="sendSkip()"
-        (guessRequest)="sendGuess($event)"
-      ></app-game-panel>
-    </div>
+    @if (viewState() === 'IN_GAME' || viewState() === 'FINISHED') {
+      <div class="panel panel--lobby">
+        <app-lobby-panel
+          [lobby]="lobby()"
+          [isHost]="isHost()"
+          [playersOverride]="sortedPlayers()"
+          [showActions]="false"
+        ></app-lobby-panel>
+      </div>
+
+      <div class="panel panel--game">
+        <app-game-panel
+          [progressPercent]="progressPercent()"
+          [roundDurationSec]="roundDurationSec()"
+          [elapsedSeconds]="elapsedSeconds()"
+          [roundStatus]="roundStatus()"
+          [canBuzz]="canBuzz()"
+          [canGuess]="canGuess()"
+          [guessTracks]="libraryTracks()"
+          [roundResult]="roundResult()"
+          [notifications]="notifications()"
+          (buzzRequest)="sendBuzz()"
+          (skipRequest)="sendSkip()"
+          (guessRequest)="sendGuess($event)"
+        ></app-game-panel>
+      </div>
+    }
   </section>
+
+  @if (viewState() === 'FINISHED') {
+    <div class="end-overlay">
+      <div class="panel end-card">
+        <h2>Marcador final</h2>
+        <div class="end-players">
+          @for (player of sortedPlayers(); track player.id) {
+            <div class="end-player">
+              <span class="end-rank">#{{ $index + 1 }}</span>
+              <span class="end-name">{{ player.username }}</span>
+              <strong class="end-score">{{ player.score }}</strong>
+            </div>
+          }
+        </div>
+        <button class="primary" (click)="leaveLobby()">Disolver sala</button>
+      </div>
+    </div>
+  }
 </div>

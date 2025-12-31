@@ -1,4 +1,8 @@
-<h2>Configura la sala</h2>
+@if (entryMode() === 'create') {
+  <h2>Crear sala</h2>
+} @else {
+  <h2>Unirse a sala</h2>
+}
 <div class="field">
   <label>Nombre de usuario</label>
   <input
@@ -8,71 +12,72 @@
     placeholder="Tu nombre"
   />
 </div>
-<div class="field">
-  <label>Biblioteca</label>
-  <select [value]="library()()" (change)="library().set($any($event.target).value)">
-    @for (lib of libraries(); track lib.id) {
-      <option [value]="lib.id">
-      {{ lib.name }} ({{ lib.trackCount }})
-      </option>
+@if (entryMode() === 'create') {
+  <div class="field">
+    <label>Biblioteca</label>
+    <select [value]="library()()" (change)="library().set($any($event.target).value)">
+      @for (lib of libraries(); track lib.id) {
+        <option [value]="lib.id">
+        {{ lib.name }} ({{ lib.trackCount }})
+        </option>
+      }
+    </select>
+    @if (selectedLibraryInfo(); as info) {
+      <small>{{ info.description }}</small>
     }
-  </select>
-  @if (selectedLibraryInfo(); as info) {
-    <small>{{ info.description }}</small>
-  }
-</div>
-<div class="field">
-  <label>Modo</label>
-  <div class="pill-row">
-    <button class="pill" [class.active]="mode()() === 'BUZZ'" (click)="mode().set('BUZZ')">
-      Timbre
-    </button>
-    <button class="pill" [class.active]="mode()() === 'WRITE'" (click)="mode().set('WRITE')">
-      Escribir
-    </button>
-    <button
-      class="pill"
-      [class.active]="mode()() === 'ONE_SECOND'"
-      (click)="mode().set('ONE_SECOND')"
-    >
-      1s
-    </button>
   </div>
-</div>
-<div class="field inline">
-  <div>
-    <label>Duracion de ronda (s)</label>
+  <div class="field">
+    <label>Modo</label>
+    <div class="pill-row">
+      <button class="pill" [class.active]="mode()() === 'BUZZ'" (click)="mode().set('BUZZ')">
+        Timbre
+      </button>
+      <button class="pill" [class.active]="mode()() === 'WRITE'" (click)="mode().set('WRITE')">
+        Escribir
+      </button>
+      <button
+        class="pill"
+        [class.active]="mode()() === 'ONE_SECOND'"
+        (click)="mode().set('ONE_SECOND')"
+      >
+        1s
+      </button>
+    </div>
+  </div>
+  <div class="field inline">
+    <div>
+      <label>Duracion de ronda (s)</label>
+      <input
+        type="number"
+        min="5"
+        max="60"
+        [value]="roundDuration()()"
+        (input)="roundDuration().set(+$any($event.target).value)"
+      />
+    </div>
+    <div>
+      <label>Max. jugadores</label>
+      <input
+        type="number"
+        min="2"
+        max="12"
+        [value]="maxPlayers()()"
+        (input)="maxPlayers().set(+$any($event.target).value)"
+      />
+    </div>
+  </div>
+  <button class="primary" (click)="createLobbyRequest.emit()">Crear sala</button>
+}
+
+@if (entryMode() === 'join') {
+  <div class="field">
+    <label>Codigo</label>
     <input
-      type="number"
-      min="5"
-      max="60"
-      [value]="roundDuration()()"
-      (input)="roundDuration().set(+$any($event.target).value)"
+      type="text"
+      [value]="joinLobbyId()()"
+      (input)="joinLobbyId().set($any($event.target).value)"
+      placeholder="Codigo"
     />
   </div>
-  <div>
-    <label>Max. jugadores</label>
-    <input
-      type="number"
-      min="2"
-      max="12"
-      [value]="maxPlayers()()"
-      (input)="maxPlayers().set(+$any($event.target).value)"
-    />
-  </div>
-</div>
-<button class="primary" (click)="createLobbyRequest.emit()">Crear sala</button>
-
-<div class="divider"></div>
-
-<h3>Unirse a sala</h3>
-<div class="field">
-  <label>Codigo</label>
-  <input
-    type="text"
-    [value]="joinLobbyId()()"
-    (input)="joinLobbyId().set($any($event.target).value)"
-    placeholder="Codigo"
-  />
-</div>
-<button class="secondary" (click)="joinLobbyRequest.emit()">Unirse</button>
+  <button class="secondary" (click)="joinLobbyRequest.emit()">Unirse</button>
+}
