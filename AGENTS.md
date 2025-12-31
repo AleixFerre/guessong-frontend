@@ -73,8 +73,6 @@ Each item below **must be addressed and named in code comments** when changed.
 ## Output Requirements
 
 - Output updated code only
-- Inline comments must label the feature used  
-  Example: `// Control Flow: @if`
 - No prose, no summaries, no migration guides
 
 ## Target
