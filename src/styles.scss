@@ -10,8 +10,10 @@
   --muted: #b8c2c8;
   --accent: #f5b14c;
   --accent-2: #47c8b1;
+  --accent-3: #ff7a8a;
   --danger: #f0544f;
   --dark: #1a1a1a;
+  --glow: rgba(245, 177, 76, 0.25);
 }
 
 * {
@@ -22,7 +24,11 @@ body {
   margin: 0;
   font-family: 'Space Grotesk', sans-serif;
   color: var(--text);
-  background: radial-gradient(circle at top, #1a2b32, var(--bg)) fixed;
+  background:
+    radial-gradient(circle at 20% 15%, rgba(255, 122, 138, 0.16), transparent 45%),
+    radial-gradient(circle at 85% 10%, rgba(71, 200, 177, 0.18), transparent 40%),
+    radial-gradient(circle at 50% 90%, rgba(245, 177, 76, 0.2), transparent 55%),
+    radial-gradient(circle at top, #1a2b32, var(--bg)) fixed;
   min-height: 100vh;
 }
 
@@ -31,15 +37,39 @@ body::before {
   position: fixed;
   inset: 0;
   background-image:
-    radial-gradient(circle at 10% 20%, rgba(245, 177, 76, 0.18), transparent 45%),
-    radial-gradient(circle at 80% 10%, rgba(71, 200, 177, 0.15), transparent 40%),
-    radial-gradient(circle at 30% 80%, rgba(255, 255, 255, 0.06), transparent 55%);
+    radial-gradient(circle at 12% 22%, rgba(245, 177, 76, 0.2), transparent 45%),
+    radial-gradient(circle at 85% 16%, rgba(71, 200, 177, 0.18), transparent 40%),
+    radial-gradient(circle at 35% 85%, rgba(255, 255, 255, 0.08), transparent 55%),
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0 12px, transparent 12px 24px);
   pointer-events: none;
   z-index: -1;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at 70% 70%, rgba(255, 122, 138, 0.08), transparent 45%);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  z-index: -1;
+  animation: shimmer 18s ease-in-out infinite;
 }
 
 button,
 input,
 select {
   font-family: inherit;
+}
+
+@keyframes shimmer {
+  0% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 0.35;
+  }
 }

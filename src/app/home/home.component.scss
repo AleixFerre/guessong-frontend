@@ -3,6 +3,8 @@
   flex-direction: column;
   gap: 2.5rem;
   padding: 2.5rem clamp(1.5rem, 4vw, 4rem) 4rem;
+  position: relative;
+  overflow: hidden;
 }
 
 .grid {
@@ -12,13 +14,90 @@
 }
 
 .panel {
-  background: var(--panel);
-  border-radius: 1.5rem;
+  background:
+    linear-gradient(140deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0)),
+    var(--panel);
+  border-radius: 1.6rem;
   padding: 1.5rem;
-  border: 1px solid var(--border);
-  box-shadow: 0 24px 60px rgba(8, 12, 18, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 24px 60px rgba(8, 12, 18, 0.35),
+    0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  animation: panel-pop 0.6s ease both;
+  position: relative;
+  z-index: 1;
 }
 
 .panel.wide {
   grid-column: 1 / -1;
+}
+
+.panel:hover {
+  transform: translateY(-6px);
+  box-shadow:
+    0 30px 70px rgba(8, 12, 18, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+}
+
+.panel:nth-child(1) {
+  animation-delay: 0.05s;
+}
+
+.panel:nth-child(2) {
+  animation-delay: 0.12s;
+}
+
+.panel:nth-child(3) {
+  animation-delay: 0.18s;
+}
+
+.page::before,
+.page::after {
+  content: '';
+  position: absolute;
+  width: 320px;
+  height: 320px;
+  border-radius: 45% 55% 60% 40%;
+  opacity: 0.15;
+  filter: blur(12px);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.page::before {
+  background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+  top: -120px;
+  right: -120px;
+  animation: floaty 12s ease-in-out infinite;
+}
+
+.page::after {
+  background: radial-gradient(circle, var(--accent-2) 0%, transparent 70%);
+  bottom: -140px;
+  left: -140px;
+  animation: floaty 14s ease-in-out infinite reverse;
+}
+
+@keyframes floaty {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(14px, -18px) scale(1.05);
+  }
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+@keyframes panel-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }

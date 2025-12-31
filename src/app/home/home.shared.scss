@@ -13,6 +13,14 @@ select {
   padding: 0.65rem 0.9rem;
   color: var(--text);
   font-size: 0.95rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: rgba(245, 177, 76, 0.6);
+  box-shadow: 0 0 0 3px rgba(245, 177, 76, 0.15);
 }
 
 small {
@@ -29,16 +37,19 @@ small {
   font-weight: 600;
   cursor: pointer;
   font-size: 0.95rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
 }
 
 .primary {
-  background: var(--accent);
+  background: linear-gradient(135deg, var(--accent), #ffd27d);
   color: var(--dark);
+  box-shadow: 0 10px 20px rgba(245, 177, 76, 0.25);
 }
 
 .secondary {
-  background: var(--accent-2);
+  background: linear-gradient(135deg, var(--accent-2), #78f3da);
   color: var(--dark);
+  box-shadow: 0 10px 20px rgba(71, 200, 177, 0.2);
 }
 
 .ghost {
@@ -48,14 +59,51 @@ small {
 }
 
 .buzz {
-  background: var(--danger);
+  background: linear-gradient(135deg, var(--danger), #ff8a7e);
   color: #fff;
   font-size: 1rem;
   padding: 0.9rem 1.8rem;
   letter-spacing: 0.05em;
+  box-shadow: 0 12px 24px rgba(240, 84, 79, 0.25);
 }
 
 .buzz:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+.primary:hover,
+.secondary:hover,
+.ghost:hover,
+.buzz:hover {
+  transform: translateY(-2px) scale(1.01);
+  filter: brightness(1.05);
+}
+
+.primary:active,
+.secondary:active,
+.ghost:active,
+.buzz:active {
+  transform: translateY(0) scale(0.99);
+}
+
+.ghost:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.06);
+}
+
+.buzz:not(:disabled) {
+  animation: buzz-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes buzz-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(240, 84, 79, 0.35);
+  }
+  70% {
+    box-shadow: 0 0 0 18px rgba(240, 84, 79, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(240, 84, 79, 0);
+  }
 }
