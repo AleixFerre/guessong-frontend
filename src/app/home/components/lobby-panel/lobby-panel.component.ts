@@ -14,7 +14,6 @@ export class LobbyPanelComponent {
   readonly showActions = input<boolean>(true);
 
   readonly startGameRequest = output<void>();
-  readonly skipRequest = output<void>();
 
   playersToShow() {
     return this.playersOverride() ?? this.lobby()?.players ?? [];

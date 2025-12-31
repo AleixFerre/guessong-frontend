@@ -65,6 +65,7 @@ export class HomeComponent {
   readonly errorMessage = signal<string | null>(null);
   readonly volume = signal(this.audio.getVolume() * 100);
   readonly audioUnavailable = signal(false);
+  readonly autoLeaving = signal(false);
   readonly viewState = computed(() => {
     const lobby = this.lobby();
     if (!lobby) {
@@ -82,6 +83,8 @@ export class HomeComponent {
     const players = this.lobby()?.players ?? [];
     return [...players].sort((a, b) => b.score - a.score);
   });
+  readonly currentRound = computed(() => this.lobby()?.currentRound ?? 0);
+  readonly totalRounds = computed(() => this.lobby()?.settings.totalRounds ?? 0);
 
   readonly selectedLibraryInfo = computed(
     () => this.libraries().find((lib) => lib.id === this.library()) ?? null
@@ -146,6 +149,20 @@ export class HomeComponent {
       this.audio.setVolume(this.volume() / 100);
     });
 
+    effect((onCleanup) => {
+      const lobby = this.lobby();
+      if (!lobby || lobby.state !== 'FINISHED') {
+        this.autoLeaving.set(false);
+        return;
+      }
+      if (this.autoLeaving()) {
+        return;
+      }
+      this.autoLeaving.set(true);
+      const timeout = window.setTimeout(() => this.leaveLobby(), 10000);
+      onCleanup(() => window.clearTimeout(timeout));
+    });
+
     const interval = window.setInterval(() => this.tickElapsed(), 250);
     this.destroyRef.onDestroy(() => window.clearInterval(interval));
   }
@@ -207,10 +224,6 @@ export class HomeComponent {
     this.ws.send('GUESS', { guessText: text });
   }
 
-  sendSkip() {
-    this.ws.send('SKIP_REQUEST', {});
-  }
-
   leaveLobby() {
     this.ws.disconnect();
     this.lobby.set(null);
@@ -220,6 +233,7 @@ export class HomeComponent {
     this.activeBuzzPlayerId.set(null);
     this.entryMode.set(null);
     this.audioUnavailable.set(false);
+    this.autoLeaving.set(false);
   }
 
   selectEntryMode(mode: 'create' | 'join') {

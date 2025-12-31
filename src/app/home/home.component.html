@@ -55,7 +55,6 @@
           [lobby]="lobby()"
           [isHost]="isHost()"
           (startGameRequest)="startGame()"
-          (skipRequest)="sendSkip()"
         ></app-lobby-panel>
       </div>
     }
@@ -76,6 +75,8 @@
           [roundDurationSec]="roundDurationSec()"
           [elapsedSeconds]="elapsedSeconds()"
           [roundStatus]="roundStatus()"
+          [currentRound]="currentRound()"
+          [totalRounds]="totalRounds()"
           [canBuzz]="canBuzz()"
           [canGuess]="canGuess()"
           [guessTracks]="libraryTracks()"
@@ -83,28 +84,9 @@
           [notifications]="notifications()"
           [audioUnavailable]="audioUnavailable()"
           (buzzRequest)="sendBuzz()"
-          (skipRequest)="sendSkip()"
           (guessRequest)="sendGuess($event)"
         ></app-game-panel>
       </div>
     }
   </section>
-
-  @if (viewState() === 'FINISHED') {
-    <div class="end-overlay">
-      <div class="panel end-card">
-        <h2>Marcador final</h2>
-        <div class="end-players">
-          @for (player of sortedPlayers(); track player.id) {
-            <div class="end-player">
-              <span class="end-rank">#{{ $index + 1 }}</span>
-              <span class="end-name">{{ player.username }}</span>
-              <strong class="end-score">{{ player.score }}</strong>
-            </div>
-          }
-        </div>
-        <button class="primary" (click)="leaveLobby()">Disolver sala</button>
-      </div>
-    </div>
-  }
 </div>

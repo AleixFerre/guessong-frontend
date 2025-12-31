@@ -14,6 +14,8 @@ export class GamePanelComponent {
   readonly roundDurationSec = input.required<number>();
   readonly elapsedSeconds = input.required<number>();
   readonly roundStatus = input.required<RoundStatus>();
+  readonly currentRound = input.required<number>();
+  readonly totalRounds = input.required<number>();
   readonly canBuzz = input.required<boolean>();
   readonly canGuess = input.required<boolean>();
   readonly guessTracks = input.required<LibraryTrack[]>();
@@ -22,7 +24,6 @@ export class GamePanelComponent {
   readonly audioUnavailable = input.required<boolean>();
 
   readonly buzzRequest = output<void>();
-  readonly skipRequest = output<void>();
   readonly guessRequest = output<string>();
 
   readonly guessText = signal('');

@@ -1,4 +1,9 @@
-<h2>En juego</h2>
+<div class="game-header">
+  <h2>En juego</h2>
+  @if (totalRounds()) {
+    <span class="round-pill">Ronda {{ currentRound() }}/{{ totalRounds() }}</span>
+  }
+</div>
 <div class="game">
   <div class="progress">
     <div class="bar" [style.width.%]="progressPercent()"></div>
@@ -14,7 +19,6 @@
   }
   <div class="controls">
     <button class="buzz" [disabled]="!canBuzz()" (click)="buzzRequest.emit()">PULSA</button>
-    <button class="ghost" (click)="skipRequest.emit()">Saltar</button>
   </div>
   @if (canGuess()) {
     <div class="guess">
