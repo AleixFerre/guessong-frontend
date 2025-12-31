@@ -7,6 +7,11 @@
     <span>{{ formatTime(roundDurationSec() - elapsedSeconds()) }}</span>
     <small>{{ formatRoundStatus(roundStatus()) }}</small>
   </div>
+  @if (audioUnavailable()) {
+    <div class="audio-warning">
+      No hay audio disponible para esta ronda.
+    </div>
+  }
   <div class="controls">
     <button class="buzz" [disabled]="!canBuzz()" (click)="buzzRequest.emit()">PULSA</button>
     <button class="ghost" (click)="skipRequest.emit()">Saltar</button>

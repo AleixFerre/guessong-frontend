@@ -64,6 +64,7 @@ export class HomeComponent {
   readonly notifications = signal<string[]>([]);
   readonly errorMessage = signal<string | null>(null);
   readonly volume = signal(this.audio.getVolume() * 100);
+  readonly audioUnavailable = signal(false);
   readonly viewState = computed(() => {
     const lobby = this.lobby();
     if (!lobby) {
@@ -218,6 +219,7 @@ export class HomeComponent {
     this.roundStatus.set('IDLE');
     this.activeBuzzPlayerId.set(null);
     this.entryMode.set(null);
+    this.audioUnavailable.set(false);
   }
 
   selectEntryMode(mode: 'create' | 'join') {
@@ -308,6 +310,7 @@ export class HomeComponent {
     this.clipDuration.set(payload.clipDuration);
     this.activeBuzzPlayerId.set(null);
     this.pausedOffsetSeconds.set(null);
+    this.audioUnavailable.set(!payload.clipUrl);
     this.audio.loadClip(payload.clipUrl || null, payload.clipDuration);
   }
 
@@ -345,6 +348,7 @@ export class HomeComponent {
     this.roundStatus.set('ENDED');
     this.roundResult.set(payload);
     this.activeBuzzPlayerId.set(null);
+    this.audioUnavailable.set(false);
     this.audio.stop();
   }
 
