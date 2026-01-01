@@ -6,6 +6,7 @@ import {
   BuzzAcceptedPayload,
   GuessResultPayload,
   LibraryInfo,
+  LibraryId,
   LibraryTrack,
   LobbyMode,
   LobbySnapshot,
@@ -14,6 +15,7 @@ import {
   RoundEndPayload,
   RoundStartPayload,
 } from '../models';
+import { getLibraryTracks, libraryCatalog } from '../data/library-data';
 import { ApiService } from '../services/api.service';
 import { AudioService } from '../services/audio.service';
 import { WsService } from '../services/ws.service';
@@ -39,13 +41,12 @@ export class HomeComponent {
   readonly ws = inject(WsService);
   private readonly audio = inject(AudioService);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly init = this.setup();
 
   readonly libraries = signal<LibraryInfo[]>([]);
   readonly username = signal('');
   readonly joinLobbyId = signal('');
   readonly mode = signal<LobbyMode>('BUZZ');
-  readonly library = signal('');
+  readonly library = signal<LibraryId | ''>('');
   readonly roundDuration = signal(30);
   readonly maxPlayers = signal(8);
   readonly totalRoundsInput = signal(5);
@@ -72,6 +73,7 @@ export class HomeComponent {
   readonly dissolveCountdown = signal(0);
   private dissolveIntervalId?: number;
   private dissolveTimeoutId?: number;
+  private readonly init = this.setup();
   readonly viewState = computed(() => {
     const lobby = this.lobby();
     if (!lobby) {
@@ -95,7 +97,9 @@ export class HomeComponent {
   readonly selectedLibraryInfo = computed(
     () => this.libraries().find((lib) => lib.id === this.library()) ?? null
   );
-  readonly activeLibraryId = computed(() => this.lobby()?.settings.library ?? this.library());
+  readonly activeLibraryId = computed<LibraryId | ''>(
+    () => this.lobby()?.settings.library ?? this.library()
+  );
 
   readonly isHost = computed(() => !!this.lobby() && this.lobby()?.hostId === this.playerId());
   readonly currentPlayer = computed(
@@ -138,17 +142,13 @@ export class HomeComponent {
       this.handleWsMessage(message.type, message.payload);
     });
 
-    effect((onCleanup) => {
+    effect(() => {
       const libraryId = this.activeLibraryId();
       if (!libraryId) {
         this.libraryTracks.set([]);
         return;
       }
-      const sub = this.api.getLibraryTracks(libraryId).subscribe({
-        next: (tracks) => this.libraryTracks.set(tracks),
-        error: () => this.libraryTracks.set([]),
-      });
-      onCleanup(() => sub.unsubscribe());
+      this.libraryTracks.set(getLibraryTracks(libraryId));
     });
 
     effect(() => {
@@ -183,6 +183,11 @@ export class HomeComponent {
       this.errorMessage.set('La contraseña debe tener al menos 5 caracteres.');
       return;
     }
+    const library = this.library();
+    if (!library) {
+      this.errorMessage.set('Selecciona una biblioteca primero.');
+      return;
+    }
 
     try {
       const response = await firstValueFrom(
@@ -190,7 +195,7 @@ export class HomeComponent {
           username,
           password,
           mode: this.mode(),
-          library: this.library(),
+          library,
           roundDuration: this.roundDuration(),
           maxPlayers: this.maxPlayers(),
           totalRounds: this.totalRoundsInput(),
@@ -290,15 +295,11 @@ export class HomeComponent {
   }
 
   private loadLibraries() {
-    this.api
-      .getLibraries()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((libs) => {
-        this.libraries.set(libs);
-        if (!this.library() && libs.length) {
-          this.library.set(libs[0].id);
-        }
-      });
+    const libs = libraryCatalog;
+    this.libraries.set(libs);
+    if (!this.library() && libs.length) {
+      this.library.set(libs[0].id);
+    }
   }
 
   private handleLobbyResponse(response: {

@@ -1,5 +1,11 @@
 export type LobbyMode = 'BUZZ' | 'WRITE' | 'ONE_SECOND';
 
+export enum LibraryId {
+  ANIME = 'anime',
+  OST = 'ost',
+  ROCK = 'rock',
+}
+
 export interface Player {
   id: string;
   username: string;
@@ -13,7 +19,7 @@ export interface LobbySnapshot {
   hostId: string;
   settings: {
     mode: LobbyMode;
-    library: string;
+    library: LibraryId;
     roundDuration: number;
     maxPlayers: number;
     totalRounds: number;
@@ -30,7 +36,7 @@ export interface LobbySnapshot {
 }
 
 export interface LibraryInfo {
-  id: string;
+  id: LibraryId;
   name: string;
   description: string;
   trackCount: number;
