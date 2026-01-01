@@ -12,16 +12,20 @@ export class WsService {
   private messageSubject = new Subject<ServerMessage>();
   private statusSignal = signal<'disconnected' | 'connecting' | 'connected'>('disconnected');
   private serverOffsetSignal = signal(0);
+  private pingSignal = signal<number | null>(null);
   private pending: Array<{ type: string; payload?: unknown }> = [];
+  private pingIntervalId?: number;
 
   readonly messages$ = this.messageSubject.asObservable();
   readonly status = this.statusSignal.asReadonly();
   readonly serverOffsetMs = this.serverOffsetSignal.asReadonly();
+  readonly pingMs = this.pingSignal.asReadonly();
 
   connect(url: string) {
     if (this.socket) {
       this.socket.close();
     }
+    this.clearPingInterval();
 
     this.statusSignal.set('connecting');
     this.socket = new WebSocket(url);
@@ -29,11 +33,14 @@ export class WsService {
     this.socket.onopen = () => {
       this.statusSignal.set('connected');
       this.send('PING', { ts: Date.now() });
+      this.startPingInterval();
       this.flushPending();
     };
 
     this.socket.onclose = () => {
       this.statusSignal.set('disconnected');
+      this.clearPingInterval();
+      this.pingSignal.set(null);
     };
 
     this.socket.onmessage = (event) => {
@@ -51,6 +58,7 @@ export class WsService {
         const roundTrip = now - clientTs;
         const offset = serverTs + roundTrip / 2 - now;
         this.serverOffsetSignal.set(offset);
+        this.pingSignal.set(Math.max(0, Math.round(roundTrip)));
         return;
       }
 
@@ -64,6 +72,8 @@ export class WsService {
     this.socket?.close();
     this.socket = undefined;
     this.statusSignal.set('disconnected');
+    this.clearPingInterval();
+    this.pingSignal.set(null);
   }
 
   send(type: string, payload?: unknown) {
@@ -82,5 +92,21 @@ export class WsService {
       this.socket?.send(JSON.stringify(message));
     });
     this.pending = [];
+  }
+
+  private startPingInterval() {
+    if (this.pingIntervalId) {
+      return;
+    }
+    this.pingIntervalId = window.setInterval(() => {
+      this.send('PING', { ts: Date.now() });
+    }, 5000);
+  }
+
+  private clearPingInterval() {
+    if (this.pingIntervalId) {
+      window.clearInterval(this.pingIntervalId);
+      this.pingIntervalId = undefined;
+    }
   }
 }

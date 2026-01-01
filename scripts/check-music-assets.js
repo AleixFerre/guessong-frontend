@@ -9,7 +9,7 @@ const backendTrackRepo = path.resolve(
   'src',
   'game',
   'repositories',
-  'track.repository.ts',
+  'track.repository.ts'
 );
 const publicDir = path.resolve(frontendRoot, 'public');
 

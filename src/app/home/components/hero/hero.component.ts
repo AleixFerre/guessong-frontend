@@ -10,6 +10,7 @@ import { LobbySnapshot } from '../../../models';
 export class HeroComponent {
   readonly lobby = input.required<LobbySnapshot | null>();
   readonly wsStatus = input.required<string>();
+  readonly pingMs = input.required<number | null>();
   readonly errorMessage = input.required<string | null>();
   readonly leave = output<void>();
   readonly volume = input.required<number>();
@@ -27,6 +28,13 @@ export class HeroComponent {
       default:
         return status;
     }
+  }
+
+  formatPing(pingMs: number | null) {
+    if (pingMs === null || Number.isNaN(pingMs)) {
+      return '-- ms';
+    }
+    return `${pingMs} ms`;
   }
 
   formatMode(mode: LobbySnapshot['settings']['mode']) {

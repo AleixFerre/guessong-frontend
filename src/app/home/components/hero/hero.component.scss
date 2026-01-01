@@ -101,6 +101,17 @@
   color: #2a8f6b;
 }
 
+.ping {
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  border: 2px dashed rgba(31, 140, 255, 0.35);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #1f355b;
+  background: #f3f8ff;
+}
+
 .hero-card {
   background: var(--card);
   border: 2px solid var(--border);

@@ -11,6 +11,9 @@
       <div class="status" [class.connected]="wsStatus() === 'connected'">
         {{ formatStatus(wsStatus()) }}
       </div>
+      @if (wsStatus() === 'connected') {
+        <div class="ping">Ping {{ formatPing(pingMs()) }}</div>
+      }
     </div>
     <div class="volume-control">
       <label for="volume-slider">Volumen</label>
