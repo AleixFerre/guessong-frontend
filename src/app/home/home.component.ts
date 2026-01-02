@@ -15,7 +15,6 @@ import {
   RoundEndPayload,
   RoundStartPayload,
 } from '../models';
-import { getLibraryTracks, libraryCatalog } from '../data/library-data';
 import { ApiService } from '../services/api.service';
 import { AudioService } from '../services/audio.service';
 import { WsService } from '../services/ws.service';
@@ -41,6 +40,8 @@ export class HomeComponent {
   readonly ws = inject(WsService);
   private readonly audio = inject(AudioService);
   private readonly destroyRef = inject(DestroyRef);
+  private libraryTracksRequestId = 0;
+  private lastLoadedLibraryId: LibraryId | null = null;
 
   readonly libraries = signal<LibraryInfo[]>([]);
   readonly username = signal('');
@@ -137,18 +138,33 @@ export class HomeComponent {
   });
 
   private setup() {
-    this.loadLibraries();
     this.ws.messages$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((message) => {
       this.handleWsMessage(message.type, message.payload);
     });
 
     effect(() => {
+      const entryMode = this.entryMode();
+      if (!entryMode || this.libraries().length) {
+        return;
+      }
+      untracked(() => {
+        void this.loadLibraries();
+      });
+    });
+
+    effect(() => {
       const libraryId = this.activeLibraryId();
-      if (!libraryId) {
+      const viewState = this.viewState();
+      if (!libraryId || (viewState !== 'IN_GAME' && viewState !== 'FINISHED')) {
         this.libraryTracks.set([]);
         return;
       }
-      this.libraryTracks.set(getLibraryTracks(libraryId));
+      if (this.lastLoadedLibraryId === libraryId && this.libraryTracks().length) {
+        return;
+      }
+      untracked(() => {
+        void this.loadLibraryTracks(libraryId);
+      });
     });
 
     effect(() => {
@@ -294,11 +310,34 @@ export class HomeComponent {
     this.volume.set(value);
   }
 
-  private loadLibraries() {
-    const libs = libraryCatalog;
-    this.libraries.set(libs);
-    if (!this.library() && libs.length) {
-      this.library.set(libs[0].id);
+  private async loadLibraries() {
+    try {
+      const libs = await firstValueFrom(this.api.listLibraries());
+      this.libraries.set(libs);
+      if (!this.library() && libs.length) {
+        this.library.set(libs[0].id);
+      }
+    } catch (error) {
+      this.errorMessage.set('No se pudieron cargar las bibliotecas.');
+    }
+  }
+
+  private async loadLibraryTracks(libraryId: LibraryId) {
+    const requestId = (this.libraryTracksRequestId += 1);
+    this.libraryTracks.set([]);
+    try {
+      const tracks = await firstValueFrom(this.api.getLibraryTracks(libraryId));
+      if (requestId !== this.libraryTracksRequestId) {
+        return;
+      }
+      this.libraryTracks.set(tracks);
+      this.lastLoadedLibraryId = libraryId;
+    } catch (error) {
+      if (requestId !== this.libraryTracksRequestId) {
+        return;
+      }
+      this.libraryTracks.set([]);
+      this.addNotice('No se pudieron cargar las canciones.');
     }
   }
 

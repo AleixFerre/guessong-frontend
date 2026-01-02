@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { BACKEND_URL } from '../config.json';
-import { LibraryId, LobbyMode, LobbySnapshot } from '../models';
+import { LibraryId, LibraryInfo, LibraryTrack, LobbyMode, LobbySnapshot } from '../models';
 
 export interface LobbyResponse {
   lobbyId: string;
@@ -31,5 +31,13 @@ export class ApiService {
       username,
       password,
     });
+  }
+
+  listLibraries() {
+    return this.http.get<LibraryInfo[]>(`${this.baseUrl}/libraries`);
+  }
+
+  getLibraryTracks(libraryId: LibraryId) {
+    return this.http.get<LibraryTrack[]>(`${this.baseUrl}/libraries/${libraryId}/tracks`);
   }
 }
