@@ -29,7 +29,6 @@ export interface LobbySnapshot {
   state: 'WAITING' | 'IN_GAME' | 'FINISHED';
   round: null | {
     status: 'PLAYING' | 'PAUSED' | 'ENDED';
-    trackId: string;
     clipDuration: number;
     startAtServerTs: number;
   };
@@ -43,14 +42,12 @@ export interface LibraryInfo {
 }
 
 export interface LibraryTrack {
-  id: string;
   title: string;
   artist: string;
   duration: number;
 }
 
 export interface RoundStartPayload {
-  trackId: string;
   clipUrl: string;
   clipDuration: number;
   startAtServerTs: number;
