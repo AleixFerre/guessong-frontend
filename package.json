@@ -8,7 +8,8 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "pretty": "bunx prettier --write \"src/**/*.{ts,html,css,json}\"",
-    "test": "ng test"
+    "test": "ng test",
+    "prepare": "husky install"
   },
   "prettier": {
     "printWidth": 100,
@@ -45,6 +46,7 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
+    "husky": "9.1.7",
     "ts-node": "^10.9.2",
     "typescript": "~5.9.2"
   }
