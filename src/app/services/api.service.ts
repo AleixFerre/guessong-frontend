@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { BACKEND_URL } from '../config.json';
+import config from '../config.json';
 import { LibraryId, LibraryInfo, LibraryTrack, LobbyMode, LobbySnapshot } from '../models';
 
 export interface LobbyResponse {
@@ -12,7 +12,7 @@ export interface LobbyResponse {
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = `${BACKEND_URL}/api`;
+  private readonly baseUrl = `${config.isProd ? config.BACKEND_URL_PROD : config.BACKEND_URL_LOCAL}/api`;
 
   createLobby(payload: {
     username: string;

@@ -1,7 +1,7 @@
 import { Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { firstValueFrom } from 'rxjs';
-import { BACKEND_URL } from '../config.json';
+import config from '../config.json';
 import {
   BuzzAcceptedPayload,
   BuzzTimeoutPayload,
@@ -492,7 +492,8 @@ export class HomeComponent {
   }
 
   private connectSocket(lobbyId: string, playerId: string) {
-    const wsUrl = `${BACKEND_URL}/ws`;
+    const baseUrl = `${config.isProd ? config.BACKEND_URL_PROD : config.BACKEND_URL_LOCAL}/api`;
+    const wsUrl = `${baseUrl}/ws`;
     this.ws.connect(wsUrl);
     this.ws.send('JOIN_LOBBY', {
       lobbyId,
