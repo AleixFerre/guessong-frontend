@@ -29,17 +29,19 @@
       }
     </div>
   }
-  @if (canGuess()) {
-    <div class="guess">
-      <app-guess-input
-        [tracks]="guessTracks()"
-        [value]="guessText()"
-        (valueChange)="guessText.set($event)"
-        [placeholder]="guessTracks().length ? 'Escribe tu respuesta' : 'Cargando canciones...'"
-      />
-      <button class="primary" [disabled]="!isGuessAllowed()" (click)="sendGuess()">Enviar</button>
-    </div>
-  }
+  <div class="guess">
+    <app-guess-input
+      [tracks]="guessTracks()"
+      [value]="guessText()"
+      (valueChange)="guessText.set($event)"
+      [placeholder]="guessTracks().length ? 'Escribe tu respuesta' : 'Cargando canciones...'"
+      [disabled]="!canGuess()"
+      [autoFocus]="canGuess()"
+    />
+    <button class="primary" [disabled]="!canGuess() || !isGuessAllowed()" (click)="sendGuess()">
+      Enviar
+    </button>
+  </div>
   @if (roundResult(); as result) {
     <div class="result">
       <h3>Resultado</h3>

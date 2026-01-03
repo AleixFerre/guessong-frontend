@@ -1,4 +1,15 @@
-import { Component, computed, input, output } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  ElementRef,
+  Injector,
+  ViewChild,
+  computed,
+  effect,
+  inject,
+  input,
+  output,
+} from '@angular/core';
 import { LibraryTrack } from '../../../models';
 
 type GuessOption = {
@@ -15,9 +26,17 @@ type GuessOption = {
   styleUrl: './guess-input.component.scss',
 })
 export class GuessInputComponent {
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly injector = inject(Injector);
+
+  @ViewChild('guessInput')
+  private inputEl?: ElementRef<HTMLInputElement>;
+
   readonly tracks = input.required<LibraryTrack[]>();
   readonly value = input.required<string>();
   readonly placeholder = input<string>('Escribe tu respuesta');
+  readonly disabled = input<boolean>(false);
+  readonly autoFocus = input<boolean>(false);
   readonly valueChange = output<string>();
 
   readonly filteredOptions = computed(() => {
@@ -81,5 +100,23 @@ export class GuessInputComponent {
     }
 
     return score;
+  }
+
+  ngAfterViewInit() {
+    const focusEffect = effect(
+      () => {
+        if (!this.autoFocus() || this.disabled()) {
+          return;
+        }
+        const input = this.inputEl?.nativeElement;
+        if (!input || document.activeElement === input) {
+          return;
+        }
+        queueMicrotask(() => input.focus());
+      },
+      { injector: this.injector },
+    );
+
+    this.destroyRef.onDestroy(() => focusEffect.destroy());
   }
 }

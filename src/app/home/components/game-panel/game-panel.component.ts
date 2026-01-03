@@ -55,7 +55,7 @@ export class GamePanelComponent {
 
   sendGuess() {
     const text = this.guessText().trim();
-    if (!text || !this.isGuessAllowed()) {
+    if (!this.canGuess() || !text || !this.isGuessAllowed()) {
       return;
     }
     this.guessRequest.emit(text);
