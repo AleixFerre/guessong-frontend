@@ -31,18 +31,12 @@
   </div>
   @if (canGuess()) {
     <div class="guess">
-      <input
-        type="text"
+      <app-guess-input
+        [tracks]="guessTracks()"
         [value]="guessText()"
-        (input)="guessText.set($any($event.target).value)"
-        [attr.list]="guessListId"
+        (valueChange)="guessText.set($event)"
         [placeholder]="guessTracks().length ? 'Escribe tu respuesta' : 'Cargando canciones...'"
       />
-      <datalist [id]="guessListId">
-        @for (track of guessTracks(); track $index) {
-          <option [value]="formatGuessOption(track)"></option>
-        }
-      </datalist>
       <button class="primary" [disabled]="!isGuessAllowed()" (click)="sendGuess()">Enviar</button>
     </div>
   }

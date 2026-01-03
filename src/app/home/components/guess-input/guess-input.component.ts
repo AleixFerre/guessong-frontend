@@ -1,0 +1,85 @@
+import { Component, computed, input, output } from '@angular/core';
+import { LibraryTrack } from '../../../models';
+
+type GuessOption = {
+  label: string;
+  normalized: string;
+  score: number | null;
+  index: number;
+};
+
+@Component({
+  selector: 'app-guess-input',
+  standalone: true,
+  templateUrl: './guess-input.component.html',
+  styleUrl: './guess-input.component.scss',
+})
+export class GuessInputComponent {
+  readonly tracks = input.required<LibraryTrack[]>();
+  readonly value = input.required<string>();
+  readonly placeholder = input<string>('Escribe tu respuesta');
+  readonly valueChange = output<string>();
+
+  readonly filteredOptions = computed(() => {
+    const query = this.normalizeValue(this.value());
+    const options = this.tracks().map((track, index) => {
+      const label = this.formatGuessOption(track);
+      const normalized = this.normalizeValue(label);
+      const score = query ? this.fuzzyScore(query, normalized) : 0;
+      return { label, normalized, score, index } satisfies GuessOption;
+    });
+
+    if (!query) {
+      return options.map((option) => option.label);
+    }
+
+    return options
+      .filter((option) => option.score !== null)
+      .sort((a, b) => {
+        if (a.score === b.score) {
+          return a.index - b.index;
+        }
+        return (b.score ?? 0) - (a.score ?? 0);
+      })
+      .map((option) => option.label);
+  });
+
+  onInput(event: Event) {
+    const target = event.target as HTMLInputElement | null;
+    this.valueChange.emit(target?.value ?? '');
+  }
+
+  selectOption(option: string) {
+    this.valueChange.emit(option);
+  }
+
+  private formatGuessOption(track: LibraryTrack) {
+    const artist = track.artist.trim();
+    return artist ? `${track.title} - ${artist}` : track.title;
+  }
+
+  private normalizeValue(value: string) {
+    return value
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '');
+  }
+
+  private fuzzyScore(query: string, candidate: string) {
+    let score = 0;
+    let lastIndex = -1;
+
+    for (const char of query) {
+      const matchIndex = candidate.indexOf(char, lastIndex + 1);
+      if (matchIndex === -1) {
+        return null;
+      }
+      const gap = matchIndex - lastIndex - 1;
+      score += Math.max(1, 5 - gap);
+      lastIndex = matchIndex;
+    }
+
+    return score;
+  }
+}

@@ -1,5 +1,6 @@
 import { Component, input, output, signal } from '@angular/core';
 import { LibraryTrack, RoundEndPayload } from '../../../models';
+import { GuessInputComponent } from '../guess-input/guess-input.component';
 
 type RoundStatus = 'IDLE' | 'PLAYING' | 'PAUSED' | 'ENDED';
 
@@ -8,6 +9,7 @@ type RoundStatus = 'IDLE' | 'PLAYING' | 'PAUSED' | 'ENDED';
   standalone: true,
   templateUrl: './game-panel.component.html',
   styleUrls: ['../../home.shared.scss', './game-panel.component.scss'],
+  imports: [GuessInputComponent],
 })
 export class GamePanelComponent {
   readonly progressPercent = input.required<number>();
@@ -30,7 +32,6 @@ export class GamePanelComponent {
   readonly guessRequest = output<string>();
 
   readonly guessText = signal('');
-  readonly guessListId = 'guess-options';
 
   formatTime(seconds: number) {
     const safe = Math.max(0, Math.ceil(seconds));
@@ -59,11 +60,6 @@ export class GamePanelComponent {
     }
     this.guessRequest.emit(text);
     this.guessText.set('');
-  }
-
-  formatGuessOption(track: LibraryTrack) {
-    const artist = track.artist.trim();
-    return artist ? `${track.title} - ${artist}` : track.title;
   }
 
   isGuessAllowed() {

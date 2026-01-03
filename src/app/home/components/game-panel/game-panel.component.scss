@@ -83,14 +83,14 @@
 }
 
 .guess {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.6rem;
+  align-items: end;
 }
 
-.guess input {
-  flex: 1;
-  min-width: 200px;
+.guess app-guess-input {
+  width: 100%;
 }
 
 .result {

@@ -1,0 +1,20 @@
+<div class="guess-input">
+  <div class="options" role="listbox">
+    @if (filteredOptions().length) {
+      @for (option of filteredOptions(); track $index) {
+        <button type="button" class="option" (click)="selectOption(option)">
+          {{ option }}
+        </button>
+      }
+    } @else {
+      <div class="empty">Sin coincidencias.</div>
+    }
+  </div>
+  <input
+    type="text"
+    [value]="value()"
+    (input)="onInput($event)"
+    [placeholder]="placeholder()"
+    aria-label="Respuesta"
+  />
+</div>

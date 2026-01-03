@@ -280,6 +280,7 @@ export class HomeComponent {
     this.lobby.set(null);
     this.playerId.set(null);
     this.roundResult.set(null);
+    this.notifications.set([]);
     this.roundStatus.set('IDLE');
     this.activeBuzzPlayerId.set(null);
     this.entryMode.set(null);
@@ -311,6 +312,8 @@ export class HomeComponent {
   }
 
   selectEntryMode(mode: 'create' | 'join') {
+    console.log('Resetting lobby form for entry mode selection:', mode);
+    this.resetLobbyForm();
     this.entryMode.set(mode);
   }
 
@@ -522,5 +525,19 @@ export class HomeComponent {
   private addNotice(message: string) {
     const next = [...this.notifications().slice(-3), message];
     this.notifications.set(next);
+  }
+
+  private resetLobbyForm() {
+    this.errorMessage.set(null);
+    this.username.set('');
+    this.joinLobbyId.set('');
+    this.mode.set('BUZZ');
+    const firstLibrary = this.libraries()[0]?.id ?? '';
+    this.library.set(firstLibrary);
+    this.roundDuration.set(30);
+    this.maxPlayers.set(8);
+    this.totalRoundsInput.set(5);
+    this.createPassword.set('');
+    this.joinPassword.set('');
   }
 }
