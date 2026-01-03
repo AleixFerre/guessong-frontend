@@ -10,13 +10,24 @@
       <div class="empty">Sin coincidencias.</div>
     }
   </div>
-  <input
-    #guessInput
-    type="text"
-    [value]="value()"
-    (input)="onInput($event)"
-    [placeholder]="placeholder()"
-    aria-label="Respuesta"
-    [disabled]="disabled()"
-  />
+  <div class="input-row">
+    <input
+      #guessInput
+      type="text"
+      [value]="value()"
+      (input)="onInput($event)"
+      [placeholder]="placeholder()"
+      aria-label="Respuesta"
+      [disabled]="disabled()"
+    />
+    <button
+      type="button"
+      class="clear"
+      (click)="clearInput()"
+      [disabled]="disabled() || !value()"
+      aria-label="Limpiar"
+    >
+      ×
+    </button>
+  </div>
 </div>

@@ -68,6 +68,41 @@ input:disabled {
   color: #66708a;
 }
 
+.input-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.clear {
+  border: 2px solid var(--border);
+  background: #ffffff;
+  color: #1f355b;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 0.9rem;
+  font-size: 1.3rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.clear:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: #ff8bb3;
+  box-shadow: 0 6px 14px rgba(255, 139, 179, 0.2);
+}
+
+.clear:disabled {
+  cursor: not-allowed;
+  background: #f4f6fb;
+  color: #66708a;
+  box-shadow: none;
+  transform: none;
+}
+
 .empty {
   padding: 0.5rem 0.7rem;
   border-radius: 0.7rem;

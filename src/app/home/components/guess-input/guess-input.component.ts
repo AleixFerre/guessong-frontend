@@ -72,6 +72,14 @@ export class GuessInputComponent {
     this.valueChange.emit(option);
   }
 
+  clearInput() {
+    this.valueChange.emit('');
+    const input = this.inputEl?.nativeElement;
+    if (input) {
+      queueMicrotask(() => input.focus());
+    }
+  }
+
   private formatGuessOption(track: LibraryTrack) {
     const artist = track.artist.trim();
     return artist ? `${track.title} - ${artist}` : track.title;
