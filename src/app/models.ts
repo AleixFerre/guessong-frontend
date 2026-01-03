@@ -62,6 +62,7 @@ export interface PlayPayload {
 export interface PausePayload {
   offsetSeconds: number;
   byPlayerId?: string;
+  responseDeadlineServerTs?: number | null;
 }
 
 export interface RoundEndPayload {
@@ -80,6 +81,14 @@ export interface GuessResultPayload {
 export interface BuzzAcceptedPayload {
   playerId: string;
   offsetSeconds: number;
+}
+
+export interface BuzzTimeoutPayload {
+  playerId: string;
+}
+
+export interface EarlyBuzzPayload {
+  playerId: string;
 }
 
 export interface LobbyUpdatePayload extends LobbySnapshot {}

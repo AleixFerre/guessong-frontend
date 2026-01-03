@@ -12,6 +12,7 @@ export class LobbyPanelComponent {
   readonly isHost = input.required<boolean>();
   readonly playersOverride = input<Player[] | null>(null);
   readonly showActions = input<boolean>(true);
+  readonly currentPlayerId = input<string | null>(null);
 
   readonly startGameRequest = output<void>();
 

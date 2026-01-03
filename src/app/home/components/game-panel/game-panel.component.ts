@@ -19,6 +19,9 @@ export class GamePanelComponent {
   readonly canBuzz = input.required<boolean>();
   readonly canGuess = input.required<boolean>();
   readonly guessTracks = input.required<LibraryTrack[]>();
+  readonly buzzCountdownSec = input.required<number | null>();
+  readonly buzzOwnerName = input<string | null>(null);
+  readonly isBuzzOwner = input<boolean>(false);
   readonly roundResult = input.required<RoundEndPayload | null>();
   readonly notifications = input.required<string[]>();
   readonly audioUnavailable = input.required<boolean>();

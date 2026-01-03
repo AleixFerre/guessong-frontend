@@ -5,6 +5,9 @@
       <div class="player">
         <div>
           <strong>{{ player.username }}</strong>
+          @if (player.id === currentPlayerId()) {
+            <span class="tag me">Yo</span>
+          }
           @if (player.id === activeLobby.hostId) {
             <span class="tag">Anfitrion</span>
           }

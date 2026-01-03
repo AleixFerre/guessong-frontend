@@ -12,6 +12,17 @@
     <span>{{ formatTime(roundDurationSec() - elapsedSeconds()) }}</span>
     <small>{{ formatRoundStatus(roundStatus()) }}</small>
   </div>
+  @if (roundStatus() === 'PAUSED' && buzzCountdownSec() !== null) {
+  <div class="buzz-timer">
+    @if (isBuzzOwner()) {
+    <span>Tiempo para responder: {{ formatTime(buzzCountdownSec() ?? 0) }}</span>
+    } @else {
+    <span>
+      {{ buzzOwnerName() ?? 'Jugador' }} ha pulsado: {{ formatTime(buzzCountdownSec() ?? 0) }}
+    </span>
+    }
+  </div>
+  }
   @if (audioUnavailable()) {
   <div class="audio-warning">No hay audio disponible para esta ronda.</div>
   }

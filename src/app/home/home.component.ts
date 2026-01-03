@@ -4,9 +4,11 @@ import { firstValueFrom } from 'rxjs';
 import { BACKEND_URL } from '../config.json';
 import {
   BuzzAcceptedPayload,
+  BuzzTimeoutPayload,
+  EarlyBuzzPayload,
   GuessResultPayload,
-  LibraryInfo,
   LibraryId,
+  LibraryInfo,
   LibraryTrack,
   LobbyMode,
   LobbySnapshot,
@@ -26,12 +28,7 @@ import { LobbySetupComponent } from './components/lobby-setup/lobby-setup.compon
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [
-    GamePanelComponent,
-    HeroComponent,
-    LobbyPanelComponent,
-    LobbySetupComponent,
-  ],
+  imports: [GamePanelComponent, HeroComponent, LobbyPanelComponent, LobbySetupComponent],
   templateUrl: './home.component.html',
   styleUrls: ['./home.shared.scss', './home.component.scss'],
 })
@@ -59,11 +56,14 @@ export class HomeComponent {
   readonly lobby = signal<LobbySnapshot | null>(null);
   readonly playerId = signal<string | null>(null);
   readonly libraryTracks = signal<LibraryTrack[]>([]);
+  readonly libraryTracksLoading = signal(false);
   readonly roundStatus = signal<'IDLE' | 'PLAYING' | 'PAUSED' | 'ENDED'>('IDLE');
   readonly roundStartAt = signal<number | null>(null);
   readonly roundDurationSec = signal(30);
   readonly clipDuration = signal(0);
   readonly pausedOffsetSeconds = signal<number | null>(null);
+  readonly buzzDeadlineAt = signal<number | null>(null);
+  readonly buzzCountdownSec = signal<number | null>(null);
   readonly elapsedSeconds = signal(0);
   readonly activeBuzzPlayerId = signal<string | null>(null);
   readonly roundResult = signal<RoundEndPayload | null>(null);
@@ -94,6 +94,13 @@ export class HomeComponent {
   });
   readonly currentRound = computed(() => this.lobby()?.currentRound ?? 0);
   readonly totalRoundsDisplay = computed(() => this.lobby()?.settings.totalRounds ?? 0);
+  readonly activeBuzzPlayerName = computed(() => {
+    const playerId = this.activeBuzzPlayerId();
+    if (!playerId) {
+      return null;
+    }
+    return this.lobby()?.players.find((player) => player.id === playerId)?.username ?? null;
+  });
 
   readonly selectedLibraryInfo = computed(
     () => this.libraries().find((lib) => lib.id === this.library()) ?? null
@@ -157,6 +164,10 @@ export class HomeComponent {
       const viewState = this.viewState();
       if (!libraryId || (viewState !== 'IN_GAME' && viewState !== 'FINISHED')) {
         this.libraryTracks.set([]);
+        this.libraryTracksLoading.set(false);
+        return;
+      }
+      if (this.libraryTracksLoading()) {
         return;
       }
       if (this.lastLoadedLibraryId === libraryId && this.libraryTracks().length) {
@@ -273,6 +284,7 @@ export class HomeComponent {
     this.activeBuzzPlayerId.set(null);
     this.entryMode.set(null);
     this.audioUnavailable.set(false);
+    this.libraryTracksLoading.set(false);
     this.clearDissolveCountdown();
     this.lobbyPassword.set('');
   }
@@ -324,19 +336,24 @@ export class HomeComponent {
 
   private async loadLibraryTracks(libraryId: LibraryId) {
     const requestId = (this.libraryTracksRequestId += 1);
+    this.libraryTracksLoading.set(true);
     this.libraryTracks.set([]);
     try {
       const tracks = await firstValueFrom(this.api.getLibraryTracks(libraryId));
       if (requestId !== this.libraryTracksRequestId) {
+        this.libraryTracksLoading.set(false);
         return;
       }
       this.libraryTracks.set(tracks);
       this.lastLoadedLibraryId = libraryId;
+      this.libraryTracksLoading.set(false);
     } catch (error) {
       if (requestId !== this.libraryTracksRequestId) {
+        this.libraryTracksLoading.set(false);
         return;
       }
       this.libraryTracks.set([]);
+      this.libraryTracksLoading.set(false);
       this.addNotice('No se pudieron cargar las canciones.');
     }
   }
@@ -388,6 +405,12 @@ export class HomeComponent {
       case 'ROUND_END':
         this.onRoundEnd(payload as RoundEndPayload);
         break;
+      case 'BUZZ_TIMEOUT':
+        this.onBuzzTimeout(payload as BuzzTimeoutPayload);
+        break;
+      case 'EARLY_BUZZ':
+        this.onEarlyBuzz(payload as EarlyBuzzPayload);
+        break;
       case 'ERROR':
         this.addNotice(payload?.message ?? 'Error inesperado del servidor.');
         break;
@@ -406,6 +429,8 @@ export class HomeComponent {
     this.clipDuration.set(payload.clipDuration);
     this.activeBuzzPlayerId.set(null);
     this.pausedOffsetSeconds.set(null);
+    this.buzzDeadlineAt.set(null);
+    this.buzzCountdownSec.set(null);
     this.audioUnavailable.set(!payload.clipUrl);
     this.audio.loadClip(payload.clipUrl || null, payload.clipDuration);
   }
@@ -413,8 +438,12 @@ export class HomeComponent {
   private onPlay(payload: PlayPayload) {
     this.roundStatus.set('PLAYING');
     this.pausedOffsetSeconds.set(null);
+    this.activeBuzzPlayerId.set(null);
+    this.buzzDeadlineAt.set(null);
+    this.buzzCountdownSec.set(null);
     if (payload.startAtServerTs) {
-      this.roundStartAt.set(payload.startAtServerTs);
+      const seekSeconds = payload.seekToSeconds ?? 0;
+      this.roundStartAt.set(payload.startAtServerTs - seekSeconds * 1000);
     }
     this.audio.schedulePlay(
       payload.startAtServerTs,
@@ -426,6 +455,7 @@ export class HomeComponent {
   private onPause(payload: PausePayload) {
     this.roundStatus.set('PAUSED');
     this.pausedOffsetSeconds.set(payload.offsetSeconds);
+    this.buzzDeadlineAt.set(payload.responseDeadlineServerTs ?? null);
     this.audio.pauseAt(payload.offsetSeconds);
   }
 
@@ -440,10 +470,22 @@ export class HomeComponent {
     }
   }
 
+  private onBuzzTimeout(payload: BuzzTimeoutPayload) {
+    const player = this.lobby()?.players.find((p) => p.id === payload.playerId);
+    this.addNotice(`${player?.username ?? 'Jugador'} se quedo sin tiempo.`);
+  }
+
+  private onEarlyBuzz(payload: EarlyBuzzPayload) {
+    const player = this.lobby()?.players.find((p) => p.id === payload.playerId);
+    this.addNotice(`${player?.username ?? 'Jugador'} pulso antes de empezar.`);
+  }
+
   private onRoundEnd(payload: RoundEndPayload) {
     this.roundStatus.set('ENDED');
     this.roundResult.set(payload);
     this.activeBuzzPlayerId.set(null);
+    this.buzzDeadlineAt.set(null);
+    this.buzzCountdownSec.set(null);
     this.audioUnavailable.set(false);
     this.audio.stop();
   }
@@ -453,18 +495,28 @@ export class HomeComponent {
     const duration = this.roundDurationSec();
     if (!startAt || !duration) {
       this.elapsedSeconds.set(0);
+      this.buzzCountdownSec.set(null);
       return;
     }
 
     const pausedOffset = this.pausedOffsetSeconds();
     if (pausedOffset !== null) {
       this.elapsedSeconds.set(Math.min(duration, pausedOffset));
+      const deadlineAt = this.buzzDeadlineAt();
+      if (deadlineAt) {
+        const nowServer = Date.now() + this.ws.serverOffsetMs();
+        const remaining = Math.max(0, (deadlineAt - nowServer) / 1000);
+        this.buzzCountdownSec.set(remaining);
+      } else {
+        this.buzzCountdownSec.set(null);
+      }
       return;
     }
 
     const nowServer = Date.now() + this.ws.serverOffsetMs();
     const elapsed = Math.max(0, (nowServer - startAt) / 1000);
     this.elapsedSeconds.set(Math.min(duration, elapsed));
+    this.buzzCountdownSec.set(null);
   }
 
   private addNotice(message: string) {

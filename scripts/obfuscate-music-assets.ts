@@ -22,8 +22,6 @@ const backendTrackDataDir = path.resolve(
   'repositories',
   'track-data'
 );
-const frontendTrackDataDir = path.resolve(frontendRoot, 'src', 'app', 'data', 'library-data');
-const libraryData = path.resolve(frontendRoot, 'src', 'app', 'data', 'library-data.ts');
 
 const isRandomName = (name: string) => /^[a-f0-9]{8,}$/i.test(name);
 
@@ -103,9 +101,8 @@ if (!renameMap.size) {
   process.exit(0);
 }
 
-const filesToUpdate = [backendTrackRepo, libraryData].filter((filePath) => fs.existsSync(filePath));
+const filesToUpdate = [backendTrackRepo].filter((filePath) => fs.existsSync(filePath));
 filesToUpdate.push(...collectTsFiles(backendTrackDataDir));
-filesToUpdate.push(...collectTsFiles(frontendTrackDataDir));
 
 for (const filePath of filesToUpdate) {
   const content = fs.readFileSync(filePath, 'utf8');
