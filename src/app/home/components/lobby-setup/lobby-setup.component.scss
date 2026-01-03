@@ -11,6 +11,17 @@
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
 }
 
+.config-title {
+  margin: 0 0 0.75rem;
+}
+
+.config-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+}
+
 .field input[type='range'] {
   appearance: none;
   width: 100%;

@@ -37,6 +37,10 @@
   grid-area: game;
 }
 
+.panel--config {
+  grid-area: config;
+}
+
 .panel:hover {
   transform: translateY(-6px);
   box-shadow:
@@ -64,6 +68,13 @@
 .grid--waiting {
   grid-template-columns: minmax(0, 640px);
   justify-content: center;
+}
+
+.grid--waiting-host {
+  grid-template-columns: minmax(280px, 1fr) minmax(320px, 1.2fr);
+  grid-template-areas: 'lobby config';
+  justify-content: stretch;
+  align-items: start;
 }
 
 .grid--playing {
@@ -239,6 +250,7 @@
 @media (max-width: 900px) {
   .grid--menu,
   .grid--waiting,
+  .grid--waiting-host,
   .grid--playing {
     grid-template-columns: 1fr;
     justify-content: stretch;
@@ -248,6 +260,12 @@
     grid-template-areas:
       'lobby'
       'game';
+  }
+
+  .grid--waiting-host {
+    grid-template-areas:
+      'lobby'
+      'config';
   }
 }
 

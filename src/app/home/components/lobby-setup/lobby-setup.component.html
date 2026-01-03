@@ -10,19 +10,20 @@
   </div>
 }
 @if (entryMode() === 'create' || entryMode() === 'edit') {
-  <div class="field">
-    <label>Biblioteca</label>
-    <select [value]="library()()" (change)="library().set($any($event.target).value)">
-      @for (lib of libraries(); track lib.id) {
-        <option [value]="lib.id">{{ lib.name }} ({{ lib.trackCount }})</option>
+  <h3 class="config-title">Configuracion de sala</h3>
+  <div class="config-list">
+    <div class="field">
+      <label>Biblioteca</label>
+      <select [value]="library()()" (change)="library().set($any($event.target).value)">
+        @for (lib of libraries(); track lib.id) {
+          <option [value]="lib.id">{{ lib.name }} ({{ lib.trackCount }})</option>
+        }
+      </select>
+      @if (selectedLibraryInfo(); as info) {
+        <small>{{ info.description }}</small>
       }
-    </select>
-    @if (selectedLibraryInfo(); as info) {
-      <small>{{ info.description }}</small>
-    }
-  </div>
-  <div class="field inline">
-    <div>
+    </div>
+    <div class="field">
       <label>Duracion de ronda (s)</label>
       <input
         type="number"
@@ -32,7 +33,7 @@
         (input)="roundDuration().set(+$any($event.target).value)"
       />
     </div>
-    <div>
+    <div class="field">
       <label>Max. jugadores</label>
       <input
         type="number"
@@ -42,7 +43,7 @@
         (input)="maxPlayers().set(+$any($event.target).value)"
       />
     </div>
-    <div>
+    <div class="field">
       <label>Rondas</label>
       <input
         type="number"
@@ -52,7 +53,7 @@
         (input)="totalRounds().set(+$any($event.target).value)"
       />
     </div>
-    <div>
+    <div class="field">
       <label>Intentos por ronda</label>
       <input
         type="number"
@@ -61,20 +62,20 @@
         [value]="maxGuessesPerRound()()"
         (input)="maxGuessesPerRound().set(+$any($event.target).value)"
       />
-      <p><small>0 = infinito</small></p>
+      <small>0 = infinito</small>
     </div>
-  </div>
-  <div class="field">
-    <label>Penalizacion por fallo: {{ penalty()() }}%</label>
-    <input
-      type="range"
-      min="0"
-      max="100"
-      step="1"
-      [value]="penalty()()"
-      (input)="penalty().set(+$any($event.target).value)"
-    />
-    <small>Resta el % de puntos que ganarias si acertaras.</small>
+    <div class="field">
+      <label>Penalizacion por fallo: {{ penalty()() }}%</label>
+      <input
+        type="range"
+        min="0"
+        max="100"
+        step="1"
+        [value]="penalty()()"
+        (input)="penalty().set(+$any($event.target).value)"
+      />
+      <small>Resta el % de puntos que ganarias si acertaras.</small>
+    </div>
   </div>
   @if (entryMode() === 'create') {
     <div class="field">

@@ -12,6 +12,7 @@
     class="grid"
     [class.grid--menu]="viewState() === 'MENU'"
     [class.grid--waiting]="viewState() === 'WAITING'"
+    [class.grid--waiting-host]="viewState() === 'WAITING' && isHost()"
     [class.grid--playing]="viewState() === 'IN_GAME' || viewState() === 'FINISHED'"
   >
     @if (viewState() === 'MENU') {
@@ -62,7 +63,7 @@
         ></app-lobby-panel>
       </div>
       @if (isHost()) {
-        <div class="panel">
+        <div class="panel panel--config">
           <h2>Configurar sala</h2>
           <app-lobby-setup
             entryMode="edit"
