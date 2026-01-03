@@ -19,8 +19,9 @@ export class LobbySetupComponent {
   readonly totalRounds = input.required<WritableSignal<number>>();
   readonly createPassword = input.required<WritableSignal<string>>();
   readonly joinPassword = input.required<WritableSignal<string>>();
-  readonly entryMode = input.required<'create' | 'join'>();
+  readonly entryMode = input.required<'create' | 'join' | 'edit'>();
 
   readonly createLobbyRequest = output<void>();
   readonly joinLobbyRequest = output<void>();
+  readonly updateLobbyRequest = output<void>();
 }

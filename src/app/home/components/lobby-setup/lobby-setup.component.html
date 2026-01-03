@@ -1,13 +1,15 @@
-<div class="field">
-  <label>Nombre de usuario</label>
-  <input
-    type="text"
-    [value]="username()()"
-    (input)="username().set($any($event.target).value)"
-    placeholder="Tu nombre"
-  />
-</div>
-@if (entryMode() === 'create') {
+@if (entryMode() !== 'edit') {
+  <div class="field">
+    <label>Nombre de usuario</label>
+    <input
+      type="text"
+      [value]="username()()"
+      (input)="username().set($any($event.target).value)"
+      placeholder="Tu nombre"
+    />
+  </div>
+}
+@if (entryMode() === 'create' || entryMode() === 'edit') {
   <div class="field">
     <label>Biblioteca</label>
     <select [value]="library()()" (change)="library().set($any($event.target).value)">
@@ -63,17 +65,23 @@
     />
     <small>Resta el % de puntos que ganarias si acertaras.</small>
   </div>
-  <div class="field">
-    <label>Contraseña de sala</label>
-    <input
-      type="password"
-      minlength="5"
-      [value]="createPassword()()"
-      (input)="createPassword().set($any($event.target).value)"
-      placeholder="Minimo 5 caracteres"
-    />
-  </div>
-  <button class="primary" (click)="createLobbyRequest.emit()">Crear sala</button>
+  @if (entryMode() === 'create') {
+    <div class="field">
+      <label>Contraseña de sala</label>
+      <input
+        type="password"
+        minlength="5"
+        [value]="createPassword()()"
+        (input)="createPassword().set($any($event.target).value)"
+        placeholder="Minimo 5 caracteres"
+      />
+    </div>
+  }
+  @if (entryMode() === 'create') {
+    <button class="primary" (click)="createLobbyRequest.emit()">Crear sala</button>
+  } @else {
+    <button class="primary" (click)="updateLobbyRequest.emit()">Guardar cambios</button>
+  }
 }
 
 @if (entryMode() === 'join') {

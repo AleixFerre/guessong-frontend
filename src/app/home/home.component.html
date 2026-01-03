@@ -58,6 +58,26 @@
           (startGameRequest)="startGame()"
         ></app-lobby-panel>
       </div>
+      @if (isHost()) {
+        <div class="panel">
+          <h2>Configurar sala</h2>
+          <app-lobby-setup
+            entryMode="edit"
+            [libraries]="libraries()"
+            [selectedLibraryInfo]="selectedLibraryInfo()"
+            [username]="username"
+            [joinLobbyId]="joinLobbyId"
+            [library]="library"
+            [roundDuration]="roundDuration"
+            [penalty]="penalty"
+            [maxPlayers]="maxPlayers"
+            [totalRounds]="totalRoundsInput"
+            [createPassword]="createPassword"
+            [joinPassword]="joinPassword"
+            (updateLobbyRequest)="updateLobbySettings()"
+          ></app-lobby-setup>
+        </div>
+      }
     }
     @if (viewState() === 'IN_GAME' || viewState() === 'FINISHED') {
       <div class="panel panel--lobby">
@@ -107,6 +127,9 @@
             </div>
           }
         </div>
+        <button class="primary" (click)="requestRematch()" [disabled]="rematchRequested()">
+          Rematch
+        </button>
         <p class="muted">La sala se disolvera automaticamente en {{ dissolveCountdown() }}s.</p>
       </div>
     </div>

@@ -77,6 +77,7 @@ export class HomeComponent {
   readonly audioUnavailable = signal(false);
   readonly dissolveCountdown = signal(0);
   readonly showFinalOverlay = signal(false);
+  readonly rematchRequested = signal(false);
   private dissolveIntervalId?: number;
   private dissolveTimeoutId?: number;
   private finalOverlayTimeoutId?: number;
@@ -170,6 +171,16 @@ export class HomeComponent {
     });
 
     effect(() => {
+      const lobby = this.lobby();
+      if (!lobby || this.libraries().length) {
+        return;
+      }
+      untracked(() => {
+        void this.loadLibraries();
+      });
+    });
+
+    effect(() => {
       const libraryId = this.activeLibraryId();
       const viewState = this.viewState();
       if (!libraryId || (viewState !== 'IN_GAME' && viewState !== 'FINISHED')) {
@@ -228,6 +239,7 @@ export class HomeComponent {
         this.clearDissolveCountdown();
         this.clearFinalOverlayTimeout();
         this.showFinalOverlay.set(false);
+        this.rematchRequested.set(false);
         return;
       }
       if (!this.dissolveTimeoutId) {
@@ -329,6 +341,33 @@ export class HomeComponent {
     this.ws.send('GUESS', { guessText: text });
   }
 
+  requestRematch() {
+    if (this.rematchRequested()) {
+      return;
+    }
+    this.rematchRequested.set(true);
+    this.ws.send('REMATCH', {});
+  }
+
+  updateLobbySettings() {
+    const lobby = this.lobby();
+    if (!lobby || lobby.state !== 'WAITING' || lobby.hostId !== this.playerId()) {
+      return;
+    }
+    const library = this.library();
+    if (!library) {
+      this.toast.show('Selecciona una biblioteca primero.', 'error');
+      return;
+    }
+    this.ws.send('UPDATE_SETTINGS', {
+      library,
+      roundDuration: this.roundDuration(),
+      penalty: this.penalty(),
+      maxPlayers: this.maxPlayers(),
+      totalRounds: this.totalRoundsInput(),
+    });
+  }
+
   leaveLobby() {
     this.ws.disconnect();
     this.audio.stop();
@@ -344,6 +383,7 @@ export class HomeComponent {
     this.excludedGuessOptions.set([]);
     this.clearDissolveCountdown();
     this.lobbyPassword.set('');
+    this.rematchRequested.set(false);
   }
 
   private startDissolveCountdown() {
@@ -352,7 +392,7 @@ export class HomeComponent {
     this.dissolveIntervalId = window.setInterval(() => {
       this.dissolveCountdown.update((value) => Math.max(0, value - 1));
     }, 1000);
-    this.dissolveTimeoutId = window.setTimeout(() => this.leaveLobby(), 5000);
+    this.dissolveTimeoutId = window.setTimeout(() => this.clearDissolveCountdown(), 5000);
   }
 
   private clearDissolveCountdown() {
@@ -422,6 +462,7 @@ export class HomeComponent {
     lobbyState: LobbySnapshot;
   }) {
     this.lobby.set(response.lobbyState);
+    this.syncLobbySettings(response.lobbyState);
     this.playerId.set(response.playerId);
     this.joinLobbyId.set(response.lobbyId);
     this.roundStatus.set('IDLE');
@@ -444,7 +485,7 @@ export class HomeComponent {
   private handleWsMessage(type: string, payload: any) {
     switch (type) {
       case 'LOBBY_UPDATE':
-        this.lobby.set(payload as LobbySnapshot);
+        this.applyLobbyUpdate(payload as LobbySnapshot);
         break;
       case 'ROUND_START':
         this.onRoundStart(payload as RoundStartPayload);
@@ -472,6 +513,13 @@ export class HomeComponent {
         break;
       case 'ERROR':
         this.toast.show(payload?.message ?? 'Error inesperado del servidor.', 'error');
+        break;
+      case 'LOBBY_DISSOLVED':
+        this.leaveLobby();
+        this.toast.show(
+          payload?.reason === 'REMATCH' ? 'No entraste en la revancha.' : 'La sala se disolvio.',
+          'info',
+        );
         break;
       default:
         break;
@@ -599,6 +647,39 @@ export class HomeComponent {
   private addNotice(message: string) {
     const next = [...this.notifications().slice(-3), message];
     this.notifications.set(next);
+  }
+
+  private applyLobbyUpdate(nextLobby: LobbySnapshot) {
+    const prevLobby = this.lobby();
+    if (
+      prevLobby?.state === 'FINISHED' &&
+      nextLobby.state === 'WAITING' &&
+      nextLobby.currentRound === 0
+    ) {
+      const resetPlayers = nextLobby.players.map((player) => ({
+        ...player,
+        score: 0,
+        lockedForRound: false,
+        lockedUntilMs: null,
+      }));
+      const updatedLobby = { ...nextLobby, players: resetPlayers };
+      this.lobby.set(updatedLobby);
+      this.syncLobbySettings(updatedLobby);
+      return;
+    }
+    this.lobby.set(nextLobby);
+    this.syncLobbySettings(nextLobby);
+  }
+
+  private syncLobbySettings(lobby: LobbySnapshot) {
+    if (lobby.state !== 'WAITING' && lobby.state !== 'IN_GAME' && lobby.state !== 'FINISHED') {
+      return;
+    }
+    this.library.set(lobby.settings.library);
+    this.roundDuration.set(lobby.settings.roundDuration);
+    this.penalty.set(lobby.settings.penalty);
+    this.maxPlayers.set(lobby.settings.maxPlayers);
+    this.totalRoundsInput.set(lobby.settings.totalRounds);
   }
 
   private resetLobbyForm() {
