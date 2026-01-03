@@ -7,6 +7,7 @@
     "prebuild": "TS_NODE_PROJECT=scripts/tsconfig.json node -r ts-node/register scripts/check-music-assets.ts",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
+    "pretty": "bunx prettier --write \"src/**/*.{ts,html,css,json}\"",
     "test": "ng test"
   },
   "prettier": {

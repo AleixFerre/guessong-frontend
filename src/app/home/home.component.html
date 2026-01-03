@@ -16,50 +16,52 @@
     [class.grid--playing]="viewState() === 'IN_GAME' || viewState() === 'FINISHED'"
   >
     @if (viewState() === 'MENU') {
-    <div class="panel panel--menu">
-      @if (entryMode(); as selectedEntry) {
-      <div class="menu-heading">
-        <button class="icon-button" (click)="resetEntryMode()" aria-label="Volver">←</button>
-        <h2>Configura la sala</h2>
+      <div class="panel panel--menu">
+        @if (entryMode(); as selectedEntry) {
+          <div class="menu-heading">
+            <button class="icon-button" (click)="resetEntryMode()" aria-label="Volver">←</button>
+            <h2>Configura la sala</h2>
+          </div>
+          <app-lobby-setup
+            [entryMode]="selectedEntry"
+            [libraries]="libraries()"
+            [selectedLibraryInfo]="selectedLibraryInfo()"
+            [username]="username"
+            [joinLobbyId]="joinLobbyId"
+            [mode]="mode"
+            [library]="library"
+            [roundDuration]="roundDuration"
+            [maxPlayers]="maxPlayers"
+            [totalRounds]="totalRoundsInput"
+            [createPassword]="createPassword"
+            [joinPassword]="joinPassword"
+            (createLobbyRequest)="createLobby()"
+            (joinLobbyRequest)="joinLobby()"
+          ></app-lobby-setup>
+        } @else {
+          <h2 class="title">Menu principal</h2>
+          <p class="menu-description">
+            Elige si quieres crear una sala nueva o unirte a una partida existente.
+          </p>
+          <div class="menu-actions">
+            <button class="primary" (click)="selectEntryMode('create')">Crear sala</button>
+            <button class="secondary" (click)="selectEntryMode('join')">Unirse a sala</button>
+          </div>
+        }
       </div>
-      <app-lobby-setup
-        [entryMode]="selectedEntry"
-        [libraries]="libraries()"
-        [selectedLibraryInfo]="selectedLibraryInfo()"
-        [username]="username"
-        [joinLobbyId]="joinLobbyId"
-        [mode]="mode"
-        [library]="library"
-        [roundDuration]="roundDuration"
-        [maxPlayers]="maxPlayers"
-        [totalRounds]="totalRoundsInput"
-        [createPassword]="createPassword"
-        [joinPassword]="joinPassword"
-        (createLobbyRequest)="createLobby()"
-        (joinLobbyRequest)="joinLobby()"
-      ></app-lobby-setup>
-      } @else {
-      <h2 class="title">Menu principal</h2>
-      <p class="menu-description">
-        Elige si quieres crear una sala nueva o unirte a una partida existente.
-      </p>
-      <div class="menu-actions">
-        <button class="primary" (click)="selectEntryMode('create')">Crear sala</button>
-        <button class="secondary" (click)="selectEntryMode('join')">Unirse a sala</button>
-      </div>
-      }
-    </div>
-    } @if (viewState() === 'WAITING') {
-    <div class="panel panel--lobby">
+    }
+    @if (viewState() === 'WAITING') {
+      <div class="panel panel--lobby">
         <app-lobby-panel
           [lobby]="lobby()"
           [isHost]="isHost()"
           [currentPlayerId]="playerId()"
           (startGameRequest)="startGame()"
         ></app-lobby-panel>
-    </div>
-    } @if (viewState() === 'IN_GAME' || viewState() === 'FINISHED') {
-    <div class="panel panel--lobby">
+      </div>
+    }
+    @if (viewState() === 'IN_GAME' || viewState() === 'FINISHED') {
+      <div class="panel panel--lobby">
         <app-lobby-panel
           [lobby]="lobby()"
           [isHost]="isHost()"
@@ -67,17 +69,17 @@
           [showActions]="false"
           [currentPlayerId]="playerId()"
         ></app-lobby-panel>
-    </div>
+      </div>
 
-    <div class="panel panel--game">
-      <app-game-panel
-        [progressPercent]="progressPercent()"
-        [roundDurationSec]="roundDurationSec()"
-        [elapsedSeconds]="elapsedSeconds()"
-        [roundStatus]="roundStatus()"
-        [currentRound]="currentRound()"
-        [totalRounds]="totalRoundsDisplay()"
-        [canBuzz]="canBuzz()"
+      <div class="panel panel--game">
+        <app-game-panel
+          [progressPercent]="progressPercent()"
+          [roundDurationSec]="roundDurationSec()"
+          [elapsedSeconds]="elapsedSeconds()"
+          [roundStatus]="roundStatus()"
+          [currentRound]="currentRound()"
+          [totalRounds]="totalRoundsDisplay()"
+          [canBuzz]="canBuzz()"
           [canGuess]="canGuess()"
           [guessTracks]="libraryTracks()"
           [buzzCountdownSec]="buzzCountdownSec()"
@@ -86,28 +88,28 @@
           [roundResult]="roundResult()"
           [notifications]="notifications()"
           [audioUnavailable]="audioUnavailable()"
-        (buzzRequest)="sendBuzz()"
-        (guessRequest)="sendGuess($event)"
-      ></app-game-panel>
-    </div>
+          (buzzRequest)="sendBuzz()"
+          (guessRequest)="sendGuess($event)"
+        ></app-game-panel>
+      </div>
     }
   </section>
 
   @if (viewState() === 'FINISHED') {
-  <div class="end-overlay">
-    <div class="panel end-card">
-      <h2>Clasificacion final</h2>
-      <div class="end-players">
-        @for (player of sortedPlayers(); track player.id) {
-        <div class="end-player">
-          <span class="end-rank">#{{ $index + 1 }}</span>
-          <span class="end-name">{{ player.username }}</span>
-          <strong class="end-score">{{ player.score }}</strong>
+    <div class="end-overlay">
+      <div class="panel end-card">
+        <h2>Clasificacion final</h2>
+        <div class="end-players">
+          @for (player of sortedPlayers(); track player.id) {
+            <div class="end-player">
+              <span class="end-rank">#{{ $index + 1 }}</span>
+              <span class="end-name">{{ player.username }}</span>
+              <strong class="end-score">{{ player.score }}</strong>
+            </div>
+          }
         </div>
-        }
+        <p class="muted">La sala se disolvera automaticamente en {{ dissolveCountdown() }}s.</p>
       </div>
-      <p class="muted">La sala se disolvera automaticamente en {{ dissolveCountdown() }}s.</p>
     </div>
-  </div>
   }
 </div>

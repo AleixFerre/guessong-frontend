@@ -1,7 +1,7 @@
 <div class="game-header">
   <h2>En juego</h2>
   @if (totalRounds()) {
-  <span class="round-pill">Ronda {{ currentRound() }}/{{ totalRounds() }}</span>
+    <span class="round-pill">Ronda {{ currentRound() }}/{{ totalRounds() }}</span>
   }
 </div>
 <div class="game">
@@ -13,52 +13,55 @@
     <small>{{ formatRoundStatus(roundStatus()) }}</small>
   </div>
   @if (roundStatus() === 'PAUSED' && buzzCountdownSec() !== null) {
-  <div class="buzz-timer">
-    @if (isBuzzOwner()) {
-    <span>Tiempo para responder: {{ formatTime(buzzCountdownSec() ?? 0) }}</span>
-    } @else {
-    <span>
-      {{ buzzOwnerName() ?? 'Jugador' }} ha pulsado: {{ formatTime(buzzCountdownSec() ?? 0) }}
-    </span>
-    }
-  </div>
+    <div class="buzz-timer">
+      @if (isBuzzOwner()) {
+        <span>Tiempo para responder: {{ formatTime(buzzCountdownSec() ?? 0) }}</span>
+      } @else {
+        <span>
+          {{ buzzOwnerName() ?? 'Jugador' }} ha pulsado: {{ formatTime(buzzCountdownSec() ?? 0) }}
+        </span>
+      }
+    </div>
   }
   @if (audioUnavailable()) {
-  <div class="audio-warning">No hay audio disponible para esta ronda.</div>
+    <div class="audio-warning">No hay audio disponible para esta ronda.</div>
   }
   <div class="controls">
     <button class="buzz" [disabled]="!canBuzz()" (click)="buzzRequest.emit()">PULSA</button>
   </div>
   @if (canGuess()) {
-  <div class="guess">
-    <input
-      type="text"
-      [value]="guessText()"
-      (input)="guessText.set($any($event.target).value)"
-      [attr.list]="guessListId"
-      [placeholder]="guessTracks().length ? 'Escribe tu respuesta' : 'Cargando canciones...'"
-    />
-    <datalist [id]="guessListId">
-      @for (track of guessTracks(); track $index) {
-      <option [value]="formatGuessOption(track)"></option>
+    <div class="guess">
+      <input
+        type="text"
+        [value]="guessText()"
+        (input)="guessText.set($any($event.target).value)"
+        [attr.list]="guessListId"
+        [placeholder]="guessTracks().length ? 'Escribe tu respuesta' : 'Cargando canciones...'"
+      />
+      <datalist [id]="guessListId">
+        @for (track of guessTracks(); track $index) {
+          <option [value]="formatGuessOption(track)"></option>
+        }
+      </datalist>
+      <button class="primary" [disabled]="!isGuessAllowed()" (click)="sendGuess()">Enviar</button>
+    </div>
+  }
+  @if (roundResult(); as result) {
+    <div class="result">
+      <h3>Resultado</h3>
+      <p>{{ result.revealedTrackMeta.title }} — {{ result.revealedTrackMeta.artist }}</p>
+      @if (result.winnerId) {
+        <p>Puntos: {{ result.pointsAwarded }}</p>
       }
-    </datalist>
-    <button class="primary" [disabled]="!isGuessAllowed()" (click)="sendGuess()">Enviar</button>
-  </div>
-  } @if (roundResult(); as result) {
-  <div class="result">
-    <h3>Resultado</h3>
-    <p>{{ result.revealedTrackMeta.title }} — {{ result.revealedTrackMeta.artist }}</p>
-    @if (result.winnerId) {
-    <p>Puntos: {{ result.pointsAwarded }}</p>
-    }
-  </div>
+    </div>
   }
 </div>
 @defer (when notifications().length) {
-<div class="notifications">
-  @for (note of notifications(); track $index) {
-  <div class="note">{{ note }}</div>
-  }
-</div>
-} @placeholder { } @loading { } @error { }
+  <div class="notifications">
+    @for (note of notifications(); track $index) {
+      <div class="note">{{ note }}</div>
+    }
+  </div>
+} @placeholder {
+} @loading {
+} @error {}

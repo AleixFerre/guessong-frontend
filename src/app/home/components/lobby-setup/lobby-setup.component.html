@@ -17,9 +17,7 @@
     <label>Biblioteca</label>
     <select [value]="library()()" (change)="library().set($any($event.target).value)">
       @for (lib of libraries(); track lib.id) {
-        <option [value]="lib.id">
-        {{ lib.name }} ({{ lib.trackCount }})
-        </option>
+        <option [value]="lib.id">{{ lib.name }} ({{ lib.trackCount }})</option>
       }
     </select>
     @if (selectedLibraryInfo(); as info) {
@@ -96,8 +94,8 @@
       type="text"
       [value]="joinLobbyId()()"
       (input)="joinLobbyId().set($any($event.target).value)"
-    placeholder="Codigo"
-  />
+      placeholder="Codigo"
+    />
   </div>
   <div class="field">
     <label>Contraseña</label>

@@ -103,15 +103,15 @@ export class HomeComponent {
   });
 
   readonly selectedLibraryInfo = computed(
-    () => this.libraries().find((lib) => lib.id === this.library()) ?? null
+    () => this.libraries().find((lib) => lib.id === this.library()) ?? null,
   );
   readonly activeLibraryId = computed<LibraryId | ''>(
-    () => this.lobby()?.settings.library ?? this.library()
+    () => this.lobby()?.settings.library ?? this.library(),
   );
 
   readonly isHost = computed(() => !!this.lobby() && this.lobby()?.hostId === this.playerId());
   readonly currentPlayer = computed(
-    () => this.lobby()?.players.find((player) => player.id === this.playerId()) ?? null
+    () => this.lobby()?.players.find((player) => player.id === this.playerId()) ?? null,
   );
   readonly canBuzz = computed(() => {
     const lobby = this.lobby();
@@ -226,7 +226,7 @@ export class HomeComponent {
           roundDuration: this.roundDuration(),
           maxPlayers: this.maxPlayers(),
           totalRounds: this.totalRoundsInput(),
-        })
+        }),
       );
       this.lobbyPassword.set(password);
       this.handleLobbyResponse(response);
@@ -424,7 +424,7 @@ export class HomeComponent {
     this.roundStatus.set('PLAYING');
     this.roundStartAt.set(payload.startAtServerTs);
     this.roundDurationSec.set(
-      payload.mode === 'ONE_SECOND' ? 1 : this.lobby()?.settings.roundDuration ?? 30
+      payload.mode === 'ONE_SECOND' ? 1 : (this.lobby()?.settings.roundDuration ?? 30),
     );
     this.clipDuration.set(payload.clipDuration);
     this.activeBuzzPlayerId.set(null);
@@ -448,7 +448,7 @@ export class HomeComponent {
     this.audio.schedulePlay(
       payload.startAtServerTs,
       this.ws.serverOffsetMs(),
-      payload.seekToSeconds ?? 0
+      payload.seekToSeconds ?? 0,
     );
   }
 

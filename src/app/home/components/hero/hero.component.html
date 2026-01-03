@@ -27,38 +27,38 @@
       />
     </div>
     @if (errorMessage(); as message) {
-    <p class="error">{{ message }}</p>
+      <p class="error">{{ message }}</p>
     }
   </div>
   @if (lobby(); as activeLobby) {
-  <div class="hero-card">
-    <h3>Sala activa</h3>
-    <div class="row">
-      <span>Codigo</span>
-      <div class="code">
-        <strong>{{ activeLobby.id }}</strong>
-        <button class="copy" (click)="copyLobbyCode(activeLobby.id)">
-          {{ copied() ? 'Copiado' : 'Copiar' }}
-        </button>
+    <div class="hero-card">
+      <h3>Sala activa</h3>
+      <div class="row">
+        <span>Codigo</span>
+        <div class="code">
+          <strong>{{ activeLobby.id }}</strong>
+          <button class="copy" (click)="copyLobbyCode(activeLobby.id)">
+            {{ copied() ? 'Copiado' : 'Copiar' }}
+          </button>
+        </div>
+      </div>
+      <div class="row">
+        <span>Modo</span>
+        <strong>{{ formatMode(activeLobby.settings.mode) }}</strong>
+      </div>
+      <div class="row">
+        <span>Biblioteca</span>
+        <strong>{{ activeLobby.settings.library }}</strong>
+      </div>
+      <div class="row">
+        <span>Jugadores</span>
+        <strong>{{ activeLobby.players.length }}/{{ activeLobby.settings.maxPlayers }}</strong>
       </div>
     </div>
-    <div class="row">
-      <span>Modo</span>
-      <strong>{{ formatMode(activeLobby.settings.mode) }}</strong>
-    </div>
-    <div class="row">
-      <span>Biblioteca</span>
-      <strong>{{ activeLobby.settings.library }}</strong>
-    </div>
-    <div class="row">
-      <span>Jugadores</span>
-      <strong>{{ activeLobby.players.length }}/{{ activeLobby.settings.maxPlayers }}</strong>
-    </div>
-  </div>
   } @else {
-  <div class="hero-card">
-    <h3>Listo para jugar</h3>
-    <p>Elige un nombre, crea una sala o unete a una.</p>
-  </div>
+    <div class="hero-card">
+      <h3>Listo para jugar</h3>
+      <p>Elige un nombre, crea una sala o unete a una.</p>
+    </div>
   }
 </header>
