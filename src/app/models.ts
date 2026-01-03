@@ -11,6 +11,7 @@ export interface Player {
   username: string;
   score: number;
   lockedForRound: boolean;
+  lockedUntilMs: number | null;
   isHost?: boolean;
 }
 

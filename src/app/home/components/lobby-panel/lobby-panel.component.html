@@ -12,7 +12,9 @@
             <span class="tag">Anfitrion</span>
           }
           @if (player.lockedForRound) {
-            <span class="tag warn">Bloqueado</span>
+            <span class="tag warn" [style.--lockout-duration]="lockoutDuration(player)">
+              Bloqueado
+            </span>
           }
         </div>
         <div class="score">{{ player.score }}</div>
