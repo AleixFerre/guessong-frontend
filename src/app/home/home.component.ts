@@ -27,6 +27,8 @@ import { LobbySetupComponent } from './components/lobby-setup/lobby-setup.compon
 
 const MAX_ROUND_DURATION_SEC = 30;
 const MAX_PLAYERS = 10;
+const MAX_GUESSES_PER_ROUND = 10;
+const DEFAULT_GUESSES_PER_ROUND = 3;
 
 @Component({
   selector: 'app-home',
@@ -52,6 +54,7 @@ export class HomeComponent {
   readonly penalty = signal(0);
   readonly maxPlayers = signal(8);
   readonly totalRoundsInput = signal(5);
+  readonly maxGuessesPerRound = signal(DEFAULT_GUESSES_PER_ROUND);
   readonly createPassword = signal('');
   readonly joinPassword = signal('');
   readonly lobbyPassword = signal('');
@@ -217,6 +220,13 @@ export class HomeComponent {
       } else if (players < 2) {
         this.maxPlayers.set(2);
       }
+
+      const maxGuesses = this.maxGuessesPerRound();
+      if (maxGuesses > MAX_GUESSES_PER_ROUND) {
+        this.maxGuessesPerRound.set(MAX_GUESSES_PER_ROUND);
+      } else if (maxGuesses < 0) {
+        this.maxGuessesPerRound.set(0);
+      }
     });
 
     effect(() => {
@@ -286,6 +296,7 @@ export class HomeComponent {
           penalty: this.penalty(),
           maxPlayers: this.maxPlayers(),
           totalRounds: this.totalRoundsInput(),
+          maxGuessesPerRound: this.maxGuessesPerRound(),
         }),
       );
       this.lobbyPassword.set(password);
@@ -365,6 +376,7 @@ export class HomeComponent {
       penalty: this.penalty(),
       maxPlayers: this.maxPlayers(),
       totalRounds: this.totalRoundsInput(),
+      maxGuessesPerRound: this.maxGuessesPerRound(),
     });
   }
 
@@ -680,6 +692,7 @@ export class HomeComponent {
     this.penalty.set(lobby.settings.penalty);
     this.maxPlayers.set(lobby.settings.maxPlayers);
     this.totalRoundsInput.set(lobby.settings.totalRounds);
+    this.maxGuessesPerRound.set(lobby.settings.maxGuessesPerRound ?? DEFAULT_GUESSES_PER_ROUND);
   }
 
   private resetLobbyForm() {
@@ -691,6 +704,7 @@ export class HomeComponent {
     this.penalty.set(0);
     this.maxPlayers.set(8);
     this.totalRoundsInput.set(5);
+    this.maxGuessesPerRound.set(DEFAULT_GUESSES_PER_ROUND);
     this.createPassword.set('');
     this.joinPassword.set('');
   }

@@ -23,6 +23,7 @@ export class ApiService {
     penalty: number;
     maxPlayers: number;
     totalRounds: number;
+    maxGuessesPerRound: number;
   }) {
     return this.http.post<LobbyResponse>(`${this.baseUrl}/lobbies`, payload);
   }

@@ -52,6 +52,17 @@
         (input)="totalRounds().set(+$any($event.target).value)"
       />
     </div>
+    <div>
+      <label>Intentos por ronda</label>
+      <input
+        type="number"
+        min="0"
+        max="10"
+        [value]="maxGuessesPerRound()()"
+        (input)="maxGuessesPerRound().set(+$any($event.target).value)"
+      />
+      <p><small>0 = infinito</small></p>
+    </div>
   </div>
   <div class="field">
     <label>Penalizacion por fallo: {{ penalty()() }}%</label>

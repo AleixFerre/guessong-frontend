@@ -25,6 +25,7 @@ export interface LobbySnapshot {
     penalty: number;
     maxPlayers: number;
     totalRounds: number;
+    maxGuessesPerRound: number;
   };
   currentRound: number;
   players: Player[];
