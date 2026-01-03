@@ -16,7 +16,10 @@
       }
     </div>
     <div class="volume-control">
-      <label for="volume-slider">Volumen</label>
+      <label for="volume-slider">
+        Volumen
+        <span class="volume-value">{{ volume() }}%</span>
+      </label>
       <input
         id="volume-slider"
         type="range"

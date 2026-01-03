@@ -51,6 +51,19 @@
   margin-top: 1rem;
 }
 
+.volume-control label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.volume-value {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #1f355b;
+}
+
 .volume-control input[type='range'] {
   appearance: none;
   width: 100%;
