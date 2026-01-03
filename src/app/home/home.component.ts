@@ -25,6 +25,9 @@ import { HeroComponent } from './components/hero/hero.component';
 import { LobbyPanelComponent } from './components/lobby-panel/lobby-panel.component';
 import { LobbySetupComponent } from './components/lobby-setup/lobby-setup.component';
 
+const MAX_ROUND_DURATION_SEC = 30;
+const MAX_PLAYERS = 10;
+
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -187,6 +190,36 @@ export class HomeComponent {
 
     effect(() => {
       this.audio.setVolume(this.volume() / 100);
+    });
+
+    effect(() => {
+      const duration = this.roundDuration();
+      if (duration > MAX_ROUND_DURATION_SEC) {
+        this.roundDuration.set(MAX_ROUND_DURATION_SEC);
+      } else if (duration < 5) {
+        this.roundDuration.set(5);
+      }
+
+      const players = this.maxPlayers();
+      if (players > MAX_PLAYERS) {
+        this.maxPlayers.set(MAX_PLAYERS);
+      } else if (players < 2) {
+        this.maxPlayers.set(2);
+      }
+    });
+
+    effect(() => {
+      const info = this.selectedLibraryInfo();
+      if (!info) {
+        return;
+      }
+      const maxRounds = Math.max(1, info.trackCount);
+      const rounds = this.totalRoundsInput();
+      if (rounds > maxRounds) {
+        this.totalRoundsInput.set(maxRounds);
+      } else if (rounds < 1) {
+        this.totalRoundsInput.set(1);
+      }
     });
 
     effect(() => {
