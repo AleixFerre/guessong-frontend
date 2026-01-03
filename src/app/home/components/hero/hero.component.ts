@@ -11,7 +11,6 @@ export class HeroComponent {
   readonly lobby = input.required<LobbySnapshot | null>();
   readonly wsStatus = input.required<string>();
   readonly pingMs = input.required<number | null>();
-  readonly errorMessage = input.required<string | null>();
   readonly leave = output<void>();
   readonly volume = input.required<number>();
   readonly volumeChange = output<number>();

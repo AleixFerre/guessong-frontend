@@ -26,9 +26,6 @@
         (input)="onVolumeInput($event)"
       />
     </div>
-    @if (errorMessage(); as message) {
-      <p class="error">{{ message }}</p>
-    }
   </div>
   @if (lobby(); as activeLobby) {
     <div class="hero-card">

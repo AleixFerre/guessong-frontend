@@ -174,12 +174,6 @@
   box-shadow: 0 6px 12px rgba(31, 140, 255, 0.12);
 }
 
-.error {
-  color: var(--danger);
-  margin-top: 0.75rem;
-  font-weight: 600;
-}
-
 @media (max-width: 720px) {
   .hero-actions {
     flex-direction: column;

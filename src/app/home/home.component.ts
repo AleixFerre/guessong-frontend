@@ -19,6 +19,7 @@ import {
 } from '../models';
 import { ApiService } from '../services/api.service';
 import { AudioService } from '../services/audio.service';
+import { ToastService } from '../services/toast.service';
 import { WsService } from '../services/ws.service';
 import { GamePanelComponent } from './components/game-panel/game-panel.component';
 import { HeroComponent } from './components/hero/hero.component';
@@ -36,6 +37,7 @@ export class HomeComponent {
   private readonly api = inject(ApiService);
   readonly ws = inject(WsService);
   private readonly audio = inject(AudioService);
+  private readonly toast = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
   private libraryTracksRequestId = 0;
   private lastLoadedLibraryId: LibraryId | null = null;
@@ -68,7 +70,6 @@ export class HomeComponent {
   readonly activeBuzzPlayerId = signal<string | null>(null);
   readonly roundResult = signal<RoundEndPayload | null>(null);
   readonly notifications = signal<string[]>([]);
-  readonly errorMessage = signal<string | null>(null);
   readonly volume = signal(this.audio.getVolume() * 100);
   readonly audioUnavailable = signal(false);
   readonly dissolveCountdown = signal(0);
@@ -199,20 +200,19 @@ export class HomeComponent {
   }
 
   async createLobby() {
-    this.errorMessage.set(null);
     const username = this.username().trim();
     const password = this.createPassword().trim();
     if (!username) {
-      this.errorMessage.set('Elige un nombre primero.');
+      this.toast.show('Elige un nombre primero.', 'error');
       return;
     }
     if (password.length < 5) {
-      this.errorMessage.set('La contraseña debe tener al menos 5 caracteres.');
+      this.toast.show('La contraseña debe tener al menos 5 caracteres.', 'error');
       return;
     }
     const library = this.library();
     if (!library) {
-      this.errorMessage.set('Selecciona una biblioteca primero.');
+      this.toast.show('Selecciona una biblioteca primero.', 'error');
       return;
     }
 
@@ -231,21 +231,20 @@ export class HomeComponent {
       this.lobbyPassword.set(password);
       this.handleLobbyResponse(response);
     } catch (error) {
-      this.errorMessage.set('No se pudo crear la sala.');
+      this.toast.show('No se pudo crear la sala.', 'error');
     }
   }
 
   async joinLobby() {
-    this.errorMessage.set(null);
     const username = this.username().trim();
     const password = this.joinPassword().trim();
     const lobbyId = this.joinLobbyId().trim();
     if (!username || !lobbyId) {
-      this.errorMessage.set('Se requiere nombre y codigo de sala.');
+      this.toast.show('Se requiere nombre y codigo de sala.', 'error');
       return;
     }
     if (password.length < 5) {
-      this.errorMessage.set('La contraseña debe tener al menos 5 caracteres.');
+      this.toast.show('La contraseña debe tener al menos 5 caracteres.', 'error');
       return;
     }
 
@@ -254,7 +253,15 @@ export class HomeComponent {
       this.lobbyPassword.set(password);
       this.handleLobbyResponse(response);
     } catch (error) {
-      this.errorMessage.set('No se pudo unir a la sala.');
+      const serverMessage =
+        typeof (error as { error?: { error?: string } })?.error?.error === 'string'
+          ? (error as { error?: { error?: string } }).error?.error
+          : '';
+      if (serverMessage === 'Lobby not found') {
+        this.toast.show('La sala no existe', 'error');
+        return;
+      }
+      this.toast.show('No se pudo unir a la sala.', 'error');
     }
   }
 
@@ -312,7 +319,6 @@ export class HomeComponent {
   }
 
   selectEntryMode(mode: 'create' | 'join') {
-    console.log('Resetting lobby form for entry mode selection:', mode);
     this.resetLobbyForm();
     this.entryMode.set(mode);
   }
@@ -333,7 +339,7 @@ export class HomeComponent {
         this.library.set(libs[0].id);
       }
     } catch (error) {
-      this.errorMessage.set('No se pudieron cargar las bibliotecas.');
+      this.toast.show('No se pudieron cargar las bibliotecas.', 'error');
     }
   }
 
@@ -357,7 +363,7 @@ export class HomeComponent {
       }
       this.libraryTracks.set([]);
       this.libraryTracksLoading.set(false);
-      this.addNotice('No se pudieron cargar las canciones.');
+      this.toast.show('No se pudieron cargar las canciones.', 'error');
     }
   }
 
@@ -415,7 +421,7 @@ export class HomeComponent {
         this.onEarlyBuzz(payload as EarlyBuzzPayload);
         break;
       case 'ERROR':
-        this.addNotice(payload?.message ?? 'Error inesperado del servidor.');
+        this.toast.show(payload?.message ?? 'Error inesperado del servidor.', 'error');
         break;
       default:
         break;
@@ -528,7 +534,6 @@ export class HomeComponent {
   }
 
   private resetLobbyForm() {
-    this.errorMessage.set(null);
     this.username.set('');
     this.joinLobbyId.set('');
     this.mode.set('BUZZ');
