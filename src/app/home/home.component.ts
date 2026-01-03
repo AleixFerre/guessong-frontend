@@ -171,6 +171,8 @@ export class HomeComponent {
   });
 
   private setup() {
+    this.applyLobbyLinkFromUrl();
+
     this.ws.messages$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((message) => {
       this.handleWsMessage(message.type, message.payload);
     });
@@ -737,5 +739,17 @@ export class HomeComponent {
 
   private normalizeGuessOption(value: string) {
     return value.trim().toLowerCase();
+  }
+
+  private applyLobbyLinkFromUrl() {
+    if (this.lobby()) {
+      return;
+    }
+    const lobbyId = new URLSearchParams(window.location.search).get('lobby') ?? '';
+    if (!lobbyId) {
+      return;
+    }
+    this.joinLobbyId.set(lobbyId);
+    this.entryMode.set('join');
   }
 }

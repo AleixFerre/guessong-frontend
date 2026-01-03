@@ -37,8 +37,8 @@
         <span>Codigo</span>
         <div class="code">
           <strong>{{ activeLobby.id }}</strong>
-          <button class="copy" (click)="copyLobbyCode(activeLobby.id)">
-            {{ copied() ? 'Copiado' : 'Copiar' }}
+          <button class="copy" (click)="copyLobbyLink(activeLobby.id)">
+            {{ copied() ? 'Copiado' : 'Copiar link' }}
           </button>
         </div>
       </div>

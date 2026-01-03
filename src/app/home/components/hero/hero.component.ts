@@ -38,17 +38,20 @@ export class HeroComponent {
     return `${pingMs} ms`;
   }
 
-  async copyLobbyCode(code: string) {
+  async copyLobbyLink(code: string) {
     if (!code) {
       return;
     }
     try {
-      await navigator.clipboard.writeText(code);
+      const baseUrl = `${window.location.origin}${window.location.pathname}`;
+      const url = new URL(baseUrl);
+      url.searchParams.set('lobby', code);
+      await navigator.clipboard.writeText(url.toString());
       this.copied.set(true);
       window.setTimeout(() => this.copied.set(false), 1500);
-      this.toast.show('Codigo copiado', 'success');
+      this.toast.show('Link copiado', 'success');
     } catch {
-      this.toast.show('No se pudo copiar el codigo', 'error');
+      this.toast.show('No se pudo copiar el link', 'error');
     }
   }
 
