@@ -11,7 +11,7 @@ const backendTrackRepo = path.resolve(
   'src',
   'game',
   'repositories',
-  'track.repository.ts'
+  'track.repository.ts',
 );
 const backendTrackDataDir = path.resolve(
   frontendRoot,
@@ -20,7 +20,7 @@ const backendTrackDataDir = path.resolve(
   'src',
   'game',
   'repositories',
-  'track-data'
+  'track-data',
 );
 
 const isRandomName = (name: string) => /^[a-f0-9]{8,}$/i.test(name);
@@ -77,7 +77,7 @@ if (!files.length) {
 }
 
 const takenNames = new Set(
-  files.map((file) => path.basename(file, path.extname(file))).filter((name) => isRandomName(name))
+  files.map((file) => path.basename(file, path.extname(file))).filter((name) => isRandomName(name)),
 );
 const renameMap = new Map<string, string>();
 

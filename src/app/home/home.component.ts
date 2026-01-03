@@ -230,7 +230,7 @@ export class HomeComponent {
       );
       this.lobbyPassword.set(password);
       this.handleLobbyResponse(response);
-    } catch (error) {
+    } catch (_error) {
       this.toast.show('No se pudo crear la sala.', 'error');
     }
   }
@@ -338,7 +338,7 @@ export class HomeComponent {
       if (!this.library() && libs.length) {
         this.library.set(libs[0].id);
       }
-    } catch (error) {
+    } catch (_error) {
       this.toast.show('No se pudieron cargar las bibliotecas.', 'error');
     }
   }
@@ -356,7 +356,7 @@ export class HomeComponent {
       this.libraryTracks.set(tracks);
       this.lastLoadedLibraryId = libraryId;
       this.libraryTracksLoading.set(false);
-    } catch (error) {
+    } catch (_error) {
       if (requestId !== this.libraryTracksRequestId) {
         this.libraryTracksLoading.set(false);
         return;

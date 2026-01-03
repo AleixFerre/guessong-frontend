@@ -8,7 +8,7 @@ const backendTrackRepo = path.resolve(
   'src',
   'game',
   'repositories',
-  'track.repository.ts'
+  'track.repository.ts',
 );
 const backendTrackDataDir = path.resolve(
   frontendRoot,
@@ -17,7 +17,7 @@ const backendTrackDataDir = path.resolve(
   'src',
   'game',
   'repositories',
-  'track-data'
+  'track-data',
 );
 const publicDir = path.resolve(frontendRoot, 'public');
 const fileUrlRegex = /fileUrl:\s*['"]([^'"]+)['"]/g;

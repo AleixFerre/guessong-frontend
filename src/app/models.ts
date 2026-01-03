@@ -91,4 +91,4 @@ export interface EarlyBuzzPayload {
   playerId: string;
 }
 
-export interface LobbyUpdatePayload extends LobbySnapshot {}
+export type LobbyUpdatePayload = LobbySnapshot;
