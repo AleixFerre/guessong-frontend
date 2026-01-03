@@ -1,5 +1,6 @@
-import { Component, input, output, signal } from '@angular/core';
+import { Component, inject, input, output, signal } from '@angular/core';
 import { LobbySnapshot } from '../../../models';
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'app-home-hero',
@@ -8,6 +9,7 @@ import { LobbySnapshot } from '../../../models';
   styleUrls: ['../../home.shared.scss', './hero.component.scss'],
 })
 export class HeroComponent {
+  private readonly toast = inject(ToastService);
   readonly lobby = input.required<LobbySnapshot | null>();
   readonly wsStatus = input.required<string>();
   readonly pingMs = input.required<number | null>();
@@ -57,8 +59,9 @@ export class HeroComponent {
       await navigator.clipboard.writeText(code);
       this.copied.set(true);
       window.setTimeout(() => this.copied.set(false), 1500);
+      this.toast.show('Codigo copiado', 'success');
     } catch {
-      // noop
+      this.toast.show('No se pudo copiar el codigo', 'error');
     }
   }
 
