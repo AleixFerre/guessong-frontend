@@ -93,7 +93,7 @@
     }
   </section>
 
-  @if (viewState() === 'FINISHED') {
+  @if (viewState() === 'FINISHED' && showFinalOverlay()) {
     <div class="end-overlay">
       <div class="panel end-card">
         <h2>Clasificación final</h2>

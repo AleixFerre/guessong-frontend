@@ -71,8 +71,10 @@ export class HomeComponent {
   readonly volume = signal(this.audio.getVolume() * 100);
   readonly audioUnavailable = signal(false);
   readonly dissolveCountdown = signal(0);
+  readonly showFinalOverlay = signal(false);
   private dissolveIntervalId?: number;
   private dissolveTimeoutId?: number;
+  private finalOverlayTimeoutId?: number;
   private readonly init = this.setup();
   readonly viewState = computed(() => {
     const lobby = this.lobby();
@@ -181,16 +183,24 @@ export class HomeComponent {
       const lobby = this.lobby();
       if (!lobby || lobby.state !== 'FINISHED') {
         this.clearDissolveCountdown();
+        this.clearFinalOverlayTimeout();
+        this.showFinalOverlay.set(false);
         return;
       }
       if (!this.dissolveTimeoutId) {
         this.startDissolveCountdown();
+      }
+      if (!this.finalOverlayTimeoutId) {
+        this.finalOverlayTimeoutId = window.setTimeout(() => {
+          this.showFinalOverlay.set(true);
+        }, 5000);
       }
     });
 
     const interval = window.setInterval(() => this.tickElapsed(), 250);
     this.destroyRef.onDestroy(() => window.clearInterval(interval));
     this.destroyRef.onDestroy(() => this.clearDissolveCountdown());
+    this.destroyRef.onDestroy(() => this.clearFinalOverlayTimeout());
   }
 
   async createLobby() {
@@ -293,11 +303,11 @@ export class HomeComponent {
 
   private startDissolveCountdown() {
     this.clearDissolveCountdown();
-    this.dissolveCountdown.set(10);
+    this.dissolveCountdown.set(5);
     this.dissolveIntervalId = window.setInterval(() => {
       this.dissolveCountdown.update((value) => Math.max(0, value - 1));
     }, 1000);
-    this.dissolveTimeoutId = window.setTimeout(() => this.leaveLobby(), 10000);
+    this.dissolveTimeoutId = window.setTimeout(() => this.leaveLobby(), 5000);
   }
 
   private clearDissolveCountdown() {
@@ -490,6 +500,13 @@ export class HomeComponent {
     this.buzzCountdownSec.set(null);
     this.audioUnavailable.set(false);
     this.audio.stop();
+  }
+
+  private clearFinalOverlayTimeout() {
+    if (this.finalOverlayTimeoutId) {
+      window.clearTimeout(this.finalOverlayTimeoutId);
+      this.finalOverlayTimeoutId = undefined;
+    }
   }
 
   private tickElapsed() {
