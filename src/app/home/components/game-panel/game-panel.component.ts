@@ -43,7 +43,7 @@ export class GamePanelComponent {
       case 'IDLE':
         return 'En espera';
       case 'PLAYING':
-        return 'Jugando';
+        return 'Reproduciendo';
       case 'PAUSED':
         return 'En pausa';
       case 'ENDED':

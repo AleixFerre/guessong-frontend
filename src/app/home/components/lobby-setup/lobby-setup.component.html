@@ -19,24 +19,6 @@
       <small>{{ info.description }}</small>
     }
   </div>
-  <div class="field">
-    <label>Modo</label>
-    <div class="pill-row">
-      <button class="pill" [class.active]="mode()() === 'BUZZ'" (click)="mode().set('BUZZ')">
-        Timbre
-      </button>
-      <button class="pill" [class.active]="mode()() === 'WRITE'" (click)="mode().set('WRITE')">
-        Escribir
-      </button>
-      <button
-        class="pill"
-        [class.active]="mode()() === 'ONE_SECOND'"
-        (click)="mode().set('ONE_SECOND')"
-      >
-        1s
-      </button>
-    </div>
-  </div>
   <div class="field inline">
     <div>
       <label>Duracion de ronda (s)</label>

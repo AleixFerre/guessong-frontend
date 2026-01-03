@@ -38,19 +38,6 @@ export class HeroComponent {
     return `${pingMs} ms`;
   }
 
-  formatMode(mode: LobbySnapshot['settings']['mode']) {
-    switch (mode) {
-      case 'BUZZ':
-        return 'Timbre';
-      case 'WRITE':
-        return 'Escribir';
-      case 'ONE_SECOND':
-        return '1s';
-      default:
-        return mode;
-    }
-  }
-
   async copyLobbyCode(code: string) {
     if (!code) {
       return;

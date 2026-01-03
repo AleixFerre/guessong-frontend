@@ -10,7 +10,6 @@ import {
   LibraryId,
   LibraryInfo,
   LibraryTrack,
-  LobbyMode,
   LobbySnapshot,
   PausePayload,
   PlayPayload,
@@ -45,7 +44,6 @@ export class HomeComponent {
   readonly libraries = signal<LibraryInfo[]>([]);
   readonly username = signal('');
   readonly joinLobbyId = signal('');
-  readonly mode = signal<LobbyMode>('BUZZ');
   readonly library = signal<LibraryId | ''>('');
   readonly roundDuration = signal(30);
   readonly maxPlayers = signal(8);
@@ -120,20 +118,15 @@ export class HomeComponent {
     if (!lobby || !player) {
       return false;
     }
-    return (
-      lobby.settings.mode === 'BUZZ' && this.roundStatus() === 'PLAYING' && !player.lockedForRound
-    );
+    return this.roundStatus() === 'PLAYING' && !player.lockedForRound;
   });
 
   readonly canGuess = computed(() => {
     const lobby = this.lobby();
-    if (!lobby) {
+    if (!lobby || this.roundStatus() !== 'PLAYING') {
       return false;
     }
-    if (lobby.settings.mode === 'BUZZ') {
-      return this.activeBuzzPlayerId() === this.playerId();
-    }
-    return this.roundStatus() === 'PLAYING';
+    return this.activeBuzzPlayerId() === this.playerId();
   });
 
   readonly progressPercent = computed(() => {
@@ -221,7 +214,7 @@ export class HomeComponent {
         this.api.createLobby({
           username,
           password,
-          mode: this.mode(),
+          mode: 'BUZZ',
           library,
           roundDuration: this.roundDuration(),
           maxPlayers: this.maxPlayers(),
@@ -432,9 +425,7 @@ export class HomeComponent {
     this.roundResult.set(null);
     this.roundStatus.set('PLAYING');
     this.roundStartAt.set(payload.startAtServerTs);
-    this.roundDurationSec.set(
-      payload.mode === 'ONE_SECOND' ? 1 : (this.lobby()?.settings.roundDuration ?? 30),
-    );
+    this.roundDurationSec.set(this.lobby()?.settings.roundDuration ?? 30);
     this.clipDuration.set(payload.clipDuration);
     this.activeBuzzPlayerId.set(null);
     this.pausedOffsetSeconds.set(null);
@@ -536,7 +527,6 @@ export class HomeComponent {
   private resetLobbyForm() {
     this.username.set('');
     this.joinLobbyId.set('');
-    this.mode.set('BUZZ');
     const firstLibrary = this.libraries()[0]?.id ?? '';
     this.library.set(firstLibrary);
     this.roundDuration.set(30);

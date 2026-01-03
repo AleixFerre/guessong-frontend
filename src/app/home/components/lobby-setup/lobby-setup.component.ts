@@ -1,5 +1,5 @@
 import { Component, WritableSignal, input, output } from '@angular/core';
-import { LibraryInfo, LobbyMode } from '../../../models';
+import { LibraryInfo } from '../../../models';
 
 @Component({
   selector: 'app-lobby-setup',
@@ -12,7 +12,6 @@ export class LobbySetupComponent {
   readonly selectedLibraryInfo = input.required<LibraryInfo | null>();
   readonly username = input.required<WritableSignal<string>>();
   readonly joinLobbyId = input.required<WritableSignal<string>>();
-  readonly mode = input.required<WritableSignal<LobbyMode>>();
   readonly library = input.required<WritableSignal<string>>();
   readonly roundDuration = input.required<WritableSignal<number>>();
   readonly maxPlayers = input.required<WritableSignal<number>>();
