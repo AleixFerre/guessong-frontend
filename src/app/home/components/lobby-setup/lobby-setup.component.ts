@@ -14,6 +14,7 @@ export class LobbySetupComponent {
   readonly joinLobbyId = input.required<WritableSignal<string>>();
   readonly library = input.required<WritableSignal<string>>();
   readonly roundDuration = input.required<WritableSignal<number>>();
+  readonly penalty = input.required<WritableSignal<number>>();
   readonly maxPlayers = input.required<WritableSignal<number>>();
   readonly totalRounds = input.required<WritableSignal<number>>();
   readonly createPassword = input.required<WritableSignal<string>>();

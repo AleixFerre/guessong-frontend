@@ -46,6 +46,7 @@ export class HomeComponent {
   readonly joinLobbyId = signal('');
   readonly library = signal<LibraryId | ''>('');
   readonly roundDuration = signal(30);
+  readonly penalty = signal(0);
   readonly maxPlayers = signal(8);
   readonly totalRoundsInput = signal(5);
   readonly createPassword = signal('');
@@ -237,6 +238,7 @@ export class HomeComponent {
           mode: 'BUZZ',
           library,
           roundDuration: this.roundDuration(),
+          penalty: this.penalty(),
           maxPlayers: this.maxPlayers(),
           totalRounds: this.totalRoundsInput(),
         }),
@@ -572,6 +574,7 @@ export class HomeComponent {
     const firstLibrary = this.libraries()[0]?.id ?? '';
     this.library.set(firstLibrary);
     this.roundDuration.set(30);
+    this.penalty.set(0);
     this.maxPlayers.set(8);
     this.totalRoundsInput.set(5);
     this.createPassword.set('');

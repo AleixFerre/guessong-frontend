@@ -20,6 +20,7 @@ export class ApiService {
     mode: LobbyMode;
     library: LibraryId;
     roundDuration: number;
+    penalty: number;
     maxPlayers: number;
     totalRounds: number;
   }) {
