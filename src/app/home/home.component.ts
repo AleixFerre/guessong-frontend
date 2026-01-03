@@ -57,6 +57,7 @@ export class HomeComponent {
   readonly playerId = signal<string | null>(null);
   readonly libraryTracks = signal<LibraryTrack[]>([]);
   readonly libraryTracksLoading = signal(false);
+  readonly excludedGuessOptions = signal<string[]>([]);
   readonly roundStatus = signal<'IDLE' | 'PLAYING' | 'PAUSED' | 'ENDED'>('IDLE');
   readonly roundStartAt = signal<number | null>(null);
   readonly roundDurationSec = signal(30);
@@ -95,6 +96,14 @@ export class HomeComponent {
   });
   readonly currentRound = computed(() => this.lobby()?.currentRound ?? 0);
   readonly totalRoundsDisplay = computed(() => this.lobby()?.settings.totalRounds ?? 0);
+  readonly roundGuessTracks = computed(() => {
+    const excluded = new Set(this.excludedGuessOptions());
+    return this.libraryTracks().filter((track) => {
+      const label = this.formatGuessOption(track);
+      const normalized = this.normalizeGuessOption(label);
+      return normalized ? !excluded.has(normalized) : true;
+    });
+  });
   readonly activeBuzzPlayerName = computed(() => {
     const playerId = this.activeBuzzPlayerId();
     if (!playerId) {
@@ -297,6 +306,7 @@ export class HomeComponent {
     this.entryMode.set(null);
     this.audioUnavailable.set(false);
     this.libraryTracksLoading.set(false);
+    this.excludedGuessOptions.set([]);
     this.clearDissolveCountdown();
     this.lobbyPassword.set('');
   }
@@ -381,6 +391,7 @@ export class HomeComponent {
     this.joinLobbyId.set(response.lobbyId);
     this.roundStatus.set('IDLE');
     this.roundResult.set(null);
+    this.excludedGuessOptions.set([]);
     this.connectSocket(response.lobbyId, response.playerId);
   }
 
@@ -435,6 +446,7 @@ export class HomeComponent {
   private onRoundStart(payload: RoundStartPayload) {
     this.roundResult.set(null);
     this.notifications.set([]);
+    this.excludedGuessOptions.set([]);
     this.roundStatus.set('PLAYING');
     this.roundStartAt.set(payload.startAtServerTs);
     this.roundDurationSec.set(this.lobby()?.settings.roundDuration ?? 30);
@@ -478,7 +490,18 @@ export class HomeComponent {
   private onGuessResult(payload: GuessResultPayload) {
     if (!payload.correct) {
       const player = this.lobby()?.players.find((p) => p.id === payload.playerId);
-      this.addNotice(`${player?.username ?? 'Jugador'} fallo la respuesta.`);
+      const guessText = payload.guessText?.trim();
+      if (guessText) {
+        const normalized = this.normalizeGuessOption(guessText);
+        if (normalized) {
+          const excluded = this.excludedGuessOptions();
+          if (!excluded.includes(normalized)) {
+            this.excludedGuessOptions.set([...excluded, normalized]);
+          }
+        }
+      }
+      const guessLabel = guessText ? `: ${guessText}` : '';
+      this.addNotice(`${player?.username ?? 'Jugador'} fallo la respuesta${guessLabel}.`);
     }
   }
 
@@ -553,5 +576,14 @@ export class HomeComponent {
     this.totalRoundsInput.set(5);
     this.createPassword.set('');
     this.joinPassword.set('');
+  }
+
+  private formatGuessOption(track: LibraryTrack) {
+    const artist = track.artist.trim();
+    return artist ? `${artist} - ${track.title}` : track.title;
+  }
+
+  private normalizeGuessOption(value: string) {
+    return value.trim().toLowerCase();
   }
 }

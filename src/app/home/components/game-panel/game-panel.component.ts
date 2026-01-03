@@ -77,7 +77,12 @@ export class GamePanelComponent {
         return true;
       }
       const artist = this.normalizeGuess(track.artist);
-      return artist ? normalized === `${title} - ${artist}` : false;
+      if (!artist) {
+        return false;
+      }
+      return (
+        normalized === `${artist} - ${title}` || normalized === `${title} - ${artist}`
+      );
     });
   }
 

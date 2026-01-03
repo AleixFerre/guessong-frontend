@@ -76,6 +76,7 @@ export interface RoundEndPayload {
 export interface GuessResultPayload {
   playerId: string;
   correct: boolean;
+  guessText: string;
 }
 
 export interface BuzzAcceptedPayload {

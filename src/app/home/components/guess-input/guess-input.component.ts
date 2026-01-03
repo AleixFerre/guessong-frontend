@@ -82,7 +82,7 @@ export class GuessInputComponent {
 
   private formatGuessOption(track: LibraryTrack) {
     const artist = track.artist.trim();
-    return artist ? `${track.title} - ${artist}` : track.title;
+    return artist ? `${artist} - ${track.title}` : track.title;
   }
 
   private normalizeValue(value: string) {
