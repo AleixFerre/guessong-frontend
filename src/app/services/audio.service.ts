@@ -55,7 +55,14 @@ export class AudioService {
       return '';
     }
     try {
-      return new URL(url, window.location.origin).toString();
+      const base = document.baseURI || window.location.href;
+      if (url.startsWith('/')) {
+        const baseUrl = new URL(base);
+        const basePath = baseUrl.pathname.replace(/\/?$/, '/');
+        const normalizedBasePath = basePath === '/' ? '' : basePath.replace(/\/$/, '');
+        return `${baseUrl.origin}${normalizedBasePath}${url}`;
+      }
+      return new URL(url, base).toString();
     } catch {
       return url;
     }
