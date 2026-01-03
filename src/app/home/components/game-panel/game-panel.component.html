@@ -12,6 +12,12 @@
     <span>{{ formatTime(roundDurationSec() - elapsedSeconds()) }}</span>
     <small>{{ formatRoundStatus(roundStatus()) }}</small>
   </div>
+  @if (audioUnavailable()) {
+    <div class="audio-warning">No hay audio disponible para esta ronda.</div>
+  }
+  <div class="controls">
+    <button class="buzz" [disabled]="!canBuzz()" (click)="buzzRequest.emit()">PULSA</button>
+  </div>
   @if (roundStatus() === 'PAUSED' && buzzCountdownSec() !== null) {
     <div class="buzz-timer">
       @if (isBuzzOwner()) {
@@ -23,12 +29,6 @@
       }
     </div>
   }
-  @if (audioUnavailable()) {
-    <div class="audio-warning">No hay audio disponible para esta ronda.</div>
-  }
-  <div class="controls">
-    <button class="buzz" [disabled]="!canBuzz()" (click)="buzzRequest.emit()">PULSA</button>
-  </div>
   @if (canGuess()) {
     <div class="guess">
       <app-guess-input

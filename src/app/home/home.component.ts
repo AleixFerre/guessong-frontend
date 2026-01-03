@@ -123,7 +123,8 @@ export class HomeComponent {
 
   readonly canGuess = computed(() => {
     const lobby = this.lobby();
-    if (!lobby || this.roundStatus() !== 'PLAYING') {
+    const status = this.roundStatus();
+    if (!lobby || (status !== 'PLAYING' && status !== 'PAUSED')) {
       return false;
     }
     return this.activeBuzzPlayerId() === this.playerId();
@@ -423,6 +424,7 @@ export class HomeComponent {
 
   private onRoundStart(payload: RoundStartPayload) {
     this.roundResult.set(null);
+    this.notifications.set([]);
     this.roundStatus.set('PLAYING');
     this.roundStartAt.set(payload.startAtServerTs);
     this.roundDurationSec.set(this.lobby()?.settings.roundDuration ?? 30);
