@@ -65,6 +65,7 @@ export class HomeComponent {
   readonly libraryTracks = signal<LibraryTrack[]>([]);
   readonly libraryTracksLoading = signal(false);
   readonly excludedGuessOptions = signal<string[]>([]);
+  readonly guessCounts = signal<Record<string, number>>({});
   readonly roundStatus = signal<'IDLE' | 'PLAYING' | 'PAUSED' | 'ENDED'>('IDLE');
   readonly roundStartAt = signal<number | null>(null);
   readonly roundDurationSec = signal(30);
@@ -83,7 +84,6 @@ export class HomeComponent {
   readonly rematchRequested = signal(false);
   private dissolveIntervalId?: number;
   private dissolveTimeoutId?: number;
-  private finalOverlayTimeoutId?: number;
   private readonly init = this.setup();
   readonly viewState = computed(() => {
     const lobby = this.lobby();
@@ -104,6 +104,18 @@ export class HomeComponent {
   });
   readonly currentRound = computed(() => this.lobby()?.currentRound ?? 0);
   readonly totalRoundsDisplay = computed(() => this.lobby()?.settings.totalRounds ?? 0);
+  readonly remainingGuesses = computed(() => {
+    const maxGuesses = this.maxGuessesPerRound();
+    if (maxGuesses <= 0) {
+      return null;
+    }
+    const playerId = this.playerId();
+    if (!playerId) {
+      return maxGuesses;
+    }
+    const used = this.guessCounts()[playerId] ?? 0;
+    return Math.max(0, maxGuesses - used);
+  });
   readonly roundGuessTracks = computed(() => {
     const excluded = new Set(this.excludedGuessOptions());
     return this.libraryTracks().filter((track) => {
@@ -247,7 +259,6 @@ export class HomeComponent {
       const lobby = this.lobby();
       if (!lobby || lobby.state !== 'FINISHED') {
         this.clearDissolveCountdown();
-        this.clearFinalOverlayTimeout();
         this.showFinalOverlay.set(false);
         this.rematchRequested.set(false);
         return;
@@ -255,17 +266,12 @@ export class HomeComponent {
       if (!this.dissolveTimeoutId) {
         this.startDissolveCountdown();
       }
-      if (!this.finalOverlayTimeoutId) {
-        this.finalOverlayTimeoutId = window.setTimeout(() => {
-          this.showFinalOverlay.set(true);
-        }, 5000);
-      }
+      this.showFinalOverlay.set(true);
     });
 
     const interval = window.setInterval(() => this.tickElapsed(), 250);
     this.destroyRef.onDestroy(() => window.clearInterval(interval));
     this.destroyRef.onDestroy(() => this.clearDissolveCountdown());
-    this.destroyRef.onDestroy(() => this.clearFinalOverlayTimeout());
   }
 
   async createLobby() {
@@ -393,6 +399,7 @@ export class HomeComponent {
     this.audioUnavailable.set(false);
     this.libraryTracksLoading.set(false);
     this.excludedGuessOptions.set([]);
+    this.guessCounts.set({});
     this.clearDissolveCountdown();
     this.lobbyPassword.set('');
     this.rematchRequested.set(false);
@@ -400,11 +407,11 @@ export class HomeComponent {
 
   private startDissolveCountdown() {
     this.clearDissolveCountdown();
-    this.dissolveCountdown.set(5);
+    this.dissolveCountdown.set(10);
     this.dissolveIntervalId = window.setInterval(() => {
       this.dissolveCountdown.update((value) => Math.max(0, value - 1));
     }, 1000);
-    this.dissolveTimeoutId = window.setTimeout(() => this.clearDissolveCountdown(), 5000);
+    this.dissolveTimeoutId = window.setTimeout(() => this.clearDissolveCountdown(), 10000);
   }
 
   private clearDissolveCountdown() {
@@ -475,6 +482,7 @@ export class HomeComponent {
   }) {
     this.lobby.set(response.lobbyState);
     this.syncLobbySettings(response.lobbyState);
+    this.guessCounts.set({});
     this.playerId.set(response.playerId);
     this.joinLobbyId.set(response.lobbyId);
     this.roundStatus.set('IDLE');
@@ -529,7 +537,7 @@ export class HomeComponent {
       case 'LOBBY_DISSOLVED':
         this.leaveLobby();
         this.toast.show(
-          payload?.reason === 'REMATCH' ? 'No entraste en la revancha.' : 'La sala se disolvio.',
+          payload?.reason === 'REMATCH' ? 'No entraste en la revancha.' : 'La sala se disolvió.',
           'info',
         );
         break;
@@ -542,6 +550,7 @@ export class HomeComponent {
     this.roundResult.set(null);
     this.notifications.set([]);
     this.excludedGuessOptions.set([]);
+    this.guessCounts.set({});
     this.roundStatus.set('PLAYING');
     this.roundStartAt.set(payload.startAtServerTs);
     this.roundDurationSec.set(this.lobby()?.settings.roundDuration ?? 30);
@@ -598,6 +607,7 @@ export class HomeComponent {
       const guessLabel = guessText ? `: ${guessText}` : '';
       this.addNotice(`${player?.username ?? 'Jugador'} fallo la respuesta${guessLabel}.`);
     }
+    this.incrementGuessCount(payload.playerId);
   }
 
   private onBuzzTimeout(payload: BuzzTimeoutPayload) {
@@ -613,18 +623,14 @@ export class HomeComponent {
   private onRoundEnd(payload: RoundEndPayload) {
     this.roundStatus.set('ENDED');
     this.roundResult.set(payload);
+    if (payload.winnerId) {
+      this.incrementGuessCount(payload.winnerId);
+    }
     this.activeBuzzPlayerId.set(null);
     this.buzzDeadlineAt.set(null);
     this.buzzCountdownSec.set(null);
     this.audioUnavailable.set(false);
     this.audio.stop();
-  }
-
-  private clearFinalOverlayTimeout() {
-    if (this.finalOverlayTimeoutId) {
-      window.clearTimeout(this.finalOverlayTimeoutId);
-      this.finalOverlayTimeoutId = undefined;
-    }
   }
 
   private tickElapsed() {
@@ -661,6 +667,16 @@ export class HomeComponent {
     this.notifications.set(next);
   }
 
+  private incrementGuessCount(playerId: string) {
+    if (!playerId) {
+      return;
+    }
+    this.guessCounts.update((counts) => ({
+      ...counts,
+      [playerId]: (counts[playerId] ?? 0) + 1,
+    }));
+  }
+
   private applyLobbyUpdate(nextLobby: LobbySnapshot) {
     const prevLobby = this.lobby();
     if (
@@ -677,7 +693,11 @@ export class HomeComponent {
       const updatedLobby = { ...nextLobby, players: resetPlayers };
       this.lobby.set(updatedLobby);
       this.syncLobbySettings(updatedLobby);
+      this.guessCounts.set({});
       return;
+    }
+    if (nextLobby.state === 'WAITING') {
+      this.guessCounts.set({});
     }
     this.lobby.set(nextLobby);
     this.syncLobbySettings(nextLobby);

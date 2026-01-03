@@ -3,19 +3,22 @@
   <div class="players">
     @for (player of playersToShow(); track player.id) {
       <div class="player">
-        <div>
-          <strong>{{ player.username }}</strong>
-          @if (player.id === currentPlayerId()) {
-            <span class="tag me">Yo</span>
-          }
-          @if (player.id === activeLobby.hostId) {
-            <span class="tag">Anfitrion</span>
-          }
-          @if (player.lockedForRound) {
-            <span class="tag warn" [style.--lockout-duration]="lockoutDuration(player)">
-              Bloqueado
-            </span>
-          }
+        <div class="player-info">
+          <div class="player-name">
+            <strong>{{ player.username }}</strong>
+            @if (player.id === currentPlayerId()) {
+              <span class="tag me">Yo</span>
+            }
+            @if (player.id === activeLobby.hostId) {
+              <span class="tag">Anfitrion</span>
+            }
+            @if (player.lockedForRound) {
+              <span class="tag warn" [style.--lockout-duration]="lockoutDuration(player)">
+                Bloqueado
+              </span>
+            }
+          </div>
+          <div class="tries">Intentos: {{ guessLimitLabel(player) }}</div>
         </div>
         <div class="score">{{ player.score }}</div>
       </div>

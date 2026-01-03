@@ -17,6 +17,8 @@ export class LobbyPanelComponent {
   readonly playersOverride = input<Player[] | null>(null);
   readonly showActions = input<boolean>(true);
   readonly currentPlayerId = input<string | null>(null);
+  readonly maxGuessesPerRound = input<number | null>(null);
+  readonly guessCounts = input<Record<string, number>>({});
 
   readonly startGameRequest = output<void>();
 
@@ -41,5 +43,24 @@ export class LobbyPanelComponent {
     const value = `${Math.round(remaining)}ms`;
     this.lockoutDurationCache.set(player.id, { until, value });
     return value;
+  }
+
+  remainingGuesses(player: Player) {
+    const maxGuesses = this.maxGuessesPerRound();
+    if (maxGuesses === null || maxGuesses <= 0) {
+      return null;
+    }
+    const used = this.guessCounts()[player.id] ?? 0;
+    return Math.max(0, maxGuesses - used);
+  }
+
+  guessLimitLabel(player: Player) {
+    const maxGuesses = this.maxGuessesPerRound();
+    if (maxGuesses === null || maxGuesses <= 0) {
+      return '∞';
+    }
+    const remaining = this.remainingGuesses(player);
+    const safeRemaining = remaining === null ? maxGuesses : remaining;
+    return `${safeRemaining}/${maxGuesses}`;
   }
 }

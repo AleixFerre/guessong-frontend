@@ -20,6 +20,8 @@ export class GamePanelComponent {
   readonly totalRounds = input.required<number>();
   readonly canBuzz = input.required<boolean>();
   readonly canGuess = input.required<boolean>();
+  readonly remainingGuesses = input<number | null>(null);
+  readonly maxGuessesPerRound = input<number>(0);
   readonly guessTracks = input.required<LibraryTrack[]>();
   readonly buzzCountdownSec = input.required<number | null>();
   readonly buzzOwnerName = input<string | null>(null);
@@ -55,11 +57,20 @@ export class GamePanelComponent {
 
   sendGuess() {
     const text = this.guessText().trim();
-    if (!this.canGuess() || !text || !this.isGuessAllowed()) {
+    if (!this.canGuess() || !text || !this.isGuessAllowed() || !this.hasGuessesLeft()) {
       return;
     }
     this.guessRequest.emit(text);
     this.guessText.set('');
+  }
+
+  hasGuessesLeft() {
+    const maxGuesses = this.maxGuessesPerRound();
+    if (maxGuesses <= 0) {
+      return true;
+    }
+    const remaining = this.remainingGuesses();
+    return remaining === null ? true : remaining > 0;
   }
 
   isGuessAllowed() {

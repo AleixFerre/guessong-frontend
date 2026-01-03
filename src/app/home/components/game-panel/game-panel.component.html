@@ -38,7 +38,11 @@
       [disabled]="!canGuess()"
       [autoFocus]="canGuess()"
     />
-    <button class="primary" [disabled]="!canGuess() || !isGuessAllowed()" (click)="sendGuess()">
+    <button
+      class="primary"
+      [disabled]="!canGuess() || !isGuessAllowed() || !hasGuessesLeft()"
+      (click)="sendGuess()"
+    >
       Enviar
     </button>
   </div>

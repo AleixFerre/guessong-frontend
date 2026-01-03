@@ -19,6 +19,24 @@ h2 {
   overflow: hidden;
 }
 
+.player-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.player-name {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.tries {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
 .player::after {
   content: '';
   position: absolute;
