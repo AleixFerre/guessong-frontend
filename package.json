@@ -7,11 +7,15 @@
     "prebuild": "TS_NODE_PROJECT=scripts/tsconfig.json node -r ts-node/register scripts/check-music-assets.ts",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "pretty": "bunx prettier --write \"src/**/*.{ts,html,css,json}\"",
     "test": "ng test",
     "lint": "bun run eslint . --ext .ts --fix",
     "prepare": "husky install",
     "deploy": "ng deploy --base-href=https://aleixferre.github.io/guessong-frontend/"
+  },
+  "lint-staged": {
+    "*.{ts,html,css,json}": [
+      "prettier --write"
+    ]
   },
   "prettier": {
     "printWidth": 100,
@@ -55,6 +59,7 @@
     "typescript-eslint": "^8.51.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
+    "lint-staged": "15.5.0",
     "ts-node": "^10.9.2",
     "typescript": "~5.9.2"
   }

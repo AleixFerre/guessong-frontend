@@ -1,4 +1,4 @@
 HOOK_DIR="$(cd "$(dirname "$0")" && pwd)"
 FRONTEND_DIR="$(cd "$HOOK_DIR/.." && pwd)"
 
-(cd "$FRONTEND_DIR" && bun run pretty)
+(cd "$FRONTEND_DIR" && bunx lint-staged)

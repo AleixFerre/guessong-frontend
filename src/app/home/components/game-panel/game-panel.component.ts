@@ -80,9 +80,7 @@ export class GamePanelComponent {
       if (!artist) {
         return false;
       }
-      return (
-        normalized === `${artist} - ${title}` || normalized === `${title} - ${artist}`
-      );
+      return normalized === `${artist} - ${title}` || normalized === `${title} - ${artist}`;
     });
   }
 
