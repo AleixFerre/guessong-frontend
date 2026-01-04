@@ -297,7 +297,7 @@
 .menu-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: 1rem 0.75rem;
   margin-top: 1.25rem;
   align-items: stretch;
 }
@@ -496,9 +496,7 @@
 
 @media (max-width: 900px) {
   .volume-float {
-    right: 1rem;
-    left: 1rem;
-    width: auto;
+    display: none;
   }
 
   .grid--menu,

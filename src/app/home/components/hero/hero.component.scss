@@ -128,10 +128,3 @@
   filter: brightness(1.05);
   box-shadow: 0 6px 12px rgba(31, 140, 255, 0.12);
 }
-
-@media (max-width: 720px) {
-  .hero-actions {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-}
