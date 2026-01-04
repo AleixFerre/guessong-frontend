@@ -47,9 +47,12 @@
     </button>
   </div>
   @if (roundResult(); as result) {
-    <div class="result">
+    <div class="result" [class.result--win]="isWinner()" [class.result--lose]="!isWinner()">
       <h3>Resultado</h3>
-      <p>{{ result.revealedTrackMeta.title }} — {{ result.revealedTrackMeta.artist }}</p>
+      <p>{{ result.revealedTrackMeta.artist }} - {{ result.revealedTrackMeta.title }}</p>
+      @if (winnerName()) {
+        <p>Ganador: {{ winnerName() }}</p>
+      }
       @if (result.winnerId) {
         <p>Puntos: {{ result.pointsAwarded }}</p>
       }

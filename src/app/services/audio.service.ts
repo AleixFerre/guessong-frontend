@@ -5,7 +5,19 @@ export class AudioService {
   private audio = new Audio();
   private durationSeconds = 0;
   private playTimeout?: number;
+  private readonly volumeStorageKey = 'audio.volume';
   private volume = 0.7;
+
+  constructor() {
+    const stored = window.localStorage.getItem(this.volumeStorageKey);
+    if (stored !== null) {
+      const parsed = Number.parseFloat(stored);
+      if (!Number.isNaN(parsed)) {
+        this.volume = Math.min(1, Math.max(0, parsed));
+        this.audio.volume = this.volume;
+      }
+    }
+  }
 
   loadClip(url: string | null, durationSeconds: number) {
     this.durationSeconds = durationSeconds;
@@ -72,6 +84,7 @@ export class AudioService {
     const clamped = Math.min(1, Math.max(0, value));
     this.volume = clamped;
     this.audio.volume = clamped;
+    window.localStorage.setItem(this.volumeStorageKey, clamped.toString());
   }
 
   getVolume() {

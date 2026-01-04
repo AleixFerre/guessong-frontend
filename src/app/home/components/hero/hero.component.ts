@@ -1,6 +1,5 @@
-import { Component, inject, input, output, signal } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { LobbySnapshot } from '../../../models';
-import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'app-home-hero',
@@ -9,14 +8,9 @@ import { ToastService } from '../../../services/toast.service';
   styleUrls: ['../../home.shared.scss', './hero.component.scss'],
 })
 export class HeroComponent {
-  private readonly toast = inject(ToastService);
   readonly lobby = input.required<LobbySnapshot | null>();
-  readonly wsStatus = input.required<string>();
   readonly pingMs = input.required<number | null>();
   readonly leave = output<void>();
-  readonly volume = input.required<number>();
-  readonly volumeChange = output<number>();
-  readonly copied = signal(false);
 
   formatStatus(status: string) {
     switch (status) {
@@ -30,36 +24,10 @@ export class HeroComponent {
         return status;
     }
   }
-
   formatPing(pingMs: number | null) {
     if (pingMs === null || Number.isNaN(pingMs)) {
       return '-- ms';
     }
     return `${pingMs} ms`;
-  }
-
-  async copyLobbyLink(code: string) {
-    if (!code) {
-      return;
-    }
-    try {
-      const baseUrl = `${window.location.origin}${window.location.pathname}`;
-      const url = new URL(baseUrl);
-      url.searchParams.set('lobby', code);
-      await navigator.clipboard.writeText(url.toString());
-      this.copied.set(true);
-      window.setTimeout(() => this.copied.set(false), 1500);
-      this.toast.show('Link copiado', 'success');
-    } catch {
-      this.toast.show('No se pudo copiar el link', 'error');
-    }
-  }
-
-  onVolumeInput(event: Event) {
-    const target = event.target as HTMLInputElement | null;
-    const value = target ? Number(target.value) : 0;
-    if (!Number.isNaN(value)) {
-      this.volumeChange.emit(value);
-    }
   }
 }

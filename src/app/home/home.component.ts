@@ -130,6 +130,20 @@ export class HomeComponent {
       return normalized ? !excluded.has(normalized) : true;
     });
   });
+  readonly roundWinnerName = computed(() => {
+    const winnerId = this.roundResult()?.winnerId;
+    if (!winnerId) {
+      return null;
+    }
+    return this.lobby()?.players.find((player) => player.id === winnerId)?.username ?? null;
+  });
+  readonly isRoundWinner = computed(() => {
+    const winnerId = this.roundResult()?.winnerId;
+    if (!winnerId) {
+      return false;
+    }
+    return winnerId === this.playerId();
+  });
   readonly activeBuzzPlayerName = computed(() => {
     const playerId = this.activeBuzzPlayerId();
     if (!playerId) {
@@ -294,7 +308,7 @@ export class HomeComponent {
       this.showFinalOverlay.set(true);
     });
 
-    const interval = window.setInterval(() => this.tickElapsed(), 250);
+    const interval = window.setInterval(() => this.tickElapsed(), 50);
     this.destroyRef.onDestroy(() => window.clearInterval(interval));
     this.destroyRef.onDestroy(() => this.clearDissolveCountdown());
   }
@@ -332,6 +346,7 @@ export class HomeComponent {
           responseSeconds: this.responseSeconds(),
         }),
       );
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       this.lobbyPassword.set(password);
       this.handleLobbyResponse(response);
     } catch (_error) {
@@ -393,6 +408,17 @@ export class HomeComponent {
     this.ws.send('REMATCH', {});
   }
 
+  confirmLeaveLobby() {
+    if (!this.lobby()) {
+      return;
+    }
+    const confirmed = window.confirm('¿Seguro que quieres salir de la sala?');
+    if (!confirmed) {
+      return;
+    }
+    this.leaveLobby();
+  }
+
   updateLobbySettings() {
     const lobby = this.lobby();
     if (!lobby || lobby.state !== 'WAITING' || lobby.hostId !== this.playerId()) {
@@ -413,6 +439,7 @@ export class HomeComponent {
       lockoutSeconds: this.lockoutSeconds(),
       responseSeconds: this.responseSeconds(),
     });
+    this.toast.show('Configuración actualizada', 'success');
   }
 
   leaveLobby() {
@@ -466,6 +493,23 @@ export class HomeComponent {
 
   updateVolume(value: number) {
     this.volume.set(value);
+  }
+
+  async copyLobbyLink() {
+    const lobbyId = this.lobby()?.id;
+    if (!lobbyId) {
+      this.toast.show('No hay sala activa.', 'error');
+      return;
+    }
+    try {
+      const baseUrl = `${window.location.origin}${window.location.pathname}`;
+      const url = new URL(baseUrl);
+      url.searchParams.set('lobby', lobbyId);
+      await navigator.clipboard.writeText(url.toString());
+      this.toast.show('Link copiado', 'success');
+    } catch {
+      this.toast.show('No se pudo copiar el link', 'error');
+    }
   }
 
   private async loadLibraries() {

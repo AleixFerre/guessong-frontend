@@ -1,4 +1,4 @@
-import { Component, inject, input, output } from '@angular/core';
+import { Component, computed, inject, input, output } from '@angular/core';
 import { LobbySnapshot, Player } from '../../../models';
 import { WsService } from '../../../services/ws.service';
 
@@ -19,6 +19,13 @@ export class LobbyPanelComponent {
   readonly currentPlayerId = input<string | null>(null);
   readonly maxGuessesPerRound = input<number | null>(null);
   readonly guessCounts = input<Record<string, number>>({});
+  readonly showScore = input<boolean>(true);
+  readonly showLockout = input<boolean>(true);
+  readonly showTries = input<boolean>(true);
+  readonly hasGuessLimit = computed(() => {
+    const maxGuesses = this.maxGuessesPerRound();
+    return maxGuesses !== null && maxGuesses > 0;
+  });
 
   readonly startGameRequest = output<void>();
 

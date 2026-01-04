@@ -1,18 +1,31 @@
 <div class="page">
   <app-home-hero
     [lobby]="lobby()"
-    [wsStatus]="ws.status()"
     [pingMs]="ws.pingMs()"
-    [volume]="volume()"
-    (volumeChange)="updateVolume($event)"
-    (leave)="leaveLobby()"
+    (leave)="confirmLeaveLobby()"
   ></app-home-hero>
+
+  <div class="volume-float">
+    <div class="volume-header">
+      <label for="volume-slider">Volumen</label>
+      <span class="volume-value">{{ volume() }}%</span>
+    </div>
+    <input
+      id="volume-slider"
+      type="range"
+      min="0"
+      max="100"
+      [value]="volume()"
+      (input)="updateVolume(+$any($event.target).value)"
+    />
+  </div>
 
   <section
     class="grid"
     [class.grid--menu]="viewState() === 'MENU'"
     [class.grid--waiting]="viewState() === 'WAITING'"
     [class.grid--waiting-host]="viewState() === 'WAITING' && isHost()"
+    [class.grid--waiting-guest]="viewState() === 'WAITING' && !isHost()"
     [class.grid--playing]="viewState() === 'IN_GAME' || viewState() === 'FINISHED'"
   >
     @if (viewState() === 'MENU') {
@@ -54,19 +67,25 @@
       </div>
     }
     @if (viewState() === 'WAITING') {
-      <div class="panel panel--lobby" [class.panel--lobby-centered]="!isHost()">
+      <div class="panel panel--lobby">
         <app-lobby-panel
           [lobby]="lobby()"
           [isHost]="isHost()"
           [currentPlayerId]="playerId()"
           [maxGuessesPerRound]="maxGuessesPerRound()"
           [guessCounts]="guessCounts()"
+          [showScore]="false"
+          [showLockout]="false"
+          [showTries]="false"
           (startGameRequest)="startGame()"
         ></app-lobby-panel>
       </div>
-      @if (isHost()) {
-        <div class="panel panel--config">
-          <h2>Configurar sala</h2>
+      <div class="panel panel--config">
+        @if (isHost()) {
+          <div class="panel-header">
+            <h2>Configurar sala</h2>
+            <button class="ghost copy-link" (click)="copyLobbyLink()">Copiar link</button>
+          </div>
           <app-lobby-setup
             entryMode="edit"
             [libraries]="libraries()"
@@ -85,8 +104,49 @@
             [joinPassword]="joinPassword"
             (updateLobbyRequest)="updateLobbySettings()"
           ></app-lobby-setup>
-        </div>
-      }
+        } @else {
+          <div class="panel-header">
+            <h2>Información de la sala</h2>
+            <button class="ghost copy-link" (click)="copyLobbyLink()">Copiar link</button>
+          </div>
+          <div class="config-readonly">
+            <div class="config-item">
+              <span>Biblioteca</span>
+              <strong>{{ selectedLibraryInfo()?.name ?? lobby()?.settings?.library }}</strong>
+            </div>
+            <div class="config-item">
+              <span>Duración de ronda</span>
+              <strong>{{ roundDuration() }}s</strong>
+            </div>
+            <div class="config-item">
+              <span>Max. jugadores</span>
+              <strong>{{ maxPlayers() }}</strong>
+            </div>
+            <div class="config-item">
+              <span>Rondas</span>
+              <strong>{{ totalRoundsInput() }}</strong>
+            </div>
+            <div class="config-item">
+              <span>Intentos por ronda</span>
+              <strong>{{ maxGuessesPerRound() === 0 ? 'Infinito' : maxGuessesPerRound() }}</strong>
+            </div>
+            <div class="config-item">
+              <span>Tiempo de bloqueo</span>
+              <strong>{{ lockoutSeconds() === 0 ? 'Sin bloqueo' : lockoutSeconds() + 's' }}</strong>
+            </div>
+            <div class="config-item">
+              <span>Tiempo para responder</span>
+              <strong>{{
+                responseSeconds() === 0 ? 'Sin limite' : responseSeconds() + 's'
+              }}</strong>
+            </div>
+            <div class="config-item">
+              <span>Penalización por fallo</span>
+              <strong>{{ penalty() }}%</strong>
+            </div>
+          </div>
+        }
+      </div>
     }
     @if (viewState() === 'IN_GAME' || viewState() === 'FINISHED') {
       <div class="panel panel--lobby">
@@ -114,10 +174,12 @@
           [remainingGuesses]="remainingGuesses()"
           [maxGuessesPerRound]="maxGuessesPerRound()"
           [guessTracks]="roundGuessTracks()"
+          [winnerName]="roundWinnerName()"
           [buzzCountdownSec]="buzzCountdownSec()"
           [buzzOwnerName]="activeBuzzPlayerName()"
           [isBuzzOwner]="activeBuzzPlayerId() === playerId()"
           [roundResult]="roundResult()"
+          [isWinner]="isRoundWinner()"
           [notifications]="notifications()"
           [audioUnavailable]="audioUnavailable()"
           (buzzRequest)="sendBuzz()"
@@ -141,7 +203,7 @@
           }
         </div>
         <button class="primary" (click)="requestRematch()" [disabled]="rematchRequested()">
-          Rematch
+          {{ rematchRequested() ? 'Rematch accepted' : 'Rematch' }}
         </button>
         <p class="muted">La sala se disolvera automaticamente en {{ dissolveCountdown() }}s.</p>
       </div>

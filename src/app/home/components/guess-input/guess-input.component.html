@@ -2,7 +2,7 @@
   <div class="options" role="listbox">
     @if (filteredOptions().length) {
       @for (option of filteredOptions(); track $index) {
-        <button type="button" class="option" (click)="selectOption(option)" [disabled]="disabled()">
+        <button type="button" class="option" (click)="selectOption(option)">
           {{ option }}
         </button>
       }
@@ -18,13 +18,12 @@
       (input)="onInput($event)"
       [placeholder]="placeholder()"
       aria-label="Respuesta"
-      [disabled]="disabled()"
     />
     <button
       type="button"
       class="clear"
       (click)="clearInput()"
-      [disabled]="disabled() || !value()"
+      [disabled]="!value()"
       aria-label="Limpiar"
     >
       ×

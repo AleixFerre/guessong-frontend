@@ -10,57 +10,11 @@
     }
     <div class="hero-actions">
       @if (lobby()) {
-        <button class="ghost" (click)="leave.emit()">Salir</button>
+        <button class="ghost" (click)="leave.emit()">Salir de la sala</button>
       }
-      <div class="status" [class.connected]="wsStatus() === 'connected'">
-        {{ formatStatus(wsStatus()) }}
-      </div>
-      @if (wsStatus() === 'connected') {
+      @if (pingMs() !== null) {
         <div class="ping">Ping {{ formatPing(pingMs()) }}</div>
       }
     </div>
-    <div class="volume-control">
-      <label for="volume-slider">
-        Volumen
-        <span class="volume-value">{{ volume() }}%</span>
-      </label>
-      <input
-        id="volume-slider"
-        type="range"
-        min="0"
-        max="100"
-        [value]="volume()"
-        (input)="onVolumeInput($event)"
-      />
-    </div>
   </div>
-  @if (lobby(); as activeLobby) {
-    @if (activeLobby.state !== 'IN_GAME') {
-      <div class="hero-card">
-        <h3 class="title">Sala activa</h3>
-        <div class="row">
-          <span>Codigo</span>
-          <div class="code">
-            <strong>{{ activeLobby.id }}</strong>
-            <button class="copy" (click)="copyLobbyLink(activeLobby.id)">
-              {{ copied() ? 'Copiado' : 'Copiar link' }}
-            </button>
-          </div>
-        </div>
-        <div class="row">
-          <span>Biblioteca</span>
-          <strong>{{ activeLobby.settings.library }}</strong>
-        </div>
-        <div class="row">
-          <span>Jugadores</span>
-          <strong>{{ activeLobby.players.length }}/{{ activeLobby.settings.maxPlayers }}</strong>
-        </div>
-      </div>
-    }
-  } @else {
-    <div class="hero-card">
-      <h3>Listo para jugar</h3>
-      <p>Elige un nombre, crea una sala o unete a una.</p>
-    </div>
-  }
 </header>

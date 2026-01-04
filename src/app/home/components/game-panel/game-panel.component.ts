@@ -27,6 +27,8 @@ export class GamePanelComponent {
   readonly buzzOwnerName = input<string | null>(null);
   readonly isBuzzOwner = input<boolean>(false);
   readonly roundResult = input.required<RoundEndPayload | null>();
+  readonly winnerName = input<string | null>(null);
+  readonly isWinner = input<boolean>(false);
   readonly notifications = input.required<string[]>();
   readonly audioUnavailable = input.required<boolean>();
 

@@ -13,14 +13,20 @@
               <span class="tag">Anfitrion</span>
             }
             @if (player.lockedForRound) {
-              <span class="tag warn" [style.--lockout-duration]="lockoutDuration(player)">
-                Bloqueado
-              </span>
+              @if (showLockout()) {
+                <span class="tag warn" [style.--lockout-duration]="lockoutDuration(player)">
+                  Bloqueado
+                </span>
+              }
             }
           </div>
-          <div class="tries">Intentos: {{ guessLimitLabel(player) }}</div>
+          @if (showTries() && hasGuessLimit()) {
+            <div class="tries">Intentos: {{ guessLimitLabel(player) }}</div>
+          }
         </div>
-        <div class="score">{{ player.score }}</div>
+        @if (showScore()) {
+          <div class="score">{{ player.score }}</div>
+        }
       </div>
     }
   </div>

@@ -36,7 +36,7 @@ h2 {
   height: 100%;
   background: linear-gradient(90deg, #ffd55f, #ff8bb3, #8bffcc);
   background-size: 200% 100%;
-  transition: width 0.2s ease;
+  transition: width 0.08s linear;
 }
 
 .timer {
@@ -103,6 +103,20 @@ h2 {
   background: #fff8e1;
   border: 2px solid rgba(255, 213, 95, 0.6);
   box-shadow: 0 10px 0 rgba(255, 213, 95, 0.35);
+}
+
+.result--win {
+  background: #e6fff4;
+  border-color: rgba(22, 163, 109, 0.5);
+  color: #0f4c36;
+  box-shadow: 0 10px 0 rgba(22, 163, 109, 0.2);
+}
+
+.result--lose {
+  background: #ffe6e6;
+  border-color: rgba(255, 107, 107, 0.6);
+  color: #7a1c1c;
+  box-shadow: 0 10px 0 rgba(255, 107, 107, 0.2);
 }
 
 .notifications {
