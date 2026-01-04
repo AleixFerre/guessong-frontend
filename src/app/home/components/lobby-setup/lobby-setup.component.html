@@ -280,7 +280,9 @@
   @if (entryMode() === 'create') {
     <button class="primary" (click)="createLobbyRequest.emit()">Crear sala</button>
   } @else {
-    <button class="primary" (click)="updateLobbyRequest.emit()">Guardar cambios</button>
+    <button class="primary" [disabled]="!canSave()" (click)="updateLobbyRequest.emit()">
+      Guardar cambios
+    </button>
   }
 }
 

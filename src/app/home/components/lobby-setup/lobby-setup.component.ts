@@ -66,6 +66,7 @@ export class LobbySetupComponent {
   readonly showPublicLobbies = input<boolean>(false);
   readonly createPassword = input.required<WritableSignal<string>>();
   readonly joinPassword = input.required<WritableSignal<string>>();
+  readonly canSave = input<boolean>(true);
   readonly entryMode = input.required<'create' | 'join' | 'edit'>();
 
   readonly createLobbyRequest = output<void>();
@@ -78,21 +79,21 @@ export class LobbySetupComponent {
   readonly selectedPreset = signal<PresetKey>('beginner');
   readonly isCustomPreset = computed(() => this.selectedPreset() === 'custom');
   readonly presetSummary = computed(() => [
+    { label: 'Rondas', value: String(this.totalRounds()()) },
     { label: 'Duración de ronda', value: `${this.roundDuration()()}s` },
     {
-      label: 'Tiempo para responder',
-      value: this.responseSeconds()() === 0 ? 'Sin límite' : `${this.responseSeconds()()}s`,
+      label: 'Intentos por ronda',
+      value: this.maxGuessesPerRound()() === 0 ? 'Infinito' : String(this.maxGuessesPerRound()()),
     },
     {
       label: 'Tiempo de bloqueo',
       value: this.lockoutSeconds()() === 0 ? 'Sin bloqueo' : `${this.lockoutSeconds()()}s`,
     },
     {
-      label: 'Intentos por ronda',
-      value: this.maxGuessesPerRound()() === 0 ? 'Infinito' : String(this.maxGuessesPerRound()()),
+      label: 'Tiempo para responder',
+      value: this.responseSeconds()() === 0 ? 'Sin límite' : `${this.responseSeconds()()}s`,
     },
     { label: 'Penalización por fallo', value: `${this.penalty()()}%` },
-    { label: 'Rondas', value: String(this.totalRounds()()) },
   ]);
 
   selectPreset(preset: PresetKey) {

@@ -104,6 +104,7 @@
             [publicLobbies]="publicLobbies()"
             [publicLobbiesLoading]="publicLobbiesLoading()"
             [showPublicLobbies]="showPublicLobbies()"
+            [canSave]="canSaveLobbySettings()"
             (updateLobbyRequest)="updateLobbySettings()"
             (togglePublicLobbiesRequest)="togglePublicLobbies()"
             (refreshPublicLobbiesRequest)="loadPublicLobbies()"
@@ -120,16 +121,16 @@
               <strong>{{ selectedLibraryInfo()?.name ?? lobby()?.settings?.library }}</strong>
             </div>
             <div class="config-item">
-              <span>Duración de ronda</span>
-              <strong>{{ roundDuration() }}s</strong>
-            </div>
-            <div class="config-item">
               <span>Max. jugadores</span>
               <strong>{{ maxPlayers() }}</strong>
             </div>
             <div class="config-item">
               <span>Rondas</span>
               <strong>{{ totalRoundsInput() }}</strong>
+            </div>
+            <div class="config-item">
+              <span>Duración de ronda</span>
+              <strong>{{ roundDuration() }}s</strong>
             </div>
             <div class="config-item">
               <span>Intentos por ronda</span>

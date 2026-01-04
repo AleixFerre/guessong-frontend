@@ -89,6 +89,17 @@ export class HomeComponent {
   readonly roundResult = signal<RoundEndPayload | null>(null);
   readonly nextRoundCountdownSec = signal<number | null>(null);
   readonly notifications = signal<string[]>([]);
+  readonly settingsBaseline = signal<{
+    name: string;
+    library: LibraryId | '';
+    roundDuration: number;
+    penalty: number;
+    maxPlayers: number;
+    totalRounds: number;
+    maxGuessesPerRound: number;
+    lockoutSeconds: number;
+    responseSeconds: number;
+  } | null>(null);
   readonly volume = signal(Math.round(this.audio.getVolume() * 100));
   readonly audioUnavailable = signal(false);
   readonly dissolveCountdown = signal(0);
@@ -113,6 +124,18 @@ export class HomeComponent {
       return 'FINISHED';
     }
     return 'WAITING';
+  });
+  readonly canSaveLobbySettings = computed(() => {
+    const lobby = this.lobby();
+    if (!lobby || lobby.state !== 'WAITING' || lobby.hostId !== this.playerId()) {
+      return false;
+    }
+    const baseline = this.settingsBaseline();
+    if (!baseline) {
+      return false;
+    }
+    const current = this.buildSettingsSnapshotFromSignals();
+    return !this.isSameSettings(baseline, current);
   });
   readonly sortedPlayers = computed(() => {
     const players = this.lobby()?.players ?? [];
@@ -482,6 +505,7 @@ export class HomeComponent {
     this.clearDissolveCountdown();
     this.lobbyPassword.set('');
     this.rematchRequested.set(false);
+    this.settingsBaseline.set(null);
   }
 
   private startDissolveCountdown() {
@@ -884,6 +908,9 @@ export class HomeComponent {
     this.lockoutSeconds.set(lobby.settings.lockoutSeconds ?? DEFAULT_LOCKOUT_SECONDS);
     this.responseSeconds.set(lobby.settings.responseSeconds ?? DEFAULT_RESPONSE_SECONDS);
     this.isPublicLobby.set(lobby.isPublic);
+    if (lobby.state === 'WAITING') {
+      this.settingsBaseline.set(this.buildSettingsSnapshotFromLobby(lobby));
+    }
   }
 
   private resetLobbyForm() {
@@ -902,6 +929,7 @@ export class HomeComponent {
     this.isPublicLobby.set(true);
     this.createPassword.set('');
     this.joinPassword.set('');
+    this.settingsBaseline.set(null);
   }
 
   private resetRoundState() {
@@ -915,6 +943,51 @@ export class HomeComponent {
     this.activeBuzzPlayerId.set(null);
     this.roundEndAtServerTs = null;
     this.audio.stop();
+  }
+
+  private buildSettingsSnapshotFromLobby(lobby: LobbySnapshot) {
+    return {
+      name: lobby.name,
+      library: lobby.settings.library,
+      roundDuration: lobby.settings.roundDuration,
+      penalty: lobby.settings.penalty,
+      maxPlayers: lobby.settings.maxPlayers,
+      totalRounds: lobby.settings.totalRounds,
+      maxGuessesPerRound: lobby.settings.maxGuessesPerRound ?? DEFAULT_GUESSES_PER_ROUND,
+      lockoutSeconds: lobby.settings.lockoutSeconds ?? DEFAULT_LOCKOUT_SECONDS,
+      responseSeconds: lobby.settings.responseSeconds ?? DEFAULT_RESPONSE_SECONDS,
+    };
+  }
+
+  private buildSettingsSnapshotFromSignals() {
+    return {
+      name: this.lobbyName().trim(),
+      library: this.library(),
+      roundDuration: this.roundDuration(),
+      penalty: this.penalty(),
+      maxPlayers: this.maxPlayers(),
+      totalRounds: this.totalRoundsInput(),
+      maxGuessesPerRound: this.maxGuessesPerRound(),
+      lockoutSeconds: this.lockoutSeconds(),
+      responseSeconds: this.responseSeconds(),
+    };
+  }
+
+  private isSameSettings(
+    left: ReturnType<HomeComponent['buildSettingsSnapshotFromSignals']>,
+    right: ReturnType<HomeComponent['buildSettingsSnapshotFromSignals']>,
+  ) {
+    return (
+      left.name === right.name &&
+      left.library === right.library &&
+      left.roundDuration === right.roundDuration &&
+      left.penalty === right.penalty &&
+      left.maxPlayers === right.maxPlayers &&
+      left.totalRounds === right.totalRounds &&
+      left.maxGuessesPerRound === right.maxGuessesPerRound &&
+      left.lockoutSeconds === right.lockoutSeconds &&
+      left.responseSeconds === right.responseSeconds
+    );
   }
 
   private formatGuessOption(track: LibraryTrack) {
