@@ -170,8 +170,8 @@
         minlength="5"
         [value]="createPassword()()"
         (input)="createPassword().set($any($event.target).value)"
-        placeholder="Minimo 5 caracteres"
       />
+      <small>Mínimo 5 caracteres</small>
     </div>
   }
   @if (entryMode() === 'create') {
