@@ -52,7 +52,7 @@
       </div>
     }
     @if (viewState() === 'WAITING') {
-      <div class="panel panel--lobby">
+      <div class="panel panel--lobby" [class.panel--lobby-centered]="!isHost()">
         <app-lobby-panel
           [lobby]="lobby()"
           [isHost]="isHost()"

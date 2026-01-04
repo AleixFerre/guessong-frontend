@@ -33,6 +33,13 @@
   grid-area: lobby;
 }
 
+.panel--lobby-centered {
+  grid-area: auto;
+  grid-column: 1 / -1;
+  justify-self: center;
+  width: min(640px, 100%);
+}
+
 .panel--game {
   grid-area: game;
 }

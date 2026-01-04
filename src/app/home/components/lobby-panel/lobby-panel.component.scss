@@ -8,6 +8,18 @@ h2 {
   margin-top: 0;
 }
 
+:host-context(.panel--lobby-centered) h2 {
+  text-align: center;
+}
+
+:host-context(.panel--lobby-centered) .players {
+  align-items: center;
+}
+
+:host-context(.panel--lobby-centered) .player {
+  width: -webkit-fill-available;
+}
+
 .player {
   display: flex;
   justify-content: space-between;
