@@ -278,7 +278,7 @@
     }
   </div>
   @if (entryMode() === 'create') {
-    <button class="primary" (click)="createLobbyRequest.emit()">Crear sala</button>
+    <button class="primary full-width" (click)="createLobbyRequest.emit()">Crear sala</button>
   } @else {
     <button class="primary full-width" [disabled]="!canSave()" (click)="updateLobbyRequest.emit()">
       Guardar cambios
@@ -291,8 +291,13 @@
     <div class="public-lobbies">
       <div class="public-header">
         <h4>Salas públicas</h4>
-        <button class="ghost" type="button" (click)="refreshPublicLobbiesRequest.emit()">
-          Actualizar
+        <button
+          class="ghost"
+          type="button"
+          [disabled]="refreshCooldownActive()"
+          (click)="requestRefreshPublicLobbies()"
+        >
+          {{ refreshButtonLabel() }}
         </button>
       </div>
       @if (publicLobbiesLoading()) {

@@ -47,6 +47,9 @@ const PRESETS: Record<
   styleUrls: ['../../home.shared.scss', './lobby-setup.component.scss'],
 })
 export class LobbySetupComponent {
+  private static readonly REFRESH_COOLDOWN_MS = 3000;
+  private refreshCooldownTimeoutId?: number;
+  private refreshCooldownIntervalId?: number;
   readonly libraries = input.required<LibraryInfo[]>();
   readonly selectedLibraryInfo = input.required<LibraryInfo | null>();
   readonly username = input.required<WritableSignal<string>>();
@@ -78,6 +81,14 @@ export class LobbySetupComponent {
   readonly joinPublicLobbyRequest = output<string>();
 
   readonly selectedPreset = signal<PresetKey>('beginner');
+  readonly refreshCooldownActive = signal(false);
+  readonly lastRefreshAtMs = signal<number | null>(null);
+  readonly refreshCooldownRemainingSec = signal(0);
+  readonly refreshButtonLabel = computed(() =>
+    this.refreshCooldownActive() && this.refreshCooldownRemainingSec() > 0
+      ? `Actualizar (${this.refreshCooldownRemainingSec()}s)`
+      : 'Actualizar',
+  );
   readonly isCustomPreset = computed(() => this.selectedPreset() === 'custom');
   readonly presetSummary = computed(() => [
     { label: 'Rondas', value: String(this.totalRounds()()) },
@@ -158,5 +169,43 @@ export class LobbySetupComponent {
       return 'hard';
     }
     return 'custom';
+  }
+
+  requestRefreshPublicLobbies() {
+    if (this.refreshCooldownActive()) {
+      return;
+    }
+    const now = Date.now();
+    const lastRefreshAtMs = this.lastRefreshAtMs();
+    if (lastRefreshAtMs && now - lastRefreshAtMs < LobbySetupComponent.REFRESH_COOLDOWN_MS) {
+      this.refreshCooldownActive.set(true);
+      const remaining = LobbySetupComponent.REFRESH_COOLDOWN_MS - (now - lastRefreshAtMs);
+      this.startRefreshCooldown(remaining);
+      return;
+    }
+    this.lastRefreshAtMs.set(now);
+    this.refreshPublicLobbiesRequest.emit();
+  }
+
+  private startRefreshCooldown(remainingMs: number) {
+    if (this.refreshCooldownTimeoutId) {
+      window.clearTimeout(this.refreshCooldownTimeoutId);
+    }
+    if (this.refreshCooldownIntervalId) {
+      window.clearInterval(this.refreshCooldownIntervalId);
+    }
+    this.refreshCooldownRemainingSec.set(Math.max(1, Math.ceil(remainingMs / 1000)));
+    this.refreshCooldownIntervalId = window.setInterval(() => {
+      this.refreshCooldownRemainingSec.update((value) => Math.max(0, value - 1));
+    }, 1000);
+    this.refreshCooldownTimeoutId = window.setTimeout(() => {
+      this.refreshCooldownActive.set(false);
+      this.refreshCooldownRemainingSec.set(0);
+      if (this.refreshCooldownIntervalId) {
+        window.clearInterval(this.refreshCooldownIntervalId);
+        this.refreshCooldownIntervalId = undefined;
+      }
+      this.refreshCooldownTimeoutId = undefined;
+    }, remainingMs);
   }
 }

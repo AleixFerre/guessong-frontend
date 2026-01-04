@@ -35,6 +35,12 @@ const DEFAULT_LOCKOUT_SECONDS = 2;
 const DEFAULT_RESPONSE_SECONDS = 10;
 const MAX_RESPONSE_SECONDS = 60;
 const NEXT_ROUND_DELAY_SEC = 10;
+const BEGINNER_ROUND_DURATION = 30;
+const BEGINNER_TOTAL_ROUNDS = 5;
+const BEGINNER_MAX_GUESSES_PER_ROUND = 0;
+const BEGINNER_LOCKOUT_SECONDS = 2;
+const BEGINNER_RESPONSE_SECONDS = 15;
+const BEGINNER_PENALTY = 0;
 
 @Component({
   selector: 'app-home',
@@ -57,13 +63,13 @@ export class HomeComponent {
   readonly lobbyName = signal('');
   readonly joinLobbyId = signal('');
   readonly library = signal<LibraryId | ''>('');
-  readonly roundDuration = signal(30);
-  readonly penalty = signal(0);
+  readonly roundDuration = signal(BEGINNER_ROUND_DURATION);
+  readonly penalty = signal(BEGINNER_PENALTY);
   readonly maxPlayers = signal(8);
-  readonly totalRoundsInput = signal(5);
-  readonly maxGuessesPerRound = signal(DEFAULT_GUESSES_PER_ROUND);
-  readonly lockoutSeconds = signal(DEFAULT_LOCKOUT_SECONDS);
-  readonly responseSeconds = signal(DEFAULT_RESPONSE_SECONDS);
+  readonly totalRoundsInput = signal(BEGINNER_TOTAL_ROUNDS);
+  readonly maxGuessesPerRound = signal(BEGINNER_MAX_GUESSES_PER_ROUND);
+  readonly lockoutSeconds = signal(BEGINNER_LOCKOUT_SECONDS);
+  readonly responseSeconds = signal(BEGINNER_RESPONSE_SECONDS);
   readonly isPublicLobby = signal(true);
   readonly createPassword = signal('');
   readonly joinPassword = signal('');
@@ -939,6 +945,18 @@ export class HomeComponent {
     if (lobby.state !== 'WAITING' && lobby.state !== 'IN_GAME' && lobby.state !== 'FINISHED') {
       return;
     }
+    const isEditingHost = lobby.state === 'WAITING' && lobby.hostId === this.playerId();
+    const baseline = this.settingsBaseline();
+    if (isEditingHost && baseline) {
+      const current = this.buildSettingsSnapshotFromSignals();
+      const serverSnapshot = this.buildSettingsSnapshotFromLobby(lobby);
+      const serverMatchesBaseline = this.isSameSettings(serverSnapshot, baseline);
+      const hasLocalChanges = !this.isSameSettings(current, baseline);
+      // Keep local edits when the server hasn't acknowledged any changes yet.
+      if (serverMatchesBaseline && hasLocalChanges) {
+        return;
+      }
+    }
     this.lobbyName.set(lobby.name);
     this.library.set(lobby.settings.library);
     this.roundDuration.set(lobby.settings.roundDuration);
@@ -961,13 +979,13 @@ export class HomeComponent {
     this.joinLobbyId.set('');
     const firstLibrary = this.libraries()[0]?.id ?? '';
     this.library.set(firstLibrary);
-    this.roundDuration.set(30);
-    this.penalty.set(0);
+    this.roundDuration.set(BEGINNER_ROUND_DURATION);
+    this.penalty.set(BEGINNER_PENALTY);
     this.maxPlayers.set(8);
-    this.totalRoundsInput.set(5);
-    this.maxGuessesPerRound.set(DEFAULT_GUESSES_PER_ROUND);
-    this.lockoutSeconds.set(DEFAULT_LOCKOUT_SECONDS);
-    this.responseSeconds.set(DEFAULT_RESPONSE_SECONDS);
+    this.totalRoundsInput.set(BEGINNER_TOTAL_ROUNDS);
+    this.maxGuessesPerRound.set(BEGINNER_MAX_GUESSES_PER_ROUND);
+    this.lockoutSeconds.set(BEGINNER_LOCKOUT_SECONDS);
+    this.responseSeconds.set(BEGINNER_RESPONSE_SECONDS);
     this.isPublicLobby.set(true);
     this.createPassword.set('');
     this.joinPassword.set('');
