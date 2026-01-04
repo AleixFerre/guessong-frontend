@@ -83,7 +83,7 @@ export class HomeComponent {
   readonly activeBuzzPlayerId = signal<string | null>(null);
   readonly roundResult = signal<RoundEndPayload | null>(null);
   readonly notifications = signal<string[]>([]);
-  readonly volume = signal(this.audio.getVolume() * 100);
+  readonly volume = signal(Math.round(this.audio.getVolume() * 100));
   readonly audioUnavailable = signal(false);
   readonly dissolveCountdown = signal(0);
   readonly showFinalOverlay = signal(false);
@@ -492,7 +492,7 @@ export class HomeComponent {
   }
 
   updateVolume(value: number) {
-    this.volume.set(value);
+    this.volume.set(Math.round(value));
   }
 
   async copyLobbyLink() {
