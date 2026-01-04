@@ -17,11 +17,13 @@ export class LobbyPanelComponent {
   readonly playersOverride = input<Player[] | null>(null);
   readonly showActions = input<boolean>(true);
   readonly currentPlayerId = input<string | null>(null);
+  readonly activeBuzzPlayerId = input<string | null>(null);
   readonly maxGuessesPerRound = input<number | null>(null);
   readonly guessCounts = input<Record<string, number>>({});
   readonly showScore = input<boolean>(true);
   readonly showLockout = input<boolean>(true);
   readonly showTries = input<boolean>(true);
+  readonly showRanks = input<boolean>(true);
   readonly hasGuessLimit = computed(() => {
     const maxGuesses = this.maxGuessesPerRound();
     return maxGuesses !== null && maxGuesses > 0;
@@ -29,9 +31,10 @@ export class LobbyPanelComponent {
 
   readonly startGameRequest = output<void>();
 
-  playersToShow() {
-    return this.playersOverride() ?? this.lobby()?.players ?? [];
-  }
+  readonly sortedPlayers = computed(() => {
+    const players = this.playersOverride() ?? this.lobby()?.players ?? [];
+    return [...players].sort((a, b) => b.score - a.score);
+  });
 
   lockoutDuration(player: Player) {
     const until = player.lockedUntilMs;

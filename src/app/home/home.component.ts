@@ -90,6 +90,7 @@ export class HomeComponent {
   readonly rematchRequested = signal(false);
   private dissolveIntervalId?: number;
   private dissolveTimeoutId?: number;
+  private lastPauseAtServerTs: number | null = null;
   private readonly init = this.setup();
   readonly viewState = computed(() => {
     const lobby = this.lobby();
@@ -636,14 +637,23 @@ export class HomeComponent {
     this.buzzCountdownSec.set(null);
     this.audioUnavailable.set(!payload.clipUrl);
     this.audio.loadClip(payload.clipUrl || null, payload.clipDuration);
+    this.lastPauseAtServerTs = null;
   }
 
   private onPlay(payload: PlayPayload) {
+    if (
+      this.roundStatus() === 'PAUSED' &&
+      this.lastPauseAtServerTs !== null &&
+      payload.startAtServerTs < this.lastPauseAtServerTs
+    ) {
+      return;
+    }
     this.roundStatus.set('PLAYING');
     this.pausedOffsetSeconds.set(null);
     this.activeBuzzPlayerId.set(null);
     this.buzzDeadlineAt.set(null);
     this.buzzCountdownSec.set(null);
+    this.lastPauseAtServerTs = null;
     if (payload.startAtServerTs) {
       const seekSeconds = payload.seekToSeconds ?? 0;
       this.roundStartAt.set(payload.startAtServerTs - seekSeconds * 1000);
@@ -660,6 +670,7 @@ export class HomeComponent {
     this.pausedOffsetSeconds.set(payload.offsetSeconds);
     this.buzzDeadlineAt.set(payload.responseDeadlineServerTs ?? null);
     this.audio.pauseAt(payload.offsetSeconds);
+    this.lastPauseAtServerTs = Date.now() + this.ws.serverOffsetMs();
   }
 
   private onBuzzAccepted(payload: BuzzAcceptedPayload) {
@@ -706,6 +717,7 @@ export class HomeComponent {
     this.buzzCountdownSec.set(null);
     this.audioUnavailable.set(false);
     this.audio.stop();
+    this.lastPauseAtServerTs = null;
   }
 
   private tickElapsed() {

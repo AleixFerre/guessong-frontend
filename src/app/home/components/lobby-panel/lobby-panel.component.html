@@ -1,10 +1,20 @@
 <h2>Sala y puntuaciones</h2>
 @if (lobby(); as activeLobby) {
   <div class="players">
-    @for (player of playersToShow(); track player.id) {
-      <div class="player">
+    @for (player of sortedPlayers(); track player.id) {
+      <div class="player" [class.player--active]="player.id === activeBuzzPlayerId()">
         <div class="player-info">
           <div class="player-name">
+            @if (showRanks()) {
+              <span
+                class="rank"
+                [class.rank--leader]="$index === 0"
+                [class.rank--silver]="$index === 1"
+                [class.rank--bronze]="$index === 2"
+              >
+                #{{ $index + 1 }}
+              </span>
+            }
             <strong>{{ player.username }}</strong>
             @if (player.id === currentPlayerId()) {
               <span class="tag me">Yo</span>

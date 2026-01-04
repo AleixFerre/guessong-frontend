@@ -48,6 +48,8 @@ export class AudioService {
     this.clearPlayTimeout();
     this.audio.pause();
     this.audio.currentTime = 0;
+    this.audio.removeAttribute('src');
+    this.audio.load();
   }
 
   private play(seekToSeconds: number) {

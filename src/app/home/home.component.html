@@ -72,11 +72,13 @@
           [lobby]="lobby()"
           [isHost]="isHost()"
           [currentPlayerId]="playerId()"
+          [activeBuzzPlayerId]="activeBuzzPlayerId()"
           [maxGuessesPerRound]="maxGuessesPerRound()"
           [guessCounts]="guessCounts()"
           [showScore]="false"
           [showLockout]="false"
           [showTries]="false"
+          [showRanks]="false"
           (startGameRequest)="startGame()"
         ></app-lobby-panel>
       </div>
@@ -156,6 +158,7 @@
           [playersOverride]="sortedPlayers()"
           [showActions]="false"
           [currentPlayerId]="playerId()"
+          [activeBuzzPlayerId]="activeBuzzPlayerId()"
           [maxGuessesPerRound]="maxGuessesPerRound()"
           [guessCounts]="guessCounts()"
         ></app-lobby-panel>
