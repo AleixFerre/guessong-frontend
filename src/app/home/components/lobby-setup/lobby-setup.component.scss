@@ -142,6 +142,30 @@
   color: var(--text);
 }
 
+.preset-summary {
+  display: grid;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.preset-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0.8rem;
+  border-radius: 0.8rem;
+  background: #f2f8ff;
+  border: 2px solid var(--border);
+}
+
+.preset-item span {
+  color: var(--muted);
+}
+
+.preset-item strong {
+  color: #1f355b;
+}
+
 .divider {
   height: 1px;
   background: var(--border);
