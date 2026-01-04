@@ -19,10 +19,110 @@
   <div class="config-list">
     <div class="field">
       <label class="label-with-tip">
-        Preset
+        Nombre de la sala
         <span class="tooltip">
           ?
-          <span class="tooltip-text">Elige una dificultad rápida o personaliza en Custom.</span>
+          <span class="tooltip-text">Nombre visible en la lista de salas públicas.</span>
+        </span>
+      </label>
+      <input
+        type="text"
+        required
+        [value]="lobbyName()()"
+        (input)="lobbyName().set($any($event.target).value)"
+        placeholder="Sala de amigos"
+      />
+    </div>
+    @if (entryMode() === 'create') {
+      <div class="field">
+        <label class="label-with-tip">
+          Tipo de sala
+          <span class="tooltip">
+            ?
+            <span class="tooltip-text">
+              Las salas públicas se verán en la lista pública y no requieren contraseña.
+            </span>
+          </span>
+        </label>
+        <div class="pill-row">
+          <button
+            type="button"
+            class="pill"
+            [class.active]="isPublicLobby()()"
+            (click)="isPublicLobby().set(true)"
+          >
+            Pública
+          </button>
+          <button
+            type="button"
+            class="pill"
+            [class.active]="!isPublicLobby()()"
+            (click)="isPublicLobby().set(false)"
+          >
+            Privada
+          </button>
+        </div>
+      </div>
+      @if (!isPublicLobby()()) {
+        <div class="field">
+          <label class="label-with-tip">
+            Contraseña de sala
+            <span class="tooltip">
+              ?
+              <span class="tooltip-text">Clave para que otros jugadores puedan unirse.</span>
+            </span>
+          </label>
+          <input
+            type="password"
+            minlength="5"
+            [value]="createPassword()()"
+            (input)="createPassword().set($any($event.target).value)"
+          />
+          <small>Mínimo 5 caracteres</small>
+        </div>
+      }
+    }
+    <div class="field">
+      <label class="label-with-tip">
+        Biblioteca
+        <span class="tooltip">
+          ?
+          <span class="tooltip-text">Selecciona el catálogo de canciones para la partida.</span>
+        </span>
+      </label>
+      <select [value]="library()()" (change)="library().set($any($event.target).value)">
+        @for (lib of libraries(); track lib.id) {
+          <option [value]="lib.id">{{ lib.name }} ({{ lib.trackCount }})</option>
+        }
+      </select>
+      @if (selectedLibraryInfo(); as info) {
+        <small>{{ info.description }}</small>
+      }
+    </div>
+    <div class="field">
+      <label class="label-with-tip">
+        Max. jugadores
+        <span class="tooltip">
+          ?
+          <span class="tooltip-text">Cantidad máxima de jugadores en la sala.</span>
+        </span>
+      </label>
+      <input
+        type="number"
+        min="2"
+        max="10"
+        [value]="maxPlayers()()"
+        (input)="maxPlayers().set(+$any($event.target).value)"
+      />
+    </div>
+    <div class="field">
+      <label class="label-with-tip">
+        Dificultad
+        <span class="tooltip">
+          ?
+          <span class="tooltip-text">
+            Elige una dificultad rápida o personaliza en Personalizado.
+          </span>
         </span>
       </label>
       <div class="pill-row">
@@ -60,23 +160,6 @@
         </button>
       </div>
     </div>
-    <div class="field">
-      <label class="label-with-tip">
-        Biblioteca
-        <span class="tooltip">
-          ?
-          <span class="tooltip-text">Selecciona el catálogo de canciones para la partida.</span>
-        </span>
-      </label>
-      <select [value]="library()()" (change)="library().set($any($event.target).value)">
-        @for (lib of libraries(); track lib.id) {
-          <option [value]="lib.id">{{ lib.name }} ({{ lib.trackCount }})</option>
-        }
-      </select>
-      @if (selectedLibraryInfo(); as info) {
-        <small>{{ info.description }}</small>
-      }
-    </div>
     @if (!isCustomPreset()) {
       <div class="preset-summary">
         @for (item of presetSummary(); track item.label) {
@@ -87,38 +170,6 @@
         }
       </div>
     } @else {
-      <div class="field">
-        <label class="label-with-tip">
-          Duracion de ronda (s)
-          <span class="tooltip">
-            ?
-            <span class="tooltip-text">Tiempo total que dura cada ronda.</span>
-          </span>
-        </label>
-        <input
-          type="number"
-          min="5"
-          max="30"
-          [value]="roundDuration()()"
-          (input)="roundDuration().set(+$any($event.target).value)"
-        />
-      </div>
-      <div class="field">
-        <label class="label-with-tip">
-          Max. jugadores
-          <span class="tooltip">
-            ?
-            <span class="tooltip-text">Cantidad máxima de jugadores en la sala.</span>
-          </span>
-        </label>
-        <input
-          type="number"
-          min="2"
-          max="10"
-          [value]="maxPlayers()()"
-          (input)="maxPlayers().set(+$any($event.target).value)"
-        />
-      </div>
       <div class="field">
         <label class="label-with-tip">
           Rondas
@@ -133,6 +184,22 @@
           [max]="selectedLibraryInfo()?.trackCount ?? 1"
           [value]="totalRounds()()"
           (input)="totalRounds().set(+$any($event.target).value)"
+        />
+      </div>
+      <div class="field">
+        <label class="label-with-tip">
+          Duracion de ronda (s)
+          <span class="tooltip">
+            ?
+            <span class="tooltip-text">Tiempo total que dura cada ronda.</span>
+          </span>
+        </label>
+        <input
+          type="number"
+          min="5"
+          max="30"
+          [value]="roundDuration()()"
+          (input)="roundDuration().set(+$any($event.target).value)"
         />
       </div>
       <div class="field">
@@ -211,24 +278,6 @@
     }
   </div>
   @if (entryMode() === 'create') {
-    <div class="field">
-      <label class="label-with-tip">
-        Contraseña de sala
-        <span class="tooltip">
-          ?
-          <span class="tooltip-text">Clave para que otros jugadores puedan unirse.</span>
-        </span>
-      </label>
-      <input
-        type="password"
-        minlength="5"
-        [value]="createPassword()()"
-        (input)="createPassword().set($any($event.target).value)"
-      />
-      <small>Mínimo 5 caracteres</small>
-    </div>
-  }
-  @if (entryMode() === 'create') {
     <button class="primary" (click)="createLobbyRequest.emit()">Crear sala</button>
   } @else {
     <button class="primary" (click)="updateLobbyRequest.emit()">Guardar cambios</button>
@@ -236,36 +285,77 @@
 }
 
 @if (entryMode() === 'join') {
-  <div class="field">
-    <label class="label-with-tip">
-      Codigo
-      <span class="tooltip">
-        ?
-        <span class="tooltip-text">Código de la sala a la que quieres unirte.</span>
-      </span>
-    </label>
-    <input
-      type="text"
-      [value]="joinLobbyId()()"
-      (input)="joinLobbyId().set($any($event.target).value)"
-      placeholder="Codigo"
-    />
-  </div>
-  <div class="field">
-    <label class="label-with-tip">
-      Contraseña
-      <span class="tooltip">
-        ?
-        <span class="tooltip-text">Contraseña de la sala.</span>
-      </span>
-    </label>
-    <input
-      type="password"
-      minlength="5"
-      [value]="joinPassword()()"
-      (input)="joinPassword().set($any($event.target).value)"
-      placeholder="Contraseña"
-    />
-  </div>
-  <button class="secondary" (click)="joinLobbyRequest.emit()">Unirse</button>
+  @if (showPublicLobbies()) {
+    <div class="public-lobbies">
+      <div class="public-header">
+        <h4>Salas públicas</h4>
+        <button class="ghost" type="button" (click)="refreshPublicLobbiesRequest.emit()">
+          Actualizar
+        </button>
+      </div>
+      @if (publicLobbiesLoading()) {
+        <p class="muted">Cargando salas públicas...</p>
+      } @else if (!publicLobbies().length) {
+        <p class="muted">No hay salas públicas disponibles.</p>
+      } @else {
+        <div class="public-list">
+          @for (lobby of publicLobbies(); track lobby.id) {
+            <div class="public-item">
+              <div>
+                <strong>{{ lobby.name }}</strong>
+                <div class="muted">Código: {{ lobby.id }}</div>
+                <div class="muted">
+                  {{ lobby.library }} · {{ lobby.playersCount }}/{{ lobby.maxPlayers }}
+                </div>
+              </div>
+              <button class="primary" type="button" (click)="joinPublicLobbyRequest.emit(lobby.id)">
+                Entrar
+              </button>
+            </div>
+          }
+        </div>
+      }
+    </div>
+    <button class="ghost" type="button" (click)="togglePublicLobbiesRequest.emit()">
+      Introducir código manualmente
+    </button>
+  } @else {
+    <div class="field">
+      <label class="label-with-tip">
+        Codigo
+        <span class="tooltip">
+          ?
+          <span class="tooltip-text">Código de la sala a la que quieres unirte.</span>
+        </span>
+      </label>
+      <input
+        type="text"
+        [value]="joinLobbyId()()"
+        (input)="joinLobbyId().set($any($event.target).value)"
+        placeholder="Codigo"
+      />
+    </div>
+    <div class="field">
+      <label class="label-with-tip">
+        Contraseña
+        <span class="tooltip">
+          ?
+          <span class="tooltip-text">Contraseña de la sala.</span>
+        </span>
+      </label>
+      <input
+        type="password"
+        minlength="5"
+        [value]="joinPassword()()"
+        (input)="joinPassword().set($any($event.target).value)"
+        placeholder="Contraseña"
+      />
+    </div>
+    <div class="join-actions">
+      <button class="secondary" (click)="joinLobbyRequest.emit()">Unirse</button>
+      <button class="ghost" type="button" (click)="togglePublicLobbiesRequest.emit()">
+        Ver salas públicas
+      </button>
+    </div>
+  }
 }

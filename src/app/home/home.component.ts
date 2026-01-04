@@ -13,6 +13,7 @@ import {
   LobbySnapshot,
   PausePayload,
   PlayPayload,
+  PublicLobbyInfo,
   RoundEndPayload,
   RoundStartPayload,
 } from '../models';
@@ -53,6 +54,7 @@ export class HomeComponent {
 
   readonly libraries = signal<LibraryInfo[]>([]);
   readonly username = signal('');
+  readonly lobbyName = signal('');
   readonly joinLobbyId = signal('');
   readonly library = signal<LibraryId | ''>('');
   readonly roundDuration = signal(30);
@@ -62,10 +64,12 @@ export class HomeComponent {
   readonly maxGuessesPerRound = signal(DEFAULT_GUESSES_PER_ROUND);
   readonly lockoutSeconds = signal(DEFAULT_LOCKOUT_SECONDS);
   readonly responseSeconds = signal(DEFAULT_RESPONSE_SECONDS);
+  readonly isPublicLobby = signal(true);
   readonly createPassword = signal('');
   readonly joinPassword = signal('');
   readonly lobbyPassword = signal('');
   readonly entryMode = signal<'create' | 'join' | null>(null);
+  readonly showPublicLobbies = signal(false);
 
   readonly lobby = signal<LobbySnapshot | null>(null);
   readonly playerId = signal<string | null>(null);
@@ -90,6 +94,8 @@ export class HomeComponent {
   readonly dissolveCountdown = signal(0);
   readonly showFinalOverlay = signal(false);
   readonly rematchRequested = signal(false);
+  readonly publicLobbies = signal<PublicLobbyInfo[]>([]);
+  readonly publicLobbiesLoading = signal(false);
   private dissolveIntervalId?: number;
   private dissolveTimeoutId?: number;
   private lastPauseAtServerTs: number | null = null;
@@ -319,12 +325,17 @@ export class HomeComponent {
 
   async createLobby() {
     const username = this.username().trim();
-    const password = this.createPassword().trim();
+    const lobbyName = this.lobbyName().trim();
+    const password = this.isPublicLobby() ? '' : this.createPassword().trim();
     if (!username) {
       this.toast.show('Elige un nombre primero.', 'error');
       return;
     }
-    if (password.length < 5) {
+    if (!lobbyName) {
+      this.toast.show('Elige un nombre para la sala.', 'error');
+      return;
+    }
+    if (!this.isPublicLobby() && password.length < 5) {
       this.toast.show('La contraseña debe tener al menos 5 caracteres.', 'error');
       return;
     }
@@ -338,7 +349,9 @@ export class HomeComponent {
       const response = await firstValueFrom(
         this.api.createLobby({
           username,
+          name: lobbyName,
           password,
+          isPublic: this.isPublicLobby(),
           mode: 'BUZZ',
           library,
           roundDuration: this.roundDuration(),
@@ -366,7 +379,7 @@ export class HomeComponent {
       this.toast.show('Se requiere nombre y codigo de sala.', 'error');
       return;
     }
-    if (password.length < 5) {
+    if (password && password.length < 5) {
       this.toast.show('La contraseña debe tener al menos 5 caracteres.', 'error');
       return;
     }
@@ -428,12 +441,18 @@ export class HomeComponent {
     if (!lobby || lobby.state !== 'WAITING' || lobby.hostId !== this.playerId()) {
       return;
     }
+    const lobbyName = this.lobbyName().trim();
+    if (!lobbyName) {
+      this.toast.show('El nombre de la sala es obligatorio.', 'error');
+      return;
+    }
     const library = this.library();
     if (!library) {
       this.toast.show('Selecciona una biblioteca primero.', 'error');
       return;
     }
     this.ws.send('UPDATE_SETTINGS', {
+      name: lobbyName,
       library,
       roundDuration: this.roundDuration(),
       penalty: this.penalty(),
@@ -489,14 +508,48 @@ export class HomeComponent {
   selectEntryMode(mode: 'create' | 'join') {
     this.resetLobbyForm();
     this.entryMode.set(mode);
+    if (mode === 'join') {
+      this.showPublicLobbies.set(true);
+      void this.loadPublicLobbies();
+    } else {
+      this.showPublicLobbies.set(false);
+    }
   }
 
   resetEntryMode() {
     this.entryMode.set(null);
+    this.showPublicLobbies.set(false);
   }
 
   updateVolume(value: number) {
     this.volume.set(Math.round(value));
+  }
+
+  togglePublicLobbies() {
+    if (this.showPublicLobbies()) {
+      this.showPublicLobbies.set(false);
+      return;
+    }
+    this.showPublicLobbies.set(true);
+    void this.loadPublicLobbies();
+  }
+
+  async loadPublicLobbies() {
+    this.publicLobbiesLoading.set(true);
+    try {
+      const lobbies = await firstValueFrom(this.api.listPublicLobbies());
+      this.publicLobbies.set(lobbies);
+    } catch (_error) {
+      this.toast.show('No se pudieron cargar las salas públicas.', 'error');
+    } finally {
+      this.publicLobbiesLoading.set(false);
+    }
+  }
+
+  joinPublicLobby(lobbyId: string) {
+    this.joinLobbyId.set(lobbyId);
+    this.joinPassword.set('');
+    void this.joinLobby();
   }
 
   async copyLobbyLink() {
@@ -565,6 +618,7 @@ export class HomeComponent {
     this.roundStatus.set('IDLE');
     this.roundResult.set(null);
     this.excludedGuessOptions.set([]);
+    this.isPublicLobby.set(response.lobbyState.isPublic);
     this.connectSocket(response.lobbyId, response.playerId);
   }
 
@@ -820,6 +874,7 @@ export class HomeComponent {
     if (lobby.state !== 'WAITING' && lobby.state !== 'IN_GAME' && lobby.state !== 'FINISHED') {
       return;
     }
+    this.lobbyName.set(lobby.name);
     this.library.set(lobby.settings.library);
     this.roundDuration.set(lobby.settings.roundDuration);
     this.penalty.set(lobby.settings.penalty);
@@ -828,10 +883,12 @@ export class HomeComponent {
     this.maxGuessesPerRound.set(lobby.settings.maxGuessesPerRound ?? DEFAULT_GUESSES_PER_ROUND);
     this.lockoutSeconds.set(lobby.settings.lockoutSeconds ?? DEFAULT_LOCKOUT_SECONDS);
     this.responseSeconds.set(lobby.settings.responseSeconds ?? DEFAULT_RESPONSE_SECONDS);
+    this.isPublicLobby.set(lobby.isPublic);
   }
 
   private resetLobbyForm() {
     this.username.set('');
+    this.lobbyName.set('');
     this.joinLobbyId.set('');
     const firstLibrary = this.libraries()[0]?.id ?? '';
     this.library.set(firstLibrary);
@@ -842,6 +899,7 @@ export class HomeComponent {
     this.maxGuessesPerRound.set(DEFAULT_GUESSES_PER_ROUND);
     this.lockoutSeconds.set(DEFAULT_LOCKOUT_SECONDS);
     this.responseSeconds.set(DEFAULT_RESPONSE_SECONDS);
+    this.isPublicLobby.set(true);
     this.createPassword.set('');
     this.joinPassword.set('');
   }

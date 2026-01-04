@@ -4,11 +4,13 @@
   gap: 0.75rem;
 }
 
-h2 {
+.lobby-title {
   margin-top: 0;
+  font-family: 'Luckiest Guy', cursive;
+  letter-spacing: 0.04em;
 }
 
-:host-context(.panel--lobby-centered) h2 {
+:host-context(.panel--lobby-centered) .lobby-title {
   text-align: center;
 }
 

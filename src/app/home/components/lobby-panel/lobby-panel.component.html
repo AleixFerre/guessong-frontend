@@ -1,5 +1,5 @@
-<h2>Sala y puntuaciones</h2>
 @if (lobby(); as activeLobby) {
+  <h2 class="lobby-title">{{ activeLobby.name || 'Sala y puntuaciones' }}</h2>
   <div class="players">
     @for (player of sortedPlayers(); track player.id) {
       <div class="player" [class.player--active]="player.id === activeBuzzPlayerId()">

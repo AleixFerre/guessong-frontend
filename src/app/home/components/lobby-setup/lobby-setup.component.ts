@@ -1,5 +1,5 @@
 import { Component, WritableSignal, computed, input, output, signal } from '@angular/core';
-import { LibraryInfo } from '../../../models';
+import { LibraryInfo, PublicLobbyInfo } from '../../../models';
 
 type PresetKey = 'beginner' | 'intermediate' | 'hard' | 'custom';
 
@@ -7,7 +7,6 @@ const PRESETS: Record<
   Exclude<PresetKey, 'custom'>,
   {
     roundDuration: number;
-    maxPlayers: number;
     totalRounds: number;
     maxGuessesPerRound: number;
     lockoutSeconds: number;
@@ -17,7 +16,6 @@ const PRESETS: Record<
 > = {
   beginner: {
     roundDuration: 30,
-    maxPlayers: 8,
     totalRounds: 5,
     maxGuessesPerRound: 0,
     lockoutSeconds: 2,
@@ -26,7 +24,6 @@ const PRESETS: Record<
   },
   intermediate: {
     roundDuration: 20,
-    maxPlayers: 8,
     totalRounds: 6,
     maxGuessesPerRound: 3,
     lockoutSeconds: 2,
@@ -35,7 +32,6 @@ const PRESETS: Record<
   },
   hard: {
     roundDuration: 12,
-    maxPlayers: 8,
     totalRounds: 7,
     maxGuessesPerRound: 2,
     lockoutSeconds: 3,
@@ -54,6 +50,7 @@ export class LobbySetupComponent {
   readonly libraries = input.required<LibraryInfo[]>();
   readonly selectedLibraryInfo = input.required<LibraryInfo | null>();
   readonly username = input.required<WritableSignal<string>>();
+  readonly lobbyName = input.required<WritableSignal<string>>();
   readonly joinLobbyId = input.required<WritableSignal<string>>();
   readonly library = input.required<WritableSignal<string>>();
   readonly roundDuration = input.required<WritableSignal<number>>();
@@ -63,6 +60,10 @@ export class LobbySetupComponent {
   readonly maxGuessesPerRound = input.required<WritableSignal<number>>();
   readonly lockoutSeconds = input.required<WritableSignal<number>>();
   readonly responseSeconds = input.required<WritableSignal<number>>();
+  readonly isPublicLobby = input.required<WritableSignal<boolean>>();
+  readonly publicLobbies = input<PublicLobbyInfo[]>([]);
+  readonly publicLobbiesLoading = input<boolean>(false);
+  readonly showPublicLobbies = input<boolean>(false);
   readonly createPassword = input.required<WritableSignal<string>>();
   readonly joinPassword = input.required<WritableSignal<string>>();
   readonly entryMode = input.required<'create' | 'join' | 'edit'>();
@@ -70,8 +71,11 @@ export class LobbySetupComponent {
   readonly createLobbyRequest = output<void>();
   readonly joinLobbyRequest = output<void>();
   readonly updateLobbyRequest = output<void>();
+  readonly togglePublicLobbiesRequest = output<void>();
+  readonly refreshPublicLobbiesRequest = output<void>();
+  readonly joinPublicLobbyRequest = output<string>();
 
-  readonly selectedPreset = signal<PresetKey>('custom');
+  readonly selectedPreset = signal<PresetKey>('beginner');
   readonly isCustomPreset = computed(() => this.selectedPreset() === 'custom');
   readonly presetSummary = computed(() => [
     { label: 'Duración de ronda', value: `${this.roundDuration()()}s` },
@@ -87,9 +91,8 @@ export class LobbySetupComponent {
       label: 'Intentos por ronda',
       value: this.maxGuessesPerRound()() === 0 ? 'Infinito' : String(this.maxGuessesPerRound()()),
     },
-    { label: 'Penalización', value: `${this.penalty()()}%` },
+    { label: 'Penalización por fallo', value: `${this.penalty()()}%` },
     { label: 'Rondas', value: String(this.totalRounds()()) },
-    { label: 'Máx. jugadores', value: String(this.maxPlayers()()) },
   ]);
 
   selectPreset(preset: PresetKey) {
@@ -99,7 +102,6 @@ export class LobbySetupComponent {
     }
     const values = PRESETS[preset];
     this.roundDuration().set(values.roundDuration);
-    this.maxPlayers().set(values.maxPlayers);
     this.totalRounds().set(values.totalRounds);
     this.maxGuessesPerRound().set(values.maxGuessesPerRound);
     this.lockoutSeconds().set(values.lockoutSeconds);

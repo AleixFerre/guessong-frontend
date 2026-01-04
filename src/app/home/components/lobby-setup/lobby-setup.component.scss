@@ -166,6 +166,48 @@
   color: #1f355b;
 }
 
+.public-lobbies {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  border-radius: 1rem;
+  border: 2px dashed var(--border);
+  background: #f7fbff;
+}
+
+.public-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.6rem;
+}
+
+.public-header h4 {
+  margin: 0;
+}
+
+.public-list {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.public-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: 0.9rem;
+  background: #ffffff;
+  border: 2px solid var(--border);
+}
+
+.join-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
 .divider {
   height: 1px;
   background: var(--border);

@@ -27,6 +27,7 @@
             [libraries]="libraries()"
             [selectedLibraryInfo]="selectedLibraryInfo()"
             [username]="username"
+            [lobbyName]="lobbyName"
             [joinLobbyId]="joinLobbyId"
             [library]="library"
             [roundDuration]="roundDuration"
@@ -36,10 +37,17 @@
             [maxGuessesPerRound]="maxGuessesPerRound"
             [lockoutSeconds]="lockoutSeconds"
             [responseSeconds]="responseSeconds"
+            [isPublicLobby]="isPublicLobby"
             [createPassword]="createPassword"
             [joinPassword]="joinPassword"
+            [publicLobbies]="publicLobbies()"
+            [publicLobbiesLoading]="publicLobbiesLoading()"
+            [showPublicLobbies]="showPublicLobbies()"
             (createLobbyRequest)="createLobby()"
             (joinLobbyRequest)="joinLobby()"
+            (togglePublicLobbiesRequest)="togglePublicLobbies()"
+            (refreshPublicLobbiesRequest)="loadPublicLobbies()"
+            (joinPublicLobbyRequest)="joinPublicLobby($event)"
           ></app-lobby-setup>
         } @else {
           <h2 class="title">Menu principal</h2>
@@ -72,7 +80,7 @@
       <div class="panel panel--config">
         @if (isHost()) {
           <div class="panel-header">
-            <h2>Configurar sala</h2>
+            <h2 class="title">Configurar sala</h2>
             <button class="ghost copy-link" (click)="copyLobbyLink()">Copiar link</button>
           </div>
           <app-lobby-setup
@@ -80,6 +88,7 @@
             [libraries]="libraries()"
             [selectedLibraryInfo]="selectedLibraryInfo()"
             [username]="username"
+            [lobbyName]="lobbyName"
             [joinLobbyId]="joinLobbyId"
             [library]="library"
             [roundDuration]="roundDuration"
@@ -89,13 +98,20 @@
             [maxGuessesPerRound]="maxGuessesPerRound"
             [lockoutSeconds]="lockoutSeconds"
             [responseSeconds]="responseSeconds"
+            [isPublicLobby]="isPublicLobby"
             [createPassword]="createPassword"
             [joinPassword]="joinPassword"
+            [publicLobbies]="publicLobbies()"
+            [publicLobbiesLoading]="publicLobbiesLoading()"
+            [showPublicLobbies]="showPublicLobbies()"
             (updateLobbyRequest)="updateLobbySettings()"
+            (togglePublicLobbiesRequest)="togglePublicLobbies()"
+            (refreshPublicLobbiesRequest)="loadPublicLobbies()"
+            (joinPublicLobbyRequest)="joinPublicLobby($event)"
           ></app-lobby-setup>
         } @else {
           <div class="panel-header">
-            <h2>Información de la sala</h2>
+            <h2 class="title">Información de la sala</h2>
             <button class="ghost copy-link" (click)="copyLobbyLink()">Copiar link</button>
           </div>
           <div class="config-readonly">

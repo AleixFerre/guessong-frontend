@@ -1,7 +1,14 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import config from '../config.json';
-import { LibraryId, LibraryInfo, LibraryTrack, LobbyMode, LobbySnapshot } from '../models';
+import {
+  LibraryId,
+  LibraryInfo,
+  LibraryTrack,
+  LobbyMode,
+  LobbySnapshot,
+  PublicLobbyInfo,
+} from '../models';
 
 export interface LobbyResponse {
   lobbyId: string;
@@ -16,7 +23,9 @@ export class ApiService {
 
   createLobby(payload: {
     username: string;
+    name: string;
     password: string;
+    isPublic: boolean;
     mode: LobbyMode;
     library: LibraryId;
     roundDuration: number;
@@ -43,5 +52,9 @@ export class ApiService {
 
   getLibraryTracks(libraryId: LibraryId) {
     return this.http.get<LibraryTrack[]>(`${this.baseUrl}/libraries/${libraryId}/tracks`);
+  }
+
+  listPublicLobbies() {
+    return this.http.get<PublicLobbyInfo[]>(`${this.baseUrl}/lobbies/public`);
   }
 }

@@ -17,7 +17,9 @@ export interface Player {
 
 export interface LobbySnapshot {
   id: string;
+  name: string;
   hostId: string;
+  isPublic: boolean;
   settings: {
     mode: LobbyMode;
     library: LibraryId;
@@ -37,6 +39,16 @@ export interface LobbySnapshot {
     clipDuration: number;
     startAtServerTs: number;
   };
+}
+
+export interface PublicLobbyInfo {
+  id: string;
+  name: string;
+  hostId: string;
+  library: LibraryId;
+  state: 'WAITING' | 'IN_GAME' | 'FINISHED';
+  playersCount: number;
+  maxPlayers: number;
 }
 
 export interface LibraryInfo {
