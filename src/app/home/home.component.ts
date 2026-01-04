@@ -33,6 +33,7 @@ const MAX_LOCKOUT_SECONDS = 30;
 const DEFAULT_LOCKOUT_SECONDS = 2;
 const DEFAULT_RESPONSE_SECONDS = 10;
 const MAX_RESPONSE_SECONDS = 60;
+const NEXT_ROUND_DELAY_SEC = 10;
 
 @Component({
   selector: 'app-home',
@@ -82,6 +83,7 @@ export class HomeComponent {
   readonly elapsedSeconds = signal(0);
   readonly activeBuzzPlayerId = signal<string | null>(null);
   readonly roundResult = signal<RoundEndPayload | null>(null);
+  readonly nextRoundCountdownSec = signal<number | null>(null);
   readonly notifications = signal<string[]>([]);
   readonly volume = signal(Math.round(this.audio.getVolume() * 100));
   readonly audioUnavailable = signal(false);
@@ -91,6 +93,7 @@ export class HomeComponent {
   private dissolveIntervalId?: number;
   private dissolveTimeoutId?: number;
   private lastPauseAtServerTs: number | null = null;
+  private roundEndAtServerTs: number | null = null;
   private readonly init = this.setup();
   readonly viewState = computed(() => {
     const lobby = this.lobby();
@@ -635,9 +638,11 @@ export class HomeComponent {
     this.pausedOffsetSeconds.set(null);
     this.buzzDeadlineAt.set(null);
     this.buzzCountdownSec.set(null);
+    this.nextRoundCountdownSec.set(null);
     this.audioUnavailable.set(!payload.clipUrl);
     this.audio.loadClip(payload.clipUrl || null, payload.clipDuration);
     this.lastPauseAtServerTs = null;
+    this.roundEndAtServerTs = null;
   }
 
   private onPlay(payload: PlayPayload) {
@@ -715,17 +720,35 @@ export class HomeComponent {
     this.activeBuzzPlayerId.set(null);
     this.buzzDeadlineAt.set(null);
     this.buzzCountdownSec.set(null);
+    this.pausedOffsetSeconds.set(null);
     this.audioUnavailable.set(false);
     this.audio.stop();
     this.lastPauseAtServerTs = null;
+    this.roundEndAtServerTs = Date.now() + this.ws.serverOffsetMs();
   }
 
   private tickElapsed() {
+    if (this.roundStatus() === 'ENDED') {
+      const nowServer = Date.now() + this.ws.serverOffsetMs();
+      if (this.lobby()?.state !== 'FINISHED') {
+        const roundEndAt = this.roundEndAtServerTs;
+        if (roundEndAt) {
+          const remaining = Math.max(0, NEXT_ROUND_DELAY_SEC - (nowServer - roundEndAt) / 1000);
+          this.nextRoundCountdownSec.set(remaining);
+        }
+      } else {
+        this.nextRoundCountdownSec.set(null);
+      }
+      this.buzzCountdownSec.set(null);
+      return;
+    }
+
     const startAt = this.roundStartAt();
     const duration = this.roundDurationSec();
     if (!startAt || !duration) {
       this.elapsedSeconds.set(0);
       this.buzzCountdownSec.set(null);
+      this.nextRoundCountdownSec.set(null);
       return;
     }
 
@@ -747,6 +770,7 @@ export class HomeComponent {
     const elapsed = Math.max(0, (nowServer - startAt) / 1000);
     this.elapsedSeconds.set(Math.min(duration, elapsed));
     this.buzzCountdownSec.set(null);
+    this.nextRoundCountdownSec.set(null);
   }
 
   private addNotice(message: string) {
@@ -780,10 +804,12 @@ export class HomeComponent {
       const updatedLobby = { ...nextLobby, players: resetPlayers };
       this.lobby.set(updatedLobby);
       this.syncLobbySettings(updatedLobby);
+      this.resetRoundState();
       this.guessCounts.set({});
       return;
     }
     if (nextLobby.state === 'WAITING') {
+      this.resetRoundState();
       this.guessCounts.set({});
     }
     this.lobby.set(nextLobby);
@@ -820,6 +846,19 @@ export class HomeComponent {
     this.joinPassword.set('');
   }
 
+  private resetRoundState() {
+    this.roundResult.set(null);
+    this.roundStatus.set('IDLE');
+    this.roundStartAt.set(null);
+    this.pausedOffsetSeconds.set(null);
+    this.buzzDeadlineAt.set(null);
+    this.buzzCountdownSec.set(null);
+    this.nextRoundCountdownSec.set(null);
+    this.activeBuzzPlayerId.set(null);
+    this.roundEndAtServerTs = null;
+    this.audio.stop();
+  }
+
   private formatGuessOption(track: LibraryTrack) {
     const artist = track.artist.trim();
     return artist ? `${artist} - ${track.title}` : track.title;
@@ -827,6 +866,11 @@ export class HomeComponent {
 
   private normalizeGuessOption(value: string) {
     return value.trim().toLowerCase();
+  }
+
+  formatCountdown(seconds: number) {
+    const safe = Math.max(0, Math.ceil(seconds));
+    return `${safe}s`;
   }
 
   private applyLobbyLinkFromUrl() {

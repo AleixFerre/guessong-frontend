@@ -192,6 +192,34 @@
     }
   </section>
 
+  @if (roundResult(); as result) {
+    @if (viewState() !== 'FINISHED') {
+      <div class="result-modal">
+        <div
+          class="result-card"
+          [class.result--win]="isRoundWinner()"
+          [class.result--lose]="!isRoundWinner()"
+        >
+          <h3>Resultado</h3>
+          <p>{{ result.revealedTrackMeta.artist }} - {{ result.revealedTrackMeta.title }}</p>
+          @if (roundWinnerName()) {
+            <p>Ganador: {{ roundWinnerName() }}</p>
+          } @else {
+            <p class="no-winner">No ha habido ganador</p>
+          }
+          @if (result.winnerId) {
+            <p>Puntos: {{ result.pointsAwarded }}</p>
+          }
+          @if (nextRoundCountdownSec() !== null) {
+            <p class="next-round">
+              Siguiente ronda en {{ formatCountdown(nextRoundCountdownSec() ?? 0) }}
+            </p>
+          }
+        </div>
+      </div>
+    }
+  }
+
   @if (viewState() === 'FINISHED' && showFinalOverlay()) {
     <div class="end-overlay">
       <div class="panel end-card">
@@ -199,7 +227,14 @@
         <div class="end-players">
           @for (player of sortedPlayers(); track player.id) {
             <div class="end-player">
-              <span class="end-rank">#{{ $index + 1 }}</span>
+              <span
+                class="end-rank"
+                [class.end-rank--leader]="$index === 0"
+                [class.end-rank--silver]="$index === 1"
+                [class.end-rank--bronze]="$index === 2"
+              >
+                #{{ $index + 1 }}
+              </span>
               <span class="end-name">{{ player.username }}</span>
               <strong class="end-score">{{ player.score }}</strong>
             </div>

@@ -46,18 +46,6 @@
       Enviar
     </button>
   </div>
-  @if (roundResult(); as result) {
-    <div class="result" [class.result--win]="isWinner()" [class.result--lose]="!isWinner()">
-      <h3>Resultado</h3>
-      <p>{{ result.revealedTrackMeta.artist }} - {{ result.revealedTrackMeta.title }}</p>
-      @if (winnerName()) {
-        <p>Ganador: {{ winnerName() }}</p>
-      }
-      @if (result.winnerId) {
-        <p>Puntos: {{ result.pointsAwarded }}</p>
-      }
-    </div>
-  }
 </div>
 @defer (when notifications().length) {
   <div class="notifications">
