@@ -1,6 +1,12 @@
 @if (entryMode() !== 'edit') {
   <div class="field">
-    <label>Nombre de usuario</label>
+    <label class="label-with-tip">
+      Nombre de usuario
+      <span class="tooltip">
+        ?
+        <span class="tooltip-text">Nombre que verán los demás jugadores en la sala.</span>
+      </span>
+    </label>
     <input
       type="text"
       [value]="username()()"
@@ -12,7 +18,13 @@
 @if (entryMode() === 'create' || entryMode() === 'edit') {
   <div class="config-list">
     <div class="field">
-      <label>Biblioteca</label>
+      <label class="label-with-tip">
+        Biblioteca
+        <span class="tooltip">
+          ?
+          <span class="tooltip-text">Selecciona el catálogo de canciones para la partida.</span>
+        </span>
+      </label>
       <select [value]="library()()" (change)="library().set($any($event.target).value)">
         @for (lib of libraries(); track lib.id) {
           <option [value]="lib.id">{{ lib.name }} ({{ lib.trackCount }})</option>
@@ -23,7 +35,13 @@
       }
     </div>
     <div class="field">
-      <label>Duracion de ronda (s)</label>
+      <label class="label-with-tip">
+        Duracion de ronda (s)
+        <span class="tooltip">
+          ?
+          <span class="tooltip-text">Tiempo total que dura cada ronda.</span>
+        </span>
+      </label>
       <input
         type="number"
         min="5"
@@ -33,7 +51,13 @@
       />
     </div>
     <div class="field">
-      <label>Max. jugadores</label>
+      <label class="label-with-tip">
+        Max. jugadores
+        <span class="tooltip">
+          ?
+          <span class="tooltip-text">Cantidad máxima de jugadores en la sala.</span>
+        </span>
+      </label>
       <input
         type="number"
         min="2"
@@ -43,7 +67,13 @@
       />
     </div>
     <div class="field">
-      <label>Rondas</label>
+      <label class="label-with-tip">
+        Rondas
+        <span class="tooltip">
+          ?
+          <span class="tooltip-text">Número total de rondas de la partida.</span>
+        </span>
+      </label>
       <input
         type="number"
         min="1"
@@ -53,7 +83,13 @@
       />
     </div>
     <div class="field">
-      <label>Intentos por ronda</label>
+      <label class="label-with-tip">
+        Intentos por ronda
+        <span class="tooltip">
+          ?
+          <span class="tooltip-text">Máximo de intentos por jugador en cada ronda.</span>
+        </span>
+      </label>
       <input
         type="number"
         min="0"
@@ -64,7 +100,15 @@
       <small>0 = infinito</small>
     </div>
     <div class="field">
-      <label>Tiempo de bloqueo (s)</label>
+      <label class="label-with-tip">
+        Tiempo de bloqueo (s)
+        <span class="tooltip">
+          ?
+          <span class="tooltip-text">
+            Tiempo que un jugador queda bloqueado tras fallar o pulsar antes de tiempo.
+          </span>
+        </span>
+      </label>
       <input
         type="number"
         min="0"
@@ -75,7 +119,15 @@
       <small>0 = sin bloqueo</small>
     </div>
     <div class="field">
-      <label>Tiempo para responder (s)</label>
+      <label class="label-with-tip">
+        Tiempo para responder (s)
+        <span class="tooltip">
+          ?
+          <span class="tooltip-text">
+            Tiempo que tiene el jugador para responder tras pulsar el timbre.
+          </span>
+        </span>
+      </label>
       <input
         type="number"
         min="0"
@@ -83,10 +135,16 @@
         [value]="responseSeconds()()"
         (input)="responseSeconds().set(+$any($event.target).value)"
       />
-      <small>0 = sin limite</small>
+      <small>0 = sin límite</small>
     </div>
     <div class="field">
-      <label>Penalizacion por fallo: {{ penalty()() }}%</label>
+      <label class="label-with-tip">
+        Penalizacion por fallo: {{ penalty()() }}%
+        <span class="tooltip">
+          ?
+          <span class="tooltip-text">Porcentaje de puntos que se resta al fallar.</span>
+        </span>
+      </label>
       <input
         type="range"
         min="0"
@@ -100,7 +158,13 @@
   </div>
   @if (entryMode() === 'create') {
     <div class="field">
-      <label>Contraseña de sala</label>
+      <label class="label-with-tip">
+        Contraseña de sala
+        <span class="tooltip">
+          ?
+          <span class="tooltip-text">Clave para que otros jugadores puedan unirse.</span>
+        </span>
+      </label>
       <input
         type="password"
         minlength="5"
@@ -119,7 +183,13 @@
 
 @if (entryMode() === 'join') {
   <div class="field">
-    <label>Codigo</label>
+    <label class="label-with-tip">
+      Codigo
+      <span class="tooltip">
+        ?
+        <span class="tooltip-text">Código de la sala a la que quieres unirte.</span>
+      </span>
+    </label>
     <input
       type="text"
       [value]="joinLobbyId()()"
@@ -128,7 +198,13 @@
     />
   </div>
   <div class="field">
-    <label>Contraseña</label>
+    <label class="label-with-tip">
+      Contraseña
+      <span class="tooltip">
+        ?
+        <span class="tooltip-text">Contraseña de la sala.</span>
+      </span>
+    </label>
     <input
       type="password"
       minlength="5"

@@ -15,6 +15,21 @@
       @if (pingMs() !== null) {
         <div class="ping">Ping {{ formatPing(pingMs()) }}</div>
       }
+      @if (lobby()) {
+        <div class="spacer"></div>
+        <div class="volume-control">
+          <label for="volume-slider">Volumen</label>
+          <input
+            id="volume-slider"
+            type="range"
+            min="0"
+            max="100"
+            [value]="volume()"
+            (input)="onVolumeInput($event)"
+          />
+          <span class="volume-value">{{ volume() }}%</span>
+        </div>
+      }
     </div>
   </div>
 </header>

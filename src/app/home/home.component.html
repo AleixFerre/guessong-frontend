@@ -2,23 +2,10 @@
   <app-home-hero
     [lobby]="lobby()"
     [pingMs]="ws.pingMs()"
+    [volume]="volume()"
+    (volumeChange)="updateVolume($event)"
     (leave)="confirmLeaveLobby()"
   ></app-home-hero>
-
-  <div class="volume-float">
-    <div class="volume-header">
-      <label for="volume-slider">Volumen</label>
-      <span class="volume-value">{{ volume() }}%</span>
-    </div>
-    <input
-      id="volume-slider"
-      type="range"
-      min="0"
-      max="100"
-      [value]="volume()"
-      (input)="updateVolume(+$any($event.target).value)"
-    />
-  </div>
 
   <section
     class="grid"
