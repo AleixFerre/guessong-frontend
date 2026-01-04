@@ -1,4 +1,4 @@
-import { Component, WritableSignal, computed, input, output, signal } from '@angular/core';
+import { Component, WritableSignal, computed, effect, input, output, signal } from '@angular/core';
 import { LibraryInfo, PublicLobbyInfo } from '../../../models';
 
 type PresetKey = 'beginner' | 'intermediate' | 'hard' | 'custom';
@@ -66,6 +66,7 @@ export class LobbySetupComponent {
   readonly showPublicLobbies = input<boolean>(false);
   readonly createPassword = input.required<WritableSignal<string>>();
   readonly joinPassword = input.required<WritableSignal<string>>();
+  readonly joinRequiresPassword = input<boolean>(false);
   readonly canSave = input<boolean>(true);
   readonly entryMode = input.required<'create' | 'join' | 'edit'>();
 
@@ -96,6 +97,20 @@ export class LobbySetupComponent {
     { label: 'Penalización por fallo', value: `${this.penalty()()}%` },
   ]);
 
+  private readonly presetSync = effect(() => {
+    const mode = this.entryMode();
+    if (mode !== 'create' && mode !== 'edit') {
+      return;
+    }
+    const resolved = this.resolvePresetKey();
+    if (this.selectedPreset() === 'custom' && resolved !== 'custom') {
+      return;
+    }
+    if (this.selectedPreset() !== resolved) {
+      this.selectedPreset.set(resolved);
+    }
+  });
+
   selectPreset(preset: PresetKey) {
     this.selectedPreset.set(preset);
     if (preset === 'custom') {
@@ -108,5 +123,40 @@ export class LobbySetupComponent {
     this.lockoutSeconds().set(values.lockoutSeconds);
     this.responseSeconds().set(values.responseSeconds);
     this.penalty().set(values.penalty);
+  }
+
+  private resolvePresetKey(): PresetKey {
+    const roundDuration = this.roundDuration()();
+    const totalRounds = this.totalRounds()();
+    const maxGuessesPerRound = this.maxGuessesPerRound()();
+    const lockoutSeconds = this.lockoutSeconds()();
+    const responseSeconds = this.responseSeconds()();
+    const penalty = this.penalty()();
+
+    const matchesPreset = (preset: PresetKey) => {
+      if (preset === 'custom') {
+        return false;
+      }
+      const values = PRESETS[preset];
+      return (
+        values.roundDuration === roundDuration &&
+        values.totalRounds === totalRounds &&
+        values.maxGuessesPerRound === maxGuessesPerRound &&
+        values.lockoutSeconds === lockoutSeconds &&
+        values.responseSeconds === responseSeconds &&
+        values.penalty === penalty
+      );
+    };
+
+    if (matchesPreset('beginner')) {
+      return 'beginner';
+    }
+    if (matchesPreset('intermediate')) {
+      return 'intermediate';
+    }
+    if (matchesPreset('hard')) {
+      return 'hard';
+    }
+    return 'custom';
   }
 }

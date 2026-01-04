@@ -4,6 +4,7 @@
       class="toast"
       [class.toast--error]="toast.type === 'error'"
       [class.toast--success]="toast.type === 'success'"
+      [class.toast--info]="toast.type === 'info'"
     >
       <span>{{ toast.message }}</span>
       <button type="button" class="toast-close" (click)="dismiss(toast.id)" aria-label="Cerrar">

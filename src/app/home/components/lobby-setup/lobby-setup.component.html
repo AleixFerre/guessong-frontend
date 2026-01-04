@@ -33,7 +33,7 @@
         placeholder="Sala de amigos"
       />
     </div>
-    @if (entryMode() === 'create') {
+    @if (entryMode() === 'create' || entryMode() === 'edit') {
       <div class="field">
         <label class="label-with-tip">
           Tipo de sala
@@ -280,7 +280,7 @@
   @if (entryMode() === 'create') {
     <button class="primary" (click)="createLobbyRequest.emit()">Crear sala</button>
   } @else {
-    <button class="primary" [disabled]="!canSave()" (click)="updateLobbyRequest.emit()">
+    <button class="primary full-width" [disabled]="!canSave()" (click)="updateLobbyRequest.emit()">
       Guardar cambios
     </button>
   }
@@ -305,12 +305,17 @@
             <div class="public-item">
               <div>
                 <strong>{{ lobby.name }}</strong>
-                <div class="muted">Código: {{ lobby.id }}</div>
+                <div class="muted public-code">{{ lobby.id }}</div>
                 <div class="muted">
-                  {{ lobby.library }} · {{ lobby.playersCount }}/{{ lobby.maxPlayers }}
+                  <span class="public-library">{{ lobby.library }}</span> ·
+                  {{ lobby.playersCount }}/{{ lobby.maxPlayers }}
                 </div>
               </div>
-              <button class="primary" type="button" (click)="joinPublicLobbyRequest.emit(lobby.id)">
+              <button
+                class="primary public-join"
+                type="button"
+                (click)="joinPublicLobbyRequest.emit(lobby.id)"
+              >
                 Entrar
               </button>
             </div>
@@ -337,22 +342,24 @@
         placeholder="Codigo"
       />
     </div>
-    <div class="field">
-      <label class="label-with-tip">
-        Contraseña
-        <span class="tooltip">
-          ?
-          <span class="tooltip-text">Contraseña de la sala.</span>
-        </span>
-      </label>
-      <input
-        type="password"
-        minlength="5"
-        [value]="joinPassword()()"
-        (input)="joinPassword().set($any($event.target).value)"
-        placeholder="Contraseña"
-      />
-    </div>
+    @if (joinRequiresPassword()) {
+      <div class="field">
+        <label class="label-with-tip">
+          Contraseña
+          <span class="tooltip">
+            ?
+            <span class="tooltip-text">Contraseña de la sala.</span>
+          </span>
+        </label>
+        <input
+          type="password"
+          minlength="5"
+          [value]="joinPassword()()"
+          (input)="joinPassword().set($any($event.target).value)"
+          placeholder="Contraseña"
+        />
+      </div>
+    }
     <div class="join-actions">
       <button class="secondary" (click)="joinLobbyRequest.emit()">Unirse</button>
       <button class="ghost" type="button" (click)="togglePublicLobbiesRequest.emit()">

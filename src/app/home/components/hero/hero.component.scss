@@ -55,6 +55,12 @@
   min-width: 180px;
 }
 
+@media (max-width: 720px) {
+  .volume-control {
+    display: none;
+  }
+}
+
 .volume-control label {
   font-size: 0.75rem;
   text-transform: uppercase;
