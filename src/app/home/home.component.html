@@ -203,9 +203,12 @@
           }
         </div>
         <button class="primary" (click)="requestRematch()" [disabled]="rematchRequested()">
-          {{ rematchRequested() ? 'Rematch accepted' : 'Rematch' }}
+          {{ rematchRequested() ? 'Revancha aceptada' : 'Revancha' }}
         </button>
-        <p class="muted">La sala se disolvera automaticamente en {{ dissolveCountdown() }}s.</p>
+        <p class="muted">
+          {{ rematchRequested() ? 'La revancha empezará' : 'La sala se disolverá' }} automáticamente
+          en {{ dissolveCountdown() }}s.
+        </p>
       </div>
     </div>
   }
