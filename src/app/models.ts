@@ -26,6 +26,8 @@ export interface LobbySnapshot {
     maxPlayers: number;
     totalRounds: number;
     maxGuessesPerRound: number;
+    lockoutSeconds: number;
+    responseSeconds: number;
   };
   currentRound: number;
   players: Player[];

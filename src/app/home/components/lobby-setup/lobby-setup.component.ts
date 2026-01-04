@@ -18,6 +18,8 @@ export class LobbySetupComponent {
   readonly maxPlayers = input.required<WritableSignal<number>>();
   readonly totalRounds = input.required<WritableSignal<number>>();
   readonly maxGuessesPerRound = input.required<WritableSignal<number>>();
+  readonly lockoutSeconds = input.required<WritableSignal<number>>();
+  readonly responseSeconds = input.required<WritableSignal<number>>();
   readonly createPassword = input.required<WritableSignal<string>>();
   readonly joinPassword = input.required<WritableSignal<string>>();
   readonly entryMode = input.required<'create' | 'join' | 'edit'>();

@@ -1,13 +1,17 @@
 <header class="hero">
   <div class="hero-copy">
-    <span class="badge">by Aleix Ferré</span>
-    <h1>Adivina la canción</h1>
-    <p>
-      Compite con tu sala, pulsa el timbre y adivina antes de que el tiempo se apague. Todo en
-      tiempo real, con reglas claras y ritmo rapido.
-    </p>
+    @if (!lobby()) {
+      <span class="badge">by Aleix Ferré</span>
+      <h1>Adivina la canción</h1>
+      <p>
+        Compite con tu sala, pulsa el timbre y adivina antes de que el tiempo se apague. Todo en
+        tiempo real, con reglas claras y ritmo rapido.
+      </p>
+    }
     <div class="hero-actions">
-      <button class="ghost" (click)="leave.emit()" [disabled]="!lobby()">Salir</button>
+      @if (lobby()) {
+        <button class="ghost" (click)="leave.emit()">Salir</button>
+      }
       <div class="status" [class.connected]="wsStatus() === 'connected'">
         {{ formatStatus(wsStatus()) }}
       </div>
@@ -31,26 +35,28 @@
     </div>
   </div>
   @if (lobby(); as activeLobby) {
-    <div class="hero-card">
-      <h3 class="title">Sala activa</h3>
-      <div class="row">
-        <span>Codigo</span>
-        <div class="code">
-          <strong>{{ activeLobby.id }}</strong>
-          <button class="copy" (click)="copyLobbyLink(activeLobby.id)">
-            {{ copied() ? 'Copiado' : 'Copiar link' }}
-          </button>
+    @if (activeLobby.state !== 'IN_GAME') {
+      <div class="hero-card">
+        <h3 class="title">Sala activa</h3>
+        <div class="row">
+          <span>Codigo</span>
+          <div class="code">
+            <strong>{{ activeLobby.id }}</strong>
+            <button class="copy" (click)="copyLobbyLink(activeLobby.id)">
+              {{ copied() ? 'Copiado' : 'Copiar link' }}
+            </button>
+          </div>
+        </div>
+        <div class="row">
+          <span>Biblioteca</span>
+          <strong>{{ activeLobby.settings.library }}</strong>
+        </div>
+        <div class="row">
+          <span>Jugadores</span>
+          <strong>{{ activeLobby.players.length }}/{{ activeLobby.settings.maxPlayers }}</strong>
         </div>
       </div>
-      <div class="row">
-        <span>Biblioteca</span>
-        <strong>{{ activeLobby.settings.library }}</strong>
-      </div>
-      <div class="row">
-        <span>Jugadores</span>
-        <strong>{{ activeLobby.players.length }}/{{ activeLobby.settings.maxPlayers }}</strong>
-      </div>
-    </div>
+    }
   } @else {
     <div class="hero-card">
       <h3>Listo para jugar</h3>

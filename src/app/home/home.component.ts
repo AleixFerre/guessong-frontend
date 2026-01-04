@@ -29,6 +29,10 @@ const MAX_ROUND_DURATION_SEC = 30;
 const MAX_PLAYERS = 10;
 const MAX_GUESSES_PER_ROUND = 10;
 const DEFAULT_GUESSES_PER_ROUND = 3;
+const MAX_LOCKOUT_SECONDS = 30;
+const DEFAULT_LOCKOUT_SECONDS = 2;
+const DEFAULT_RESPONSE_SECONDS = 10;
+const MAX_RESPONSE_SECONDS = 60;
 
 @Component({
   selector: 'app-home',
@@ -55,6 +59,8 @@ export class HomeComponent {
   readonly maxPlayers = signal(8);
   readonly totalRoundsInput = signal(5);
   readonly maxGuessesPerRound = signal(DEFAULT_GUESSES_PER_ROUND);
+  readonly lockoutSeconds = signal(DEFAULT_LOCKOUT_SECONDS);
+  readonly responseSeconds = signal(DEFAULT_RESPONSE_SECONDS);
   readonly createPassword = signal('');
   readonly joinPassword = signal('');
   readonly lobbyPassword = signal('');
@@ -149,7 +155,10 @@ export class HomeComponent {
     if (!lobby || !player) {
       return false;
     }
-    return this.roundStatus() === 'PLAYING' && !player.lockedForRound;
+    const maxGuesses = this.maxGuessesPerRound();
+    const remaining = this.remainingGuesses();
+    const hasGuessesLeft = maxGuesses <= 0 || remaining === null || remaining > 0;
+    return this.roundStatus() === 'PLAYING' && !player.lockedForRound && hasGuessesLeft;
   });
 
   readonly canGuess = computed(() => {
@@ -241,6 +250,20 @@ export class HomeComponent {
       } else if (maxGuesses < 0) {
         this.maxGuessesPerRound.set(0);
       }
+
+      const lockoutSeconds = this.lockoutSeconds();
+      if (lockoutSeconds > MAX_LOCKOUT_SECONDS) {
+        this.lockoutSeconds.set(MAX_LOCKOUT_SECONDS);
+      } else if (lockoutSeconds < 0) {
+        this.lockoutSeconds.set(0);
+      }
+
+      const responseSeconds = this.responseSeconds();
+      if (responseSeconds > MAX_RESPONSE_SECONDS) {
+        this.responseSeconds.set(MAX_RESPONSE_SECONDS);
+      } else if (responseSeconds < 0) {
+        this.responseSeconds.set(0);
+      }
     });
 
     effect(() => {
@@ -305,6 +328,8 @@ export class HomeComponent {
           maxPlayers: this.maxPlayers(),
           totalRounds: this.totalRoundsInput(),
           maxGuessesPerRound: this.maxGuessesPerRound(),
+          lockoutSeconds: this.lockoutSeconds(),
+          responseSeconds: this.responseSeconds(),
         }),
       );
       this.lobbyPassword.set(password);
@@ -385,6 +410,8 @@ export class HomeComponent {
       maxPlayers: this.maxPlayers(),
       totalRounds: this.totalRoundsInput(),
       maxGuessesPerRound: this.maxGuessesPerRound(),
+      lockoutSeconds: this.lockoutSeconds(),
+      responseSeconds: this.responseSeconds(),
     });
   }
 
@@ -494,8 +521,9 @@ export class HomeComponent {
   }
 
   private connectSocket(lobbyId: string, playerId: string) {
-    const baseUrl = `${config.isProd ? config.BACKEND_URL_PROD : config.BACKEND_URL_LOCAL}/api`;
-    const wsUrl = `${baseUrl}/ws`;
+    const baseUrl = config.isProd ? config.BACKEND_URL_PROD : config.BACKEND_URL_LOCAL;
+    const wsBaseUrl = baseUrl.replace(/^http/, 'ws');
+    const wsUrl = `${wsBaseUrl}/ws`;
     this.ws.connect(wsUrl);
     this.ws.send('JOIN_LOBBY', {
       lobbyId,
@@ -716,6 +744,8 @@ export class HomeComponent {
     this.maxPlayers.set(lobby.settings.maxPlayers);
     this.totalRoundsInput.set(lobby.settings.totalRounds);
     this.maxGuessesPerRound.set(lobby.settings.maxGuessesPerRound ?? DEFAULT_GUESSES_PER_ROUND);
+    this.lockoutSeconds.set(lobby.settings.lockoutSeconds ?? DEFAULT_LOCKOUT_SECONDS);
+    this.responseSeconds.set(lobby.settings.responseSeconds ?? DEFAULT_RESPONSE_SECONDS);
   }
 
   private resetLobbyForm() {
@@ -728,6 +758,8 @@ export class HomeComponent {
     this.maxPlayers.set(8);
     this.totalRoundsInput.set(5);
     this.maxGuessesPerRound.set(DEFAULT_GUESSES_PER_ROUND);
+    this.lockoutSeconds.set(DEFAULT_LOCKOUT_SECONDS);
+    this.responseSeconds.set(DEFAULT_RESPONSE_SECONDS);
     this.createPassword.set('');
     this.joinPassword.set('');
   }

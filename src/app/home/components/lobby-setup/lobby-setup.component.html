@@ -65,6 +65,28 @@
       <small>0 = infinito</small>
     </div>
     <div class="field">
+      <label>Tiempo de bloqueo (s)</label>
+      <input
+        type="number"
+        min="0"
+        max="30"
+        [value]="lockoutSeconds()()"
+        (input)="lockoutSeconds().set(+$any($event.target).value)"
+      />
+      <small>0 = sin bloqueo</small>
+    </div>
+    <div class="field">
+      <label>Tiempo para responder (s)</label>
+      <input
+        type="number"
+        min="0"
+        max="60"
+        [value]="responseSeconds()()"
+        (input)="responseSeconds().set(+$any($event.target).value)"
+      />
+      <small>0 = sin limite</small>
+    </div>
+    <div class="field">
       <label>Penalizacion por fallo: {{ penalty()() }}%</label>
       <input
         type="range"
