@@ -41,6 +41,7 @@ const BEGINNER_MAX_GUESSES_PER_ROUND = 0;
 const BEGINNER_LOCKOUT_SECONDS = 2;
 const BEGINNER_RESPONSE_SECONDS = 15;
 const BEGINNER_PENALTY = 0;
+const FINAL_RESULT_MODAL_DELAY_MS = NEXT_ROUND_DELAY_SEC * 1000;
 
 @Component({
   selector: 'app-home',
@@ -113,12 +114,14 @@ export class HomeComponent {
   readonly volume = signal(Math.round(this.audio.getVolume() * 100));
   readonly audioUnavailable = signal(false);
   readonly dissolveCountdown = signal(0);
+  readonly showResultModal = signal(false);
   readonly showFinalOverlay = signal(false);
   readonly rematchRequested = signal(false);
   readonly publicLobbies = signal<PublicLobbyInfo[]>([]);
   readonly publicLobbiesLoading = signal(false);
   private dissolveIntervalId?: number;
   private dissolveTimeoutId?: number;
+  private finalOverlayTimeoutId?: number;
   private lastPauseAtServerTs: number | null = null;
   private roundEndAtServerTs: number | null = null;
   private readonly init = this.setup();
@@ -343,10 +346,22 @@ export class HomeComponent {
         this.clearDissolveCountdown();
         this.showFinalOverlay.set(false);
         this.rematchRequested.set(false);
+        this.clearFinalOverlayDelay();
         return;
       }
       if (!this.dissolveTimeoutId) {
         this.startDissolveCountdown();
+      }
+      if (this.roundResult() && this.showResultModal()) {
+        if (!this.finalOverlayTimeoutId) {
+          this.finalOverlayTimeoutId = window.setTimeout(() => {
+            this.showResultModal.set(false);
+            this.showFinalOverlay.set(true);
+            this.finalOverlayTimeoutId = undefined;
+          }, FINAL_RESULT_MODAL_DELAY_MS);
+        }
+        this.showFinalOverlay.set(false);
+        return;
       }
       this.showFinalOverlay.set(true);
     });
@@ -354,6 +369,7 @@ export class HomeComponent {
     const interval = window.setInterval(() => this.tickElapsed(), 50);
     this.destroyRef.onDestroy(() => window.clearInterval(interval));
     this.destroyRef.onDestroy(() => this.clearDissolveCountdown());
+    this.destroyRef.onDestroy(() => this.clearFinalOverlayDelay());
   }
 
   async createLobby() {
@@ -537,6 +553,7 @@ export class HomeComponent {
     this.lobby.set(null);
     this.playerId.set(null);
     this.roundResult.set(null);
+    this.showResultModal.set(false);
     this.notifications.set([]);
     this.roundStatus.set('IDLE');
     this.activeBuzzPlayerId.set(null);
@@ -546,6 +563,7 @@ export class HomeComponent {
     this.excludedGuessOptions.set([]);
     this.guessCounts.set({});
     this.clearDissolveCountdown();
+    this.clearFinalOverlayDelay();
     this.lobbyPassword.set('');
     this.rematchRequested.set(false);
     this.settingsBaseline.set(null);
@@ -570,6 +588,13 @@ export class HomeComponent {
       this.dissolveTimeoutId = undefined;
     }
     this.dissolveCountdown.set(0);
+  }
+
+  private clearFinalOverlayDelay() {
+    if (this.finalOverlayTimeoutId) {
+      window.clearTimeout(this.finalOverlayTimeoutId);
+      this.finalOverlayTimeoutId = undefined;
+    }
   }
 
   selectEntryMode(mode: 'create' | 'join') {
@@ -688,6 +713,7 @@ export class HomeComponent {
     this.joinLobbyId.set(response.lobbyId);
     this.roundStatus.set('IDLE');
     this.roundResult.set(null);
+    this.showResultModal.set(false);
     this.excludedGuessOptions.set([]);
     this.isPublicLobby.set(response.lobbyState.isPublic);
     this.connectSocket(response.lobbyId, response.playerId);
@@ -752,6 +778,7 @@ export class HomeComponent {
 
   private onRoundStart(payload: RoundStartPayload) {
     this.roundResult.set(null);
+    this.showResultModal.set(false);
     this.notifications.set([]);
     this.excludedGuessOptions.set([]);
     this.guessCounts.set({});
@@ -839,6 +866,7 @@ export class HomeComponent {
   private onRoundEnd(payload: RoundEndPayload) {
     this.roundStatus.set('ENDED');
     this.roundResult.set(payload);
+    this.showResultModal.set(true);
     if (payload.winnerId) {
       this.incrementGuessCount(payload.winnerId);
     }
@@ -996,6 +1024,7 @@ export class HomeComponent {
 
   private resetRoundState() {
     this.roundResult.set(null);
+    this.showResultModal.set(false);
     this.roundStatus.set('IDLE');
     this.roundStartAt.set(null);
     this.pausedOffsetSeconds.set(null);
@@ -1005,6 +1034,7 @@ export class HomeComponent {
     this.activeBuzzPlayerId.set(null);
     this.roundEndAtServerTs = null;
     this.audio.stop();
+    this.clearFinalOverlayDelay();
   }
 
   private buildSettingsSnapshotFromLobby(lobby: LobbySnapshot) {

@@ -199,7 +199,7 @@
   </section>
 
   @if (roundResult(); as result) {
-    @if (viewState() !== 'FINISHED') {
+    @if (showResultModal()) {
       <div class="result-modal">
         <div
           class="result-card"
