@@ -12,9 +12,13 @@ select {
   border: 2px solid var(--border);
   border-radius: 1rem;
   padding: 0.65rem 0.9rem;
-  padding-right: 2.4rem;
   color: var(--text);
   font-size: 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+select {
+  padding-right: 2.4rem;
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -22,7 +26,6 @@ select {
   background-repeat: no-repeat;
   background-position: right 0.9rem center;
   background-size: 0.75rem;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 input:focus,

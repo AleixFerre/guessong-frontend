@@ -75,14 +75,15 @@
           [showLockout]="false"
           [showTries]="false"
           [showRanks]="false"
+          [showCopyLink]="true"
           (startGameRequest)="startGame()"
+          (copyLinkRequest)="copyLobbyLink()"
         ></app-lobby-panel>
       </div>
       <div class="panel panel--config">
         @if (isHost()) {
           <div class="panel-header">
             <h2 class="title">Configurar sala</h2>
-            <button class="ghost copy-link" (click)="copyLobbyLink()">Copiar link</button>
           </div>
           <app-lobby-setup
             entryMode="edit"
@@ -115,7 +116,6 @@
         } @else {
           <div class="panel-header">
             <h2 class="title">Información de la sala</h2>
-            <button class="ghost copy-link" (click)="copyLobbyLink()">Copiar link</button>
           </div>
           <div class="config-readonly">
             <div class="config-item">

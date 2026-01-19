@@ -45,7 +45,9 @@
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
 }
 
 .tooltip:hover .tooltip-text,
@@ -118,19 +120,25 @@
 }
 
 .pill {
-  background: #fff;
+  background-color: #fff;
   border: 2px solid var(--border);
   color: var(--muted);
   padding: 0.35rem 0.85rem;
   border-radius: 999px;
   font-size: 0.8rem;
   cursor: pointer;
-  transition: transform 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease 0.1s,
+    background-color 0.2s ease,
+    font-weight 0.2s ease,
+    color 0.2s ease;
 }
 
 .pill.active {
-  background: linear-gradient(120deg, #ffeaa0, var(--accent));
-  color: #3a2b12;
+  background-color: #ffeaa0;
+  color: var(--text);
   border-color: transparent;
   font-weight: 600;
   box-shadow: 0 8px 0 rgba(245, 177, 76, 0.4);
@@ -138,7 +146,6 @@
 
 .pill:hover {
   transform: translateY(-2px);
-  border-color: rgba(255, 255, 255, 0.2);
   color: var(--text);
 }
 

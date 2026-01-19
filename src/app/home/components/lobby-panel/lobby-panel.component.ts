@@ -24,12 +24,14 @@ export class LobbyPanelComponent {
   readonly showLockout = input<boolean>(true);
   readonly showTries = input<boolean>(true);
   readonly showRanks = input<boolean>(true);
+  readonly showCopyLink = input<boolean>(false);
   readonly hasGuessLimit = computed(() => {
     const maxGuesses = this.maxGuessesPerRound();
     return maxGuesses !== null && maxGuesses > 0;
   });
 
   readonly startGameRequest = output<void>();
+  readonly copyLinkRequest = output<void>();
 
   readonly sortedPlayers = computed(() => {
     const players = this.playersOverride() ?? this.lobby()?.players ?? [];

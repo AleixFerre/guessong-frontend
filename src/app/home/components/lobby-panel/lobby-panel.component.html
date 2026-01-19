@@ -1,5 +1,10 @@
 @if (lobby(); as activeLobby) {
-  <h2 class="lobby-title">{{ activeLobby.name || 'Sala y puntuaciones' }}</h2>
+  <div class="lobby-header">
+    <h2 class="lobby-title">{{ activeLobby.name || 'Sala y puntuaciones' }}</h2>
+    @if (showCopyLink()) {
+      <button class="ghost copy-link" (click)="copyLinkRequest.emit()">Copiar link</button>
+    }
+  </div>
   <div class="players">
     @for (player of sortedPlayers(); track player.id) {
       <div class="player" [class.player--active]="player.id === activeBuzzPlayerId()">
