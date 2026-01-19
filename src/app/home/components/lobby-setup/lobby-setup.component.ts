@@ -3,17 +3,16 @@ import { LibraryInfo, PublicLobbyInfo } from '../../../models';
 
 type PresetKey = 'beginner' | 'intermediate' | 'hard' | 'custom';
 
-const PRESETS: Record<
-  Exclude<PresetKey, 'custom'>,
-  {
-    roundDuration: number;
-    totalRounds: number;
-    maxGuessesPerRound: number;
-    lockoutSeconds: number;
-    responseSeconds: number;
-    penalty: number;
-  }
-> = {
+interface PresetValues {
+  roundDuration: number;
+  totalRounds: number;
+  maxGuessesPerRound: number;
+  lockoutSeconds: number;
+  responseSeconds: number;
+  penalty: number;
+}
+
+const PRESETS: Record<Exclude<PresetKey, 'custom'>, PresetValues> = {
   beginner: {
     roundDuration: 30,
     totalRounds: 5,
