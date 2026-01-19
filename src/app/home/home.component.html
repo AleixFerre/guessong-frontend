@@ -218,7 +218,11 @@
           }
           @if (nextRoundCountdownSec() !== null) {
             <p class="next-round">
-              Siguiente ronda en {{ formatCountdown(nextRoundCountdownSec() ?? 0) }}
+              @if (viewState() === 'FINISHED') {
+                Resultados finales en {{ formatCountdown(nextRoundCountdownSec() ?? 0) }}
+              } @else {
+                Siguiente ronda en {{ formatCountdown(nextRoundCountdownSec() ?? 0) }}
+              }
             </p>
           }
         </div>

@@ -41,7 +41,6 @@ const BEGINNER_MAX_GUESSES_PER_ROUND = 0;
 const BEGINNER_LOCKOUT_SECONDS = 2;
 const BEGINNER_RESPONSE_SECONDS = 15;
 const BEGINNER_PENALTY = 0;
-const FINAL_RESULT_MODAL_DELAY_MS = NEXT_ROUND_DELAY_SEC * 1000;
 
 @Component({
   selector: 'app-home',
@@ -121,7 +120,6 @@ export class HomeComponent {
   readonly publicLobbiesLoading = signal(false);
   private dissolveIntervalId?: number;
   private dissolveTimeoutId?: number;
-  private finalOverlayTimeoutId?: number;
   private lastPauseAtServerTs: number | null = null;
   private roundEndAtServerTs: number | null = null;
   private readonly init = this.setup();
@@ -346,30 +344,20 @@ export class HomeComponent {
         this.clearDissolveCountdown();
         this.showFinalOverlay.set(false);
         this.rematchRequested.set(false);
-        this.clearFinalOverlayDelay();
+        return;
+      }
+      if (!this.showFinalOverlay()) {
+        this.clearDissolveCountdown();
         return;
       }
       if (!this.dissolveTimeoutId) {
         this.startDissolveCountdown();
       }
-      if (this.roundResult() && this.showResultModal()) {
-        if (!this.finalOverlayTimeoutId) {
-          this.finalOverlayTimeoutId = window.setTimeout(() => {
-            this.showResultModal.set(false);
-            this.showFinalOverlay.set(true);
-            this.finalOverlayTimeoutId = undefined;
-          }, FINAL_RESULT_MODAL_DELAY_MS);
-        }
-        this.showFinalOverlay.set(false);
-        return;
-      }
-      this.showFinalOverlay.set(true);
     });
 
     const interval = window.setInterval(() => this.tickElapsed(), 50);
     this.destroyRef.onDestroy(() => window.clearInterval(interval));
     this.destroyRef.onDestroy(() => this.clearDissolveCountdown());
-    this.destroyRef.onDestroy(() => this.clearFinalOverlayDelay());
   }
 
   async createLobby() {
@@ -563,7 +551,6 @@ export class HomeComponent {
     this.excludedGuessOptions.set([]);
     this.guessCounts.set({});
     this.clearDissolveCountdown();
-    this.clearFinalOverlayDelay();
     this.lobbyPassword.set('');
     this.rematchRequested.set(false);
     this.settingsBaseline.set(null);
@@ -588,13 +575,6 @@ export class HomeComponent {
       this.dissolveTimeoutId = undefined;
     }
     this.dissolveCountdown.set(0);
-  }
-
-  private clearFinalOverlayDelay() {
-    if (this.finalOverlayTimeoutId) {
-      window.clearTimeout(this.finalOverlayTimeoutId);
-      this.finalOverlayTimeoutId = undefined;
-    }
   }
 
   selectEntryMode(mode: 'create' | 'join') {
@@ -779,6 +759,7 @@ export class HomeComponent {
   private onRoundStart(payload: RoundStartPayload) {
     this.roundResult.set(null);
     this.showResultModal.set(false);
+    this.showFinalOverlay.set(false);
     this.notifications.set([]);
     this.excludedGuessOptions.set([]);
     this.guessCounts.set({});
@@ -867,6 +848,7 @@ export class HomeComponent {
     this.roundStatus.set('ENDED');
     this.roundResult.set(payload);
     this.showResultModal.set(true);
+    this.showFinalOverlay.set(false);
     if (payload.winnerId) {
       this.incrementGuessCount(payload.winnerId);
     }
@@ -889,8 +871,17 @@ export class HomeComponent {
           const remaining = Math.max(0, NEXT_ROUND_DELAY_SEC - (nowServer - roundEndAt) / 1000);
           this.nextRoundCountdownSec.set(remaining);
         }
-      } else {
+      } else if (this.showFinalOverlay()) {
         this.nextRoundCountdownSec.set(null);
+      } else {
+        const roundEndAt = this.roundEndAtServerTs;
+        if (roundEndAt) {
+          const remaining = Math.max(0, NEXT_ROUND_DELAY_SEC - (nowServer - roundEndAt) / 1000);
+          this.nextRoundCountdownSec.set(remaining);
+          if (remaining <= 0) {
+            this.showFinalClassification();
+          }
+        }
       }
       this.buzzCountdownSec.set(null);
       return;
@@ -1025,6 +1016,7 @@ export class HomeComponent {
   private resetRoundState() {
     this.roundResult.set(null);
     this.showResultModal.set(false);
+    this.showFinalOverlay.set(false);
     this.roundStatus.set('IDLE');
     this.roundStartAt.set(null);
     this.pausedOffsetSeconds.set(null);
@@ -1034,7 +1026,22 @@ export class HomeComponent {
     this.activeBuzzPlayerId.set(null);
     this.roundEndAtServerTs = null;
     this.audio.stop();
-    this.clearFinalOverlayDelay();
+  }
+
+  showFinalClassification() {
+    if (this.lobby()?.state !== 'FINISHED') {
+      return;
+    }
+    if (this.showFinalOverlay()) {
+      return;
+    }
+    this.showResultModal.set(false);
+    this.showFinalOverlay.set(true);
+    this.nextRoundCountdownSec.set(null);
+    this.ws.send('FINAL_RESULTS_SHOWN', {});
+    if (!this.dissolveTimeoutId) {
+      this.startDissolveCountdown();
+    }
   }
 
   private buildSettingsSnapshotFromLobby(lobby: LobbySnapshot) {
