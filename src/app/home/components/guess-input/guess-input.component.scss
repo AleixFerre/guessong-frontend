@@ -21,6 +21,10 @@
   background: #ffffff;
 }
 
+.guess-input.is-disabled .option {
+  pointer-events: none;
+}
+
 .options::before {
   content: '';
   flex: 1 1 auto;
@@ -48,64 +52,6 @@
 .option:disabled {
   cursor: not-allowed;
   background: #f0f2f7;
-  box-shadow: none;
-  transform: none;
-}
-
-input {
-  flex: 1;
-  padding: 0.55rem 0.8rem;
-  border-radius: 0.9rem;
-  border: 2px solid var(--border);
-  background: #ffffff;
-  font-size: 1rem;
-  font-weight: 600;
-  color: #1f355b;
-  outline: none;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-input:focus {
-  border-color: #ff8bb3;
-  box-shadow: 0 0 0 3px rgba(255, 139, 179, 0.2);
-}
-
-input:disabled {
-  background: #f4f6fb;
-  color: #66708a;
-}
-
-.input-row {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-.clear {
-  border: 2px solid var(--border);
-  background: #ffffff;
-  color: #1f355b;
-  width: 2.4rem;
-  height: 2.4rem;
-  border-radius: 0.9rem;
-  font-size: 1.3rem;
-  font-weight: 700;
-  line-height: 1;
-  cursor: pointer;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
-}
-
-.clear:hover:not(:disabled) {
-  transform: translateY(-1px);
-  border-color: #ff8bb3;
-  box-shadow: 0 6px 14px rgba(255, 139, 179, 0.2);
-}
-
-.clear:disabled {
-  cursor: not-allowed;
-  background: #f4f6fb;
-  color: #66708a;
   box-shadow: none;
   transform: none;
 }

@@ -34,19 +34,9 @@
   <div class="guess">
     <app-guess-input
       [tracks]="guessTracks()"
-      [value]="guessText()"
-      (valueChange)="guessText.set($event)"
-      [placeholder]="guessTracks().length ? 'Escribe tu respuesta' : 'Cargando canciones...'"
-      [disabled]="!canGuess()"
-      [autoFocus]="canGuess()"
+      [disabled]="!canGuess() || !hasGuessesLeft()"
+      (guessSelect)="onGuessSelect($event)"
     />
-    <button
-      class="primary"
-      [disabled]="!canGuess() || !isGuessAllowed() || !hasGuessesLeft()"
-      (click)="sendGuess()"
-    >
-      Enviar
-    </button>
   </div>
 </div>
 @defer (when notifications().length) {

@@ -1,4 +1,4 @@
-import { Component, input, output, signal } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { LibraryTrack, RoundEndPayload } from '../../../models';
 import { GuessInputComponent } from '../guess-input/guess-input.component';
 
@@ -36,8 +36,6 @@ export class GamePanelComponent {
   readonly buzzRequest = output<void>();
   readonly guessRequest = output<string>();
 
-  readonly guessText = signal('');
-
   formatTime(seconds: number) {
     const safe = Math.max(0, Math.ceil(seconds));
     return `${safe}s`;
@@ -58,15 +56,6 @@ export class GamePanelComponent {
     }
   }
 
-  sendGuess() {
-    const text = this.guessText().trim();
-    if (!this.canGuess() || !text || !this.isGuessAllowed() || !this.hasGuessesLeft()) {
-      return;
-    }
-    this.guessRequest.emit(text);
-    this.guessText.set('');
-  }
-
   hasGuessesLeft() {
     const maxGuesses = this.maxGuessesPerRound();
     if (maxGuesses <= 0) {
@@ -76,29 +65,10 @@ export class GamePanelComponent {
     return remaining === null ? true : remaining > 0;
   }
 
-  isGuessAllowed() {
-    const normalized = this.normalizeGuess(this.guessText());
-    const tracks = this.guessTracks();
-    if (!normalized || !tracks.length) {
-      return false;
+  onGuessSelect(option: string) {
+    if (!this.canGuess() || !this.hasGuessesLeft()) {
+      return;
     }
-    return tracks.some((track) => {
-      const title = this.normalizeGuess(track.title);
-      if (!title) {
-        return false;
-      }
-      if (normalized === title) {
-        return true;
-      }
-      const artist = this.normalizeGuess(track.artist);
-      if (!artist) {
-        return false;
-      }
-      return normalized === `${artist} - ${title}` || normalized === `${title} - ${artist}`;
-    });
-  }
-
-  private normalizeGuess(value: string) {
-    return value.trim().toLowerCase();
+    this.guessRequest.emit(option);
   }
 }

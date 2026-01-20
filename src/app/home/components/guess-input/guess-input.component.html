@@ -1,32 +1,13 @@
 <div class="guess-input" [class.is-disabled]="disabled()">
   <div class="options" role="listbox">
-    @if (filteredOptions().length) {
-      @for (option of filteredOptions(); track $index) {
-        <button type="button" class="option" (click)="selectOption(option)">
+    @if (options().length) {
+      @for (option of options(); track $index) {
+        <button type="button" class="option" [disabled]="disabled()" (click)="selectOption(option)">
           {{ option }}
         </button>
       }
     } @else {
       <div class="empty">Sin coincidencias.</div>
     }
-  </div>
-  <div class="input-row">
-    <input
-      #guessInput
-      type="text"
-      [value]="value()"
-      (input)="onInput($event)"
-      [placeholder]="placeholder()"
-      aria-label="Respuesta"
-    />
-    <button
-      type="button"
-      class="clear"
-      (click)="clearInput()"
-      [disabled]="!value()"
-      aria-label="Limpiar"
-    >
-      ×
-    </button>
   </div>
 </div>
