@@ -29,6 +29,7 @@ export interface LobbySnapshot {
     totalRounds: number;
     maxGuessesPerRound: number;
     guessOptionsLimit: number;
+    requireBuzzToGuess: boolean;
     lockoutSeconds: number;
     responseSeconds: number;
   };

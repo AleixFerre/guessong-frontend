@@ -69,6 +69,7 @@ export class HomeComponent {
   readonly totalRoundsInput = signal(BEGINNER_TOTAL_ROUNDS);
   readonly maxGuessesPerRound = signal(BEGINNER_MAX_GUESSES_PER_ROUND);
   readonly guessOptionsLimit = signal(0);
+  readonly requireBuzzToGuess = signal(false);
   readonly lockoutSeconds = signal(BEGINNER_LOCKOUT_SECONDS);
   readonly responseSeconds = signal(BEGINNER_RESPONSE_SECONDS);
   readonly isPublicLobby = signal(true);
@@ -108,6 +109,7 @@ export class HomeComponent {
     totalRounds: number;
     maxGuessesPerRound: number;
     guessOptionsLimit: number;
+    requireBuzzToGuess: boolean;
     lockoutSeconds: number;
     responseSeconds: number;
     isPublic: boolean;
@@ -214,7 +216,7 @@ export class HomeComponent {
   readonly canBuzz = computed(() => {
     const lobby = this.lobby();
     const player = this.currentPlayer();
-    if (!lobby || !player) {
+    if (!lobby || !player || !this.requireBuzzToGuess()) {
       return false;
     }
     const maxGuesses = this.maxGuessesPerRound();
@@ -229,7 +231,17 @@ export class HomeComponent {
     if (!lobby || (status !== 'PLAYING' && status !== 'PAUSED')) {
       return false;
     }
-    return this.activeBuzzPlayerId() === this.playerId();
+    if (this.requireBuzzToGuess()) {
+      return this.activeBuzzPlayerId() === this.playerId();
+    }
+    const player = this.currentPlayer();
+    if (!player) {
+      return false;
+    }
+    const maxGuesses = this.maxGuessesPerRound();
+    const remaining = this.remainingGuesses();
+    const hasGuessesLeft = maxGuesses <= 0 || remaining === null || remaining > 0;
+    return this.roundStatus() === 'PLAYING' && !player.lockedForRound && hasGuessesLeft;
   });
 
   readonly progressPercent = computed(() => {
@@ -408,6 +420,7 @@ export class HomeComponent {
           totalRounds: this.totalRoundsInput(),
           maxGuessesPerRound: this.maxGuessesPerRound(),
           guessOptionsLimit: this.guessOptionsLimit(),
+          requireBuzzToGuess: this.requireBuzzToGuess(),
           lockoutSeconds: this.lockoutSeconds(),
           responseSeconds: this.responseSeconds(),
         }),
@@ -542,6 +555,7 @@ export class HomeComponent {
       totalRounds: this.totalRoundsInput(),
       maxGuessesPerRound: this.maxGuessesPerRound(),
       guessOptionsLimit: this.guessOptionsLimit(),
+      requireBuzzToGuess: this.requireBuzzToGuess(),
       lockoutSeconds: this.lockoutSeconds(),
       responseSeconds: this.responseSeconds(),
     });
@@ -999,6 +1013,7 @@ export class HomeComponent {
     this.totalRoundsInput.set(lobby.settings.totalRounds);
     this.maxGuessesPerRound.set(lobby.settings.maxGuessesPerRound ?? DEFAULT_GUESSES_PER_ROUND);
     this.guessOptionsLimit.set(lobby.settings.guessOptionsLimit);
+    this.requireBuzzToGuess.set(lobby.settings.requireBuzzToGuess);
     this.lockoutSeconds.set(lobby.settings.lockoutSeconds ?? DEFAULT_LOCKOUT_SECONDS);
     this.responseSeconds.set(lobby.settings.responseSeconds ?? DEFAULT_RESPONSE_SECONDS);
     this.isPublicLobby.set(lobby.isPublic);
@@ -1020,6 +1035,7 @@ export class HomeComponent {
     this.totalRoundsInput.set(BEGINNER_TOTAL_ROUNDS);
     this.maxGuessesPerRound.set(BEGINNER_MAX_GUESSES_PER_ROUND);
     this.guessOptionsLimit.set(0);
+    this.requireBuzzToGuess.set(false);
     this.lockoutSeconds.set(BEGINNER_LOCKOUT_SECONDS);
     this.responseSeconds.set(BEGINNER_RESPONSE_SECONDS);
     this.isPublicLobby.set(true);
@@ -1072,6 +1088,7 @@ export class HomeComponent {
       totalRounds: lobby.settings.totalRounds,
       maxGuessesPerRound: lobby.settings.maxGuessesPerRound ?? DEFAULT_GUESSES_PER_ROUND,
       guessOptionsLimit: lobby.settings.guessOptionsLimit,
+      requireBuzzToGuess: lobby.settings.requireBuzzToGuess,
       lockoutSeconds: lobby.settings.lockoutSeconds ?? DEFAULT_LOCKOUT_SECONDS,
       responseSeconds: lobby.settings.responseSeconds ?? DEFAULT_RESPONSE_SECONDS,
       isPublic: lobby.isPublic,
@@ -1089,6 +1106,7 @@ export class HomeComponent {
       totalRounds: this.totalRoundsInput(),
       maxGuessesPerRound: this.maxGuessesPerRound(),
       guessOptionsLimit: this.guessOptionsLimit(),
+      requireBuzzToGuess: this.requireBuzzToGuess(),
       lockoutSeconds: this.lockoutSeconds(),
       responseSeconds: this.responseSeconds(),
       isPublic: this.isPublicLobby(),
@@ -1109,6 +1127,7 @@ export class HomeComponent {
       left.totalRounds === right.totalRounds &&
       left.maxGuessesPerRound === right.maxGuessesPerRound &&
       left.guessOptionsLimit === right.guessOptionsLimit &&
+      left.requireBuzzToGuess === right.requireBuzzToGuess &&
       left.lockoutSeconds === right.lockoutSeconds &&
       left.responseSeconds === right.responseSeconds &&
       left.isPublic === right.isPublic &&

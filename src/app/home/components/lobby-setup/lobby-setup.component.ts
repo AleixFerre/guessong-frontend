@@ -4,6 +4,7 @@ import { LibraryInfo, PublicLobbyInfo } from '../../../models';
 type PresetKey = 'beginner' | 'intermediate' | 'hard' | 'custom';
 
 interface PresetValues {
+  requireBuzzToGuess: boolean;
   roundDuration: number;
   totalRounds: number;
   maxGuessesPerRound: number;
@@ -15,6 +16,7 @@ interface PresetValues {
 
 const PRESETS: Record<Exclude<PresetKey, 'custom'>, PresetValues> = {
   beginner: {
+    requireBuzzToGuess: false,
     roundDuration: 30,
     totalRounds: 5,
     maxGuessesPerRound: 0,
@@ -24,6 +26,7 @@ const PRESETS: Record<Exclude<PresetKey, 'custom'>, PresetValues> = {
     penalty: 0,
   },
   intermediate: {
+    requireBuzzToGuess: false,
     roundDuration: 20,
     totalRounds: 6,
     maxGuessesPerRound: 3,
@@ -33,6 +36,7 @@ const PRESETS: Record<Exclude<PresetKey, 'custom'>, PresetValues> = {
     penalty: 10,
   },
   hard: {
+    requireBuzzToGuess: false,
     roundDuration: 12,
     totalRounds: 7,
     maxGuessesPerRound: 2,
@@ -65,6 +69,7 @@ export class LobbySetupComponent {
   readonly totalRounds = input.required<WritableSignal<number>>();
   readonly maxGuessesPerRound = input.required<WritableSignal<number>>();
   readonly guessOptionsLimit = input.required<WritableSignal<number>>();
+  readonly requireBuzzToGuess = input.required<WritableSignal<boolean>>();
   readonly lockoutSeconds = input.required<WritableSignal<number>>();
   readonly responseSeconds = input.required<WritableSignal<number>>();
   readonly isPublicLobby = input.required<WritableSignal<boolean>>();
@@ -95,6 +100,7 @@ export class LobbySetupComponent {
   );
   readonly isCustomPreset = computed(() => this.selectedPreset() === 'custom');
   readonly presetSummary = computed(() => [
+    { label: 'Requiere PULSA', value: this.requireBuzzToGuess()() ? 'Si' : 'No' },
     { label: 'Rondas', value: String(this.totalRounds()()) },
     { label: 'Duración de ronda', value: `${this.roundDuration()()}s` },
     {
@@ -140,6 +146,7 @@ export class LobbySetupComponent {
     this.totalRounds().set(values.totalRounds);
     this.maxGuessesPerRound().set(values.maxGuessesPerRound);
     this.guessOptionsLimit().set(resolvedGuessOptionsLimit);
+    this.requireBuzzToGuess().set(values.requireBuzzToGuess);
     this.lockoutSeconds().set(values.lockoutSeconds);
     this.responseSeconds().set(values.responseSeconds);
     this.penalty().set(values.penalty);
@@ -150,6 +157,7 @@ export class LobbySetupComponent {
     const totalRounds = this.totalRounds()();
     const maxGuessesPerRound = this.maxGuessesPerRound()();
     const guessOptionsLimit = this.guessOptionsLimit()();
+    const requireBuzzToGuess = this.requireBuzzToGuess()();
     const lockoutSeconds = this.lockoutSeconds()();
     const responseSeconds = this.responseSeconds()();
     const penalty = this.penalty()();
@@ -167,6 +175,7 @@ export class LobbySetupComponent {
         values.totalRounds === totalRounds &&
         values.maxGuessesPerRound === maxGuessesPerRound &&
         resolvedGuessOptionsLimit === guessOptionsLimit &&
+        values.requireBuzzToGuess === requireBuzzToGuess &&
         values.lockoutSeconds === lockoutSeconds &&
         values.responseSeconds === responseSeconds &&
         values.penalty === penalty

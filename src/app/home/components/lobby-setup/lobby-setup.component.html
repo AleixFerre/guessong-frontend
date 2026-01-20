@@ -160,6 +160,25 @@
         </button>
       </div>
     </div>
+    @if (isCustomPreset()) {
+      <div class="field">
+        <label class="label-with-tip">
+          Requiere PULSA
+          <span class="tooltip">
+            ?
+            <span class="tooltip-text">Obliga a pulsar el timbre antes de responder.</span>
+          </span>
+        </label>
+        <label class="toggle">
+          <input
+            type="checkbox"
+            [checked]="requireBuzzToGuess()()"
+            (change)="requireBuzzToGuess().set($any($event.target).checked)"
+          />
+          <span>Mostrar boton PULSA</span>
+        </label>
+      </div>
+    }
     @if (!isCustomPreset()) {
       <div class="preset-summary">
         @for (item of presetSummary(); track item.label) {

@@ -36,6 +36,7 @@
             [totalRounds]="totalRoundsInput"
             [maxGuessesPerRound]="maxGuessesPerRound"
             [guessOptionsLimit]="guessOptionsLimit"
+            [requireBuzzToGuess]="requireBuzzToGuess"
             [lockoutSeconds]="lockoutSeconds"
             [responseSeconds]="responseSeconds"
             [isPublicLobby]="isPublicLobby"
@@ -100,6 +101,7 @@
             [totalRounds]="totalRoundsInput"
             [maxGuessesPerRound]="maxGuessesPerRound"
             [guessOptionsLimit]="guessOptionsLimit"
+            [requireBuzzToGuess]="requireBuzzToGuess"
             [lockoutSeconds]="lockoutSeconds"
             [responseSeconds]="responseSeconds"
             [isPublicLobby]="isPublicLobby"
@@ -127,6 +129,10 @@
             <div class="config-item">
               <span>Max. jugadores</span>
               <strong>{{ maxPlayers() }}</strong>
+            </div>
+            <div class="config-item">
+              <span>Requiere PULSA</span>
+              <strong>{{ requireBuzzToGuess() ? 'Si' : 'No' }}</strong>
             </div>
             <div class="config-item">
               <span>Rondas</span>
@@ -193,6 +199,7 @@
           [buzzCountdownSec]="buzzCountdownSec()"
           [buzzOwnerName]="activeBuzzPlayerName()"
           [isBuzzOwner]="activeBuzzPlayerId() === playerId()"
+          [requireBuzzToGuess]="requireBuzzToGuess()"
           [roundResult]="roundResult()"
           [isWinner]="isRoundWinner()"
           [notifications]="notifications()"

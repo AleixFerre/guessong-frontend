@@ -26,6 +26,7 @@ export class GamePanelComponent {
   readonly buzzCountdownSec = input.required<number | null>();
   readonly buzzOwnerName = input<string | null>(null);
   readonly isBuzzOwner = input<boolean>(false);
+  readonly requireBuzzToGuess = input<boolean>(true);
   readonly roundResult = input.required<RoundEndPayload | null>();
   readonly winnerName = input<string | null>(null);
   readonly isWinner = input<boolean>(false);
