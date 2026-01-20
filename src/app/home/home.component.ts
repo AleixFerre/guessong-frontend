@@ -68,6 +68,7 @@ export class HomeComponent {
   readonly maxPlayers = signal(8);
   readonly totalRoundsInput = signal(BEGINNER_TOTAL_ROUNDS);
   readonly maxGuessesPerRound = signal(BEGINNER_MAX_GUESSES_PER_ROUND);
+  readonly guessOptionsLimit = signal(0);
   readonly lockoutSeconds = signal(BEGINNER_LOCKOUT_SECONDS);
   readonly responseSeconds = signal(BEGINNER_RESPONSE_SECONDS);
   readonly isPublicLobby = signal(true);
@@ -83,6 +84,7 @@ export class HomeComponent {
   readonly playerId = signal<string | null>(null);
   readonly libraryTracks = signal<LibraryTrack[]>([]);
   readonly libraryTracksLoading = signal(false);
+  readonly roundGuessOptions = signal<LibraryTrack[] | null>(null);
   readonly excludedGuessOptions = signal<string[]>([]);
   readonly guessCounts = signal<Record<string, number>>({});
   readonly roundStatus = signal<'IDLE' | 'PLAYING' | 'PAUSED' | 'ENDED'>('IDLE');
@@ -105,6 +107,7 @@ export class HomeComponent {
     maxPlayers: number;
     totalRounds: number;
     maxGuessesPerRound: number;
+    guessOptionsLimit: number;
     lockoutSeconds: number;
     responseSeconds: number;
     isPublic: boolean;
@@ -168,7 +171,8 @@ export class HomeComponent {
   });
   readonly roundGuessTracks = computed(() => {
     const excluded = new Set(this.excludedGuessOptions());
-    return this.libraryTracks().filter((track) => {
+    const options = this.roundGuessOptions() ?? this.libraryTracks();
+    return options.filter((track) => {
       const label = this.formatGuessOption(track);
       const normalized = this.normalizeGuessOption(label);
       return normalized ? !excluded.has(normalized) : true;
@@ -336,6 +340,13 @@ export class HomeComponent {
       } else if (rounds < 1) {
         this.totalRoundsInput.set(1);
       }
+      const maxOptions = Math.max(2, info.trackCount);
+      const optionsLimit = this.guessOptionsLimit();
+      if (optionsLimit > maxOptions || optionsLimit <= 0) {
+        this.guessOptionsLimit.set(maxOptions);
+      } else if (optionsLimit < 2) {
+        this.guessOptionsLimit.set(2);
+      }
     });
 
     effect(() => {
@@ -396,6 +407,7 @@ export class HomeComponent {
           maxPlayers: this.maxPlayers(),
           totalRounds: this.totalRoundsInput(),
           maxGuessesPerRound: this.maxGuessesPerRound(),
+          guessOptionsLimit: this.guessOptionsLimit(),
           lockoutSeconds: this.lockoutSeconds(),
           responseSeconds: this.responseSeconds(),
         }),
@@ -529,6 +541,7 @@ export class HomeComponent {
       maxPlayers: this.maxPlayers(),
       totalRounds: this.totalRoundsInput(),
       maxGuessesPerRound: this.maxGuessesPerRound(),
+      guessOptionsLimit: this.guessOptionsLimit(),
       lockoutSeconds: this.lockoutSeconds(),
       responseSeconds: this.responseSeconds(),
     });
@@ -542,6 +555,7 @@ export class HomeComponent {
     this.playerId.set(null);
     this.roundResult.set(null);
     this.showResultModal.set(false);
+    this.roundGuessOptions.set(null);
     this.notifications.set([]);
     this.roundStatus.set('IDLE');
     this.activeBuzzPlayerId.set(null);
@@ -767,6 +781,7 @@ export class HomeComponent {
     this.roundStartAt.set(payload.startAtServerTs);
     this.roundDurationSec.set(this.lobby()?.settings.roundDuration ?? 30);
     this.clipDuration.set(payload.clipDuration);
+    this.roundGuessOptions.set(payload.guessOptions ?? null);
     this.activeBuzzPlayerId.set(null);
     this.pausedOffsetSeconds.set(null);
     this.buzzDeadlineAt.set(null);
@@ -983,6 +998,7 @@ export class HomeComponent {
     this.maxPlayers.set(lobby.settings.maxPlayers);
     this.totalRoundsInput.set(lobby.settings.totalRounds);
     this.maxGuessesPerRound.set(lobby.settings.maxGuessesPerRound ?? DEFAULT_GUESSES_PER_ROUND);
+    this.guessOptionsLimit.set(lobby.settings.guessOptionsLimit);
     this.lockoutSeconds.set(lobby.settings.lockoutSeconds ?? DEFAULT_LOCKOUT_SECONDS);
     this.responseSeconds.set(lobby.settings.responseSeconds ?? DEFAULT_RESPONSE_SECONDS);
     this.isPublicLobby.set(lobby.isPublic);
@@ -1003,6 +1019,7 @@ export class HomeComponent {
     this.maxPlayers.set(8);
     this.totalRoundsInput.set(BEGINNER_TOTAL_ROUNDS);
     this.maxGuessesPerRound.set(BEGINNER_MAX_GUESSES_PER_ROUND);
+    this.guessOptionsLimit.set(0);
     this.lockoutSeconds.set(BEGINNER_LOCKOUT_SECONDS);
     this.responseSeconds.set(BEGINNER_RESPONSE_SECONDS);
     this.isPublicLobby.set(true);
@@ -1024,6 +1041,7 @@ export class HomeComponent {
     this.buzzCountdownSec.set(null);
     this.nextRoundCountdownSec.set(null);
     this.activeBuzzPlayerId.set(null);
+    this.roundGuessOptions.set(null);
     this.roundEndAtServerTs = null;
     this.audio.stop();
   }
@@ -1053,6 +1071,7 @@ export class HomeComponent {
       maxPlayers: lobby.settings.maxPlayers,
       totalRounds: lobby.settings.totalRounds,
       maxGuessesPerRound: lobby.settings.maxGuessesPerRound ?? DEFAULT_GUESSES_PER_ROUND,
+      guessOptionsLimit: lobby.settings.guessOptionsLimit,
       lockoutSeconds: lobby.settings.lockoutSeconds ?? DEFAULT_LOCKOUT_SECONDS,
       responseSeconds: lobby.settings.responseSeconds ?? DEFAULT_RESPONSE_SECONDS,
       isPublic: lobby.isPublic,
@@ -1069,6 +1088,7 @@ export class HomeComponent {
       maxPlayers: this.maxPlayers(),
       totalRounds: this.totalRoundsInput(),
       maxGuessesPerRound: this.maxGuessesPerRound(),
+      guessOptionsLimit: this.guessOptionsLimit(),
       lockoutSeconds: this.lockoutSeconds(),
       responseSeconds: this.responseSeconds(),
       isPublic: this.isPublicLobby(),
@@ -1088,6 +1108,7 @@ export class HomeComponent {
       left.maxPlayers === right.maxPlayers &&
       left.totalRounds === right.totalRounds &&
       left.maxGuessesPerRound === right.maxGuessesPerRound &&
+      left.guessOptionsLimit === right.guessOptionsLimit &&
       left.lockoutSeconds === right.lockoutSeconds &&
       left.responseSeconds === right.responseSeconds &&
       left.isPublic === right.isPublic &&

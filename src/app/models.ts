@@ -28,6 +28,7 @@ export interface LobbySnapshot {
     maxPlayers: number;
     totalRounds: number;
     maxGuessesPerRound: number;
+    guessOptionsLimit: number;
     lockoutSeconds: number;
     responseSeconds: number;
   };
@@ -69,6 +70,7 @@ export interface RoundStartPayload {
   clipDuration: number;
   startAtServerTs: number;
   mode: LobbyMode;
+  guessOptions: LibraryTrack[];
 }
 
 export interface PlayPayload {

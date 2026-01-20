@@ -35,6 +35,7 @@
             [maxPlayers]="maxPlayers"
             [totalRounds]="totalRoundsInput"
             [maxGuessesPerRound]="maxGuessesPerRound"
+            [guessOptionsLimit]="guessOptionsLimit"
             [lockoutSeconds]="lockoutSeconds"
             [responseSeconds]="responseSeconds"
             [isPublicLobby]="isPublicLobby"
@@ -98,6 +99,7 @@
             [maxPlayers]="maxPlayers"
             [totalRounds]="totalRoundsInput"
             [maxGuessesPerRound]="maxGuessesPerRound"
+            [guessOptionsLimit]="guessOptionsLimit"
             [lockoutSeconds]="lockoutSeconds"
             [responseSeconds]="responseSeconds"
             [isPublicLobby]="isPublicLobby"
@@ -137,6 +139,10 @@
             <div class="config-item">
               <span>Intentos por ronda</span>
               <strong>{{ maxGuessesPerRound() === 0 ? 'Infinito' : maxGuessesPerRound() }}</strong>
+            </div>
+            <div class="config-item">
+              <span>Opciones por ronda</span>
+              <strong>{{ guessOptionsLimit() }}</strong>
             </div>
             <div class="config-item">
               <span>Tiempo de bloqueo</span>

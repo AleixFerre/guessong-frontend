@@ -221,6 +221,24 @@
       </div>
       <div class="field">
         <label class="label-with-tip">
+          Opciones por ronda
+          <span class="tooltip">
+            ?
+            <span class="tooltip-text">
+              Cantidad de canciones disponibles para elegir en cada ronda.
+            </span>
+          </span>
+        </label>
+        <input
+          type="number"
+          min="2"
+          [max]="selectedLibraryInfo()?.trackCount ?? 2"
+          [value]="guessOptionsLimit()()"
+          (input)="guessOptionsLimit().set(+$any($event.target).value)"
+        />
+      </div>
+      <div class="field">
+        <label class="label-with-tip">
           Tiempo de bloqueo (s)
           <span class="tooltip">
             ?

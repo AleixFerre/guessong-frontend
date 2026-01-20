@@ -33,6 +33,7 @@ export class ApiService {
     maxPlayers: number;
     totalRounds: number;
     maxGuessesPerRound: number;
+    guessOptionsLimit: number;
     lockoutSeconds: number;
     responseSeconds: number;
   }) {

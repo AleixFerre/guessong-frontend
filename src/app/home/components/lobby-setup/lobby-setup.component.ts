@@ -7,6 +7,7 @@ interface PresetValues {
   roundDuration: number;
   totalRounds: number;
   maxGuessesPerRound: number;
+  guessOptionsLimit: number;
   lockoutSeconds: number;
   responseSeconds: number;
   penalty: number;
@@ -17,6 +18,7 @@ const PRESETS: Record<Exclude<PresetKey, 'custom'>, PresetValues> = {
     roundDuration: 30,
     totalRounds: 5,
     maxGuessesPerRound: 0,
+    guessOptionsLimit: 4,
     lockoutSeconds: 2,
     responseSeconds: 15,
     penalty: 0,
@@ -25,6 +27,7 @@ const PRESETS: Record<Exclude<PresetKey, 'custom'>, PresetValues> = {
     roundDuration: 20,
     totalRounds: 6,
     maxGuessesPerRound: 3,
+    guessOptionsLimit: 5,
     lockoutSeconds: 2,
     responseSeconds: 10,
     penalty: 10,
@@ -33,6 +36,7 @@ const PRESETS: Record<Exclude<PresetKey, 'custom'>, PresetValues> = {
     roundDuration: 12,
     totalRounds: 7,
     maxGuessesPerRound: 2,
+    guessOptionsLimit: 6,
     lockoutSeconds: 3,
     responseSeconds: 5,
     penalty: 20,
@@ -60,6 +64,7 @@ export class LobbySetupComponent {
   readonly maxPlayers = input.required<WritableSignal<number>>();
   readonly totalRounds = input.required<WritableSignal<number>>();
   readonly maxGuessesPerRound = input.required<WritableSignal<number>>();
+  readonly guessOptionsLimit = input.required<WritableSignal<number>>();
   readonly lockoutSeconds = input.required<WritableSignal<number>>();
   readonly responseSeconds = input.required<WritableSignal<number>>();
   readonly isPublicLobby = input.required<WritableSignal<boolean>>();
@@ -96,6 +101,7 @@ export class LobbySetupComponent {
       label: 'Intentos por ronda',
       value: this.maxGuessesPerRound()() === 0 ? 'Infinito' : String(this.maxGuessesPerRound()()),
     },
+    { label: 'Opciones por ronda', value: String(this.guessOptionsLimit()()) },
     {
       label: 'Tiempo de bloqueo',
       value: this.lockoutSeconds()() === 0 ? 'Sin bloqueo' : `${this.lockoutSeconds()()}s`,
@@ -127,9 +133,13 @@ export class LobbySetupComponent {
       return;
     }
     const values = PRESETS[preset];
+    const trackCount = this.selectedLibraryInfo()?.trackCount ?? 0;
+    const resolvedGuessOptionsLimit =
+      values.guessOptionsLimit > 0 ? values.guessOptionsLimit : trackCount;
     this.roundDuration().set(values.roundDuration);
     this.totalRounds().set(values.totalRounds);
     this.maxGuessesPerRound().set(values.maxGuessesPerRound);
+    this.guessOptionsLimit().set(resolvedGuessOptionsLimit);
     this.lockoutSeconds().set(values.lockoutSeconds);
     this.responseSeconds().set(values.responseSeconds);
     this.penalty().set(values.penalty);
@@ -139,19 +149,24 @@ export class LobbySetupComponent {
     const roundDuration = this.roundDuration()();
     const totalRounds = this.totalRounds()();
     const maxGuessesPerRound = this.maxGuessesPerRound()();
+    const guessOptionsLimit = this.guessOptionsLimit()();
     const lockoutSeconds = this.lockoutSeconds()();
     const responseSeconds = this.responseSeconds()();
     const penalty = this.penalty()();
+    const trackCount = this.selectedLibraryInfo()?.trackCount ?? 0;
 
     const matchesPreset = (preset: PresetKey) => {
       if (preset === 'custom') {
         return false;
       }
       const values = PRESETS[preset];
+      const resolvedGuessOptionsLimit =
+        values.guessOptionsLimit > 0 ? values.guessOptionsLimit : trackCount;
       return (
         values.roundDuration === roundDuration &&
         values.totalRounds === totalRounds &&
         values.maxGuessesPerRound === maxGuessesPerRound &&
+        resolvedGuessOptionsLimit === guessOptionsLimit &&
         values.lockoutSeconds === lockoutSeconds &&
         values.responseSeconds === responseSeconds &&
         values.penalty === penalty
