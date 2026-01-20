@@ -1,12 +1,7 @@
 <header class="hero">
   <div class="hero-copy">
     @if (!lobby()) {
-      <span class="badge">by Aleix Ferré</span>
-      <h1>Adivina la canción</h1>
-      <p>
-        Compite con tu sala, pulsa el timbre y adivina antes de que el tiempo se apague. Todo en
-        tiempo real, con reglas claras y ritmo rapido.
-      </p>
+      <h1 class="title">Adivina la canción</h1>
     }
     <div class="hero-actions">
       @if (lobby()) {

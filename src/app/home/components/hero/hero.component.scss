@@ -14,10 +14,10 @@
 }
 
 .title {
-  margin-top: 0;
+  text-align: center;
 }
 
-.spacer  {
+.spacer {
   flex: 1;
 }
 
@@ -193,7 +193,10 @@
   font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
 }
 
 .copy:hover {

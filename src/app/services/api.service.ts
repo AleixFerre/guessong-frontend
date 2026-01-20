@@ -24,6 +24,7 @@ export class ApiService {
   createLobby(payload: {
     username: string;
     name: string;
+    avatar?: string;
     isPublic: boolean;
     mode: LobbyMode;
     library: LibraryId;
@@ -40,9 +41,10 @@ export class ApiService {
     return this.http.post<LobbyResponse>(`${this.baseUrl}/lobbies`, payload);
   }
 
-  joinLobby(lobbyId: string, username: string) {
+  joinLobby(lobbyId: string, username: string, avatar?: string) {
     return this.http.post<LobbyResponse>(`${this.baseUrl}/lobbies/${lobbyId}/join`, {
       username,
+      avatar,
     });
   }
 

@@ -59,6 +59,19 @@
   gap: 0.35rem;
 }
 
+.player-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  border: 2px solid rgba(31, 140, 255, 0.35);
+  background-color: #fff;
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 6px 12px rgba(31, 53, 91, 0.18);
+  position: relative;
+  z-index: 1;
+}
+
 .rank {
   display: inline-flex;
   align-items: center;
@@ -76,7 +89,7 @@
 .rank--leader {
   background: linear-gradient(135deg, #ffe29a, #f6b84c);
   color: #3a2b12;
-  border-color: transparent;
+  border: none;
   box-shadow:
     0 6px 10px rgba(246, 184, 76, 0.35),
     0 0 0 2px rgba(255, 226, 154, 0.6);
@@ -85,7 +98,7 @@
 .rank--silver {
   background: linear-gradient(135deg, #f1f5f9, #b8c4d9);
   color: #2f3a4a;
-  border-color: transparent;
+  border: none;
   box-shadow:
     0 6px 10px rgba(148, 163, 184, 0.35),
     0 0 0 2px rgba(226, 232, 240, 0.75);
@@ -94,7 +107,7 @@
 .rank--bronze {
   background: linear-gradient(135deg, #f7c59f, #c77d4f);
   color: #3a2414;
-  border-color: transparent;
+  border: none;
   box-shadow:
     0 6px 10px rgba(199, 125, 79, 0.35),
     0 0 0 2px rgba(247, 197, 159, 0.6);
@@ -103,15 +116,6 @@
 .tries {
   font-size: 0.75rem;
   color: var(--muted);
-}
-
-.player::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(120deg, rgba(255, 255, 255, 0.7), transparent);
-  opacity: 0.6;
-  pointer-events: none;
 }
 
 .tag {

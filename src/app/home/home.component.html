@@ -17,48 +17,139 @@
   >
     @if (viewState() === 'MENU') {
       <div class="panel panel--menu">
-        @if (entryMode(); as selectedEntry) {
-          <div class="menu-heading">
-            <button class="icon-button" (click)="resetEntryMode()" aria-label="Volver">←</button>
-            <h2>{{ selectedEntry === 'create' ? 'Crear sala' : 'Unirse a sala' }}</h2>
+        <div class="menu-layout">
+          <div class="menu-actions-block">
+            @if (entryMode(); as selectedEntry) {
+              <div class="menu-heading">
+                <button class="icon-button" (click)="resetEntryMode()" aria-label="Volver">
+                  ←
+                </button>
+                <h2>{{ selectedEntry === 'create' ? 'Crear sala' : 'Unirse a sala' }}</h2>
+              </div>
+              <app-lobby-setup
+                [entryMode]="selectedEntry"
+                [libraries]="libraries()"
+                [selectedLibraryInfo]="selectedLibraryInfo()"
+                [lobbyName]="lobbyName"
+                [joinLobbyId]="joinLobbyId"
+                [library]="library"
+                [roundDuration]="roundDuration"
+                [penalty]="penalty"
+                [maxPlayers]="maxPlayers"
+                [totalRounds]="totalRoundsInput"
+                [maxGuessesPerRound]="maxGuessesPerRound"
+                [guessOptionsLimit]="guessOptionsLimit"
+                [requireBuzzToGuess]="requireBuzzToGuess"
+                [lockoutSeconds]="lockoutSeconds"
+                [responseSeconds]="responseSeconds"
+                [isPublicLobby]="isPublicLobby"
+                [publicLobbies]="publicLobbies()"
+                [publicLobbiesLoading]="publicLobbiesLoading()"
+                [showPublicLobbies]="showPublicLobbies()"
+                (createLobbyRequest)="createLobby()"
+                (joinLobbyRequest)="joinLobby()"
+                (togglePublicLobbiesRequest)="togglePublicLobbies()"
+                (refreshPublicLobbiesRequest)="loadPublicLobbies()"
+                (joinPublicLobbyRequest)="joinPublicLobby($event)"
+              ></app-lobby-setup>
+            } @else {
+              <h2 class="title">Menu principal</h2>
+              <p class="menu-description">
+                Crea una sala nueva o entra a una existente. Aqui empieza la partida.
+              </p>
+              <div class="menu-actions menu-actions--cards">
+                <button class="menu-card primary" (click)="selectEntryMode('create')">
+                  <span class="menu-card__icon menu-card__icon--create" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" role="presentation">
+                      <path
+                        d="M5 13.5l4.2 4.2L19 8.5"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      ></path>
+                    </svg>
+                  </span>
+                  <span class="menu-card__text">
+                    <span class="menu-card__title">Crear sala</span>
+                    <span class="menu-card__subtitle">Invita y personaliza tu partida.</span>
+                  </span>
+                </button>
+                <button class="menu-card secondary" (click)="selectEntryMode('join')">
+                  <span class="menu-card__icon menu-card__icon--join" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" role="presentation">
+                      <path
+                        d="M4 12h10"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                      ></path>
+                      <path
+                        d="M11 7l5 5-5 5"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      ></path>
+                    </svg>
+                  </span>
+                  <span class="menu-card__text">
+                    <span class="menu-card__title">Unirse a sala</span>
+                    <span class="menu-card__subtitle">Pega el codigo y entra rapido.</span>
+                  </span>
+                </button>
+              </div>
+            }
           </div>
-          <app-lobby-setup
-            [entryMode]="selectedEntry"
-            [libraries]="libraries()"
-            [selectedLibraryInfo]="selectedLibraryInfo()"
-            [username]="username"
-            [lobbyName]="lobbyName"
-            [joinLobbyId]="joinLobbyId"
-            [library]="library"
-            [roundDuration]="roundDuration"
-            [penalty]="penalty"
-            [maxPlayers]="maxPlayers"
-            [totalRounds]="totalRoundsInput"
-            [maxGuessesPerRound]="maxGuessesPerRound"
-            [guessOptionsLimit]="guessOptionsLimit"
-            [requireBuzzToGuess]="requireBuzzToGuess"
-            [lockoutSeconds]="lockoutSeconds"
-            [responseSeconds]="responseSeconds"
-            [isPublicLobby]="isPublicLobby"
-            [publicLobbies]="publicLobbies()"
-            [publicLobbiesLoading]="publicLobbiesLoading()"
-            [showPublicLobbies]="showPublicLobbies()"
-            (createLobbyRequest)="createLobby()"
-            (joinLobbyRequest)="joinLobby()"
-            (togglePublicLobbiesRequest)="togglePublicLobbies()"
-            (refreshPublicLobbiesRequest)="loadPublicLobbies()"
-            (joinPublicLobbyRequest)="joinPublicLobby($event)"
-          ></app-lobby-setup>
-        } @else {
-          <h2 class="title">Menu principal</h2>
-          <p class="menu-description">
-            Elige si quieres crear una sala nueva o unirte a una partida existente.
-          </p>
-          <div class="menu-actions">
-            <button class="primary" (click)="selectEntryMode('create')">Crear sala</button>
-            <button class="secondary" (click)="selectEntryMode('join')">Unirse a sala</button>
+
+          <div class="menu-identity">
+            <div class="menu-identity__head">
+              <h3>Tu identidad</h3>
+              <p class="muted">Elige un nombre y un avatar para la sala.</p>
+            </div>
+            <div class="field">
+              <label class="label-with-tip">
+                Nombre de usuario
+                <span class="tooltip">
+                  ?
+                  <span class="tooltip-text">
+                    Nombre que veran los demas jugadores en la sala.
+                  </span>
+                </span>
+              </label>
+              <input
+                type="text"
+                [value]="username()"
+                (input)="username.set($any($event.target).value)"
+                placeholder="Tu nombre"
+              />
+            </div>
+            <div class="avatar-picker">
+              @for (avatar of avatarOptions; track avatar) {
+                <button
+                  type="button"
+                  class="avatar-option"
+                  [class.active]="selectedAvatar() === avatar"
+                  (click)="selectedAvatar.set(avatar)"
+                  [style.backgroundImage]="'url(/avatars/' + avatar + ')'"
+                  aria-label="Seleccionar avatar"
+                ></button>
+              }
+              <button
+                type="button"
+                class="avatar-option avatar-option--random"
+                (click)="selectRandomAvatar()"
+                aria-label="Seleccionar avatar aleatorio"
+              >
+                ?
+              </button>
+            </div>
+            <p class="avatar-credit">{{ avatarCredit }}</p>
           </div>
-        }
+        </div>
       </div>
     }
     @if (viewState() === 'WAITING') {
@@ -88,7 +179,6 @@
             entryMode="edit"
             [libraries]="libraries()"
             [selectedLibraryInfo]="selectedLibraryInfo()"
-            [username]="username"
             [lobbyName]="lobbyName"
             [joinLobbyId]="joinLobbyId"
             [library]="library"

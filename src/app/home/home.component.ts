@@ -5,6 +5,21 @@ import config from '../config.json';
 import {
   BuzzAcceptedPayload,
   BuzzTimeoutPayload,
+  DEFAULT_GUESSES_PER_ROUND,
+  DEFAULT_LOCKOUT_SECONDS,
+  DEFAULT_RESPONSE_SECONDS,
+  BEGINNER_LOCKOUT_SECONDS,
+  BEGINNER_MAX_GUESSES_PER_ROUND,
+  BEGINNER_PENALTY,
+  BEGINNER_RESPONSE_SECONDS,
+  BEGINNER_ROUND_DURATION,
+  BEGINNER_TOTAL_ROUNDS,
+  MAX_GUESSES_PER_ROUND,
+  MAX_LOCKOUT_SECONDS,
+  MAX_PLAYERS,
+  MAX_RESPONSE_SECONDS,
+  MAX_ROUND_DURATION_SEC,
+  NEXT_ROUND_DELAY_SEC,
   EarlyBuzzPayload,
   GuessResultPayload,
   LibraryId,
@@ -16,6 +31,8 @@ import {
   PublicLobbyInfo,
   RoundEndPayload,
   RoundStartPayload,
+  AVATAR_CREDIT,
+  AVATAR_OPTIONS,
 } from '../models';
 import { ApiService } from '../services/api.service';
 import { AudioService } from '../services/audio.service';
@@ -25,22 +42,6 @@ import { GamePanelComponent } from './components/game-panel/game-panel.component
 import { HeroComponent } from './components/hero/hero.component';
 import { LobbyPanelComponent } from './components/lobby-panel/lobby-panel.component';
 import { LobbySetupComponent } from './components/lobby-setup/lobby-setup.component';
-
-const MAX_ROUND_DURATION_SEC = 30;
-const MAX_PLAYERS = 10;
-const MAX_GUESSES_PER_ROUND = 10;
-const DEFAULT_GUESSES_PER_ROUND = 3;
-const MAX_LOCKOUT_SECONDS = 30;
-const DEFAULT_LOCKOUT_SECONDS = 2;
-const DEFAULT_RESPONSE_SECONDS = 10;
-const MAX_RESPONSE_SECONDS = 60;
-const NEXT_ROUND_DELAY_SEC = 10;
-const BEGINNER_ROUND_DURATION = 30;
-const BEGINNER_TOTAL_ROUNDS = 5;
-const BEGINNER_MAX_GUESSES_PER_ROUND = 0;
-const BEGINNER_LOCKOUT_SECONDS = 2;
-const BEGINNER_RESPONSE_SECONDS = 15;
-const BEGINNER_PENALTY = 0;
 
 @Component({
   selector: 'app-home',
@@ -75,6 +76,9 @@ export class HomeComponent {
   readonly isPublicLobby = signal(true);
   readonly entryMode = signal<'create' | 'join' | null>(null);
   readonly showPublicLobbies = signal(false);
+  avatarOptions = [...AVATAR_OPTIONS];
+  readonly avatarCredit = AVATAR_CREDIT;
+  readonly selectedAvatar = signal(this.avatarOptions[0]);
 
   readonly lobby = signal<LobbySnapshot | null>(null);
   readonly playerId = signal<string | null>(null);
@@ -249,7 +253,7 @@ export class HomeComponent {
 
   private setup() {
     this.applyLobbyLinkFromUrl();
-
+    this.shuffleAvatars();
     this.ws.messages$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((message) => {
       this.handleWsMessage(message.type, message.payload);
     });
@@ -399,6 +403,7 @@ export class HomeComponent {
         this.api.createLobby({
           username,
           name: lobbyName,
+          avatar: this.selectedAvatar() || undefined,
           isPublic: this.isPublicLobby(),
           mode: 'BUZZ',
           library,
@@ -433,7 +438,9 @@ export class HomeComponent {
     }
 
     try {
-      const response = await firstValueFrom(this.api.joinLobby(lobbyId, username));
+      const response = await firstValueFrom(
+        this.api.joinLobby(lobbyId, username, this.selectedAvatar() || undefined),
+      );
       this.handleLobbyResponse(response);
     } catch (error) {
       const serverMessage =
@@ -970,7 +977,6 @@ export class HomeComponent {
   }
 
   private resetLobbyForm() {
-    this.username.set('');
     this.lobbyName.set('');
     this.joinLobbyId.set('');
     const firstLibrary = this.libraries()[0]?.id ?? '';
@@ -1002,6 +1008,24 @@ export class HomeComponent {
     this.roundGuessOptions.set(null);
     this.roundEndAtServerTs = null;
     this.audio.stop();
+  }
+
+  selectRandomAvatar() {
+    if (!this.avatarOptions.length) {
+      return;
+    }
+    const randomIndex = Math.floor(Math.random() * this.avatarOptions.length);
+    this.selectedAvatar.set(this.avatarOptions[randomIndex]);
+  }
+
+  private shuffleAvatars() {
+    const shuffled = [...AVATAR_OPTIONS];
+    for (let i = shuffled.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    this.avatarOptions = shuffled;
+    this.selectedAvatar.set(shuffled[0] ?? '');
   }
 
   showFinalClassification() {

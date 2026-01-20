@@ -9,6 +9,7 @@ export enum LibraryId {
 export interface Player {
   id: string;
   username: string;
+  avatar?: string;
   score: number;
   lockedForRound: boolean;
   lockedUntilMs: number | null;
@@ -113,3 +114,27 @@ export interface EarlyBuzzPayload {
 }
 
 export type LobbyUpdatePayload = LobbySnapshot;
+
+export const AVATAR_COUNT = 43;
+export const AVATAR_OPTIONS = Array.from(
+  { length: AVATAR_COUNT },
+  (_value, index) => `${index}.webp`,
+);
+
+export const AVATAR_CREDIT = 'Adventurer Neutral by Lisa Wischofsky is licensed under CC BY 4.0.';
+
+export const MAX_ROUND_DURATION_SEC = 30;
+export const MAX_PLAYERS = 10;
+export const MAX_GUESSES_PER_ROUND = 10;
+export const DEFAULT_GUESSES_PER_ROUND = 3;
+export const MAX_LOCKOUT_SECONDS = 30;
+export const DEFAULT_LOCKOUT_SECONDS = 2;
+export const DEFAULT_RESPONSE_SECONDS = 10;
+export const MAX_RESPONSE_SECONDS = 60;
+export const NEXT_ROUND_DELAY_SEC = 10;
+export const BEGINNER_ROUND_DURATION = 30;
+export const BEGINNER_TOTAL_ROUNDS = 5;
+export const BEGINNER_MAX_GUESSES_PER_ROUND = 0;
+export const BEGINNER_LOCKOUT_SECONDS = 2;
+export const BEGINNER_RESPONSE_SECONDS = 15;
+export const BEGINNER_PENALTY = 0;

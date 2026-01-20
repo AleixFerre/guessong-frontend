@@ -1,20 +1,3 @@
-@if (entryMode() !== 'edit') {
-  <div class="field">
-    <label class="label-with-tip">
-      Nombre de usuario
-      <span class="tooltip">
-        ?
-        <span class="tooltip-text">Nombre que verán los demás jugadores en la sala.</span>
-      </span>
-    </label>
-    <input
-      type="text"
-      [value]="username()()"
-      (input)="username().set($any($event.target).value)"
-      placeholder="Tu nombre"
-    />
-  </div>
-}
 @if (entryMode() === 'create' || entryMode() === 'edit') {
   <div class="config-list">
     <div class="field">
@@ -329,7 +312,6 @@
             <div class="public-item">
               <div>
                 <strong>{{ lobby.name }}</strong>
-                <div class="muted public-code">{{ lobby.id }}</div>
                 <div class="muted">
                   <span class="public-library">{{ lobby.library }}</span> ·
                   {{ lobby.playersCount }}/{{ lobby.maxPlayers }}

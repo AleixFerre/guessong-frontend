@@ -70,7 +70,6 @@ export class LobbySetupComponent {
   private refreshCooldownIntervalId?: number;
   readonly libraries = input.required<LibraryInfo[]>();
   readonly selectedLibraryInfo = input.required<LibraryInfo | null>();
-  readonly username = input.required<WritableSignal<string>>();
   readonly lobbyName = input.required<WritableSignal<string>>();
   readonly joinLobbyId = input.required<WritableSignal<string>>();
   readonly library = input.required<WritableSignal<string>>();
