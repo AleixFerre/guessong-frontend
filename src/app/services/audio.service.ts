@@ -44,6 +44,12 @@ export class AudioService {
     this.audio.currentTime = Math.max(0, offsetSeconds);
   }
 
+  replay() {
+    this.clearPlayTimeout();
+    this.audio.currentTime = 0;
+    this.audio.play().catch(() => undefined);
+  }
+
   stop() {
     this.clearPlayTimeout();
     this.audio.pause();

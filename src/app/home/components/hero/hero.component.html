@@ -1,20 +1,18 @@
 <header class="hero">
   <div class="hero-copy">
-    @if (!lobby()) {
-      <h1 class="title hero-title" aria-label="Adivina la canción">
-        <span class="hero-title__word hero-title__word--base">Adivina la</span>
-        <span class="hero-title__word hero-title__word--accent">CANCIÓN</span>
-      </h1>
-      <div class="hero-icons" aria-hidden="true">
-        <img class="hero-icon hero-icon--left" src="song-icons/music.webp" alt="" loading="lazy" />
-        <img
-          class="hero-icon hero-icon--right"
-          src="song-icons/musical-note.webp"
-          alt=""
-          loading="lazy"
-        />
-      </div>
-    }
+    <h1 class="title hero-title" aria-label="Adivina la canción">
+      <span class="hero-title__word hero-title__word--base">Adivina la</span>
+      <span class="hero-title__word hero-title__word--accent">CANCIÓN</span>
+    </h1>
+    <div class="hero-icons" aria-hidden="true">
+      <img class="hero-icon hero-icon--left" src="song-icons/music.webp" alt="" loading="lazy" />
+      <img
+        class="hero-icon hero-icon--right"
+        src="song-icons/musical-note.webp"
+        alt=""
+        loading="lazy"
+      />
+    </div>
     <div class="hero-actions">
       @if (lobby()) {
         <button class="ghost" (click)="leave.emit()">Salir de la sala</button>

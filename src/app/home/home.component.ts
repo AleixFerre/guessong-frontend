@@ -840,7 +840,7 @@ export class HomeComponent {
     this.buzzCountdownSec.set(null);
     this.pausedOffsetSeconds.set(null);
     this.audioUnavailable.set(false);
-    this.audio.stop();
+    this.audio.replay();
     this.lastPauseAtServerTs = null;
     this.roundEndAtServerTs = Date.now() + this.ws.serverOffsetMs();
   }
