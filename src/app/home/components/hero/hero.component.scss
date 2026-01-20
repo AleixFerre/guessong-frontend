@@ -6,15 +6,86 @@
 }
 
 .hero-copy h1 {
-  font-family: 'Luckiest Guy', cursive;
+  font-family: 'Atma', 'Baloo 2', sans-serif;
   font-size: clamp(2.6rem, 4.5vw, 4rem);
   margin-bottom: 0.75rem;
   letter-spacing: 0.02em;
   color: #1f355b;
+  width: 100%;
 }
 
 .title {
   text-align: center;
+}
+
+.hero-title {
+  display: inline-flex;
+  gap: 0.5rem;
+  justify-content: center;
+  align-items: baseline;
+  flex-wrap: wrap;
+  text-align: center;
+  width: 100%;
+  position: relative;
+  z-index: 2;
+}
+
+.hero-title__word {
+  display: inline-block;
+}
+
+.hero-title__word--base {
+  font-family: 'Atma', 'Baloo 2', sans-serif;
+}
+
+.hero-title__word--accent {
+  font-family: 'Story Script', cursive;
+  letter-spacing: 0.08em;
+  line-height: 1.5rem;
+  font-size: 1.12em;
+  font-weight: black;
+  color: #032c57;
+  display: block;
+  width: 100%;
+}
+
+.hero-icons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 23rem;
+  margin-top: -5rem;
+  margin-bottom: 2rem;
+  width: 100%;
+  position: absolute;
+  left: 0;
+  z-index: 1;
+  opacity: 0.4;
+}
+
+.hero-icon {
+  width: clamp(36px, 6vw, 56px);
+  height: auto;
+  filter: drop-shadow(0 10px 12px rgba(31, 53, 91, 0.2));
+  animation: hero-float 3.6s ease-in-out infinite;
+}
+
+.hero-icon--left {
+  animation-delay: 0.2s;
+}
+
+.hero-icon--right {
+  animation-delay: 0.9s;
+}
+
+@keyframes hero-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(-6px) rotate(2deg);
+  }
 }
 
 .spacer {
