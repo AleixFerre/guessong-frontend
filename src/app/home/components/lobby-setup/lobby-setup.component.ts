@@ -3,6 +3,17 @@ import { LibraryInfo, PublicLobbyInfo } from '../../../models';
 
 type PresetKey = 'beginner' | 'intermediate' | 'hard' | 'custom';
 
+const TOOLTIP_TEXTS = {
+  requireBuzz: 'Obliga a pulsar el timbre antes de responder.',
+  rounds: 'Número total de rondas de la partida.',
+  roundDuration: 'Tiempo total que dura cada ronda.',
+  maxGuesses: 'Máximo de intentos por jugador en cada ronda.',
+  guessOptions: 'Cantidad de canciones disponibles para elegir en cada ronda.',
+  lockout: 'Tiempo que un jugador queda bloqueado tras fallar o pulsar antes de tiempo.',
+  responseTime: 'Tiempo que tiene el jugador para responder tras pulsar el timbre.',
+  penalty: 'Porcentaje de puntos que se resta al fallar.',
+} as const;
+
 interface PresetValues {
   requireBuzzToGuess: boolean;
   roundDuration: number;
@@ -100,23 +111,46 @@ export class LobbySetupComponent {
   );
   readonly isCustomPreset = computed(() => this.selectedPreset() === 'custom');
   readonly presetSummary = computed(() => [
-    { label: 'Requiere PULSA', value: this.requireBuzzToGuess()() ? 'Si' : 'No' },
-    { label: 'Rondas', value: String(this.totalRounds()()) },
-    { label: 'Duración de ronda', value: `${this.roundDuration()()}s` },
+    {
+      label: 'Requiere PULSA',
+      tooltip: TOOLTIP_TEXTS.requireBuzz,
+      value: this.requireBuzzToGuess()() ? 'Si' : 'No',
+    },
+    {
+      label: 'Rondas',
+      tooltip: TOOLTIP_TEXTS.rounds,
+      value: String(this.totalRounds()()),
+    },
+    {
+      label: 'Duración de ronda',
+      tooltip: TOOLTIP_TEXTS.roundDuration,
+      value: `${this.roundDuration()()}s`,
+    },
     {
       label: 'Intentos por ronda',
+      tooltip: TOOLTIP_TEXTS.maxGuesses,
       value: this.maxGuessesPerRound()() === 0 ? 'Infinito' : String(this.maxGuessesPerRound()()),
     },
-    { label: 'Opciones por ronda', value: String(this.guessOptionsLimit()()) },
+    {
+      label: 'Opciones por ronda',
+      tooltip: TOOLTIP_TEXTS.guessOptions,
+      value: String(this.guessOptionsLimit()()),
+    },
     {
       label: 'Tiempo de bloqueo',
+      tooltip: TOOLTIP_TEXTS.lockout,
       value: this.lockoutSeconds()() === 0 ? 'Sin bloqueo' : `${this.lockoutSeconds()()}s`,
     },
     {
       label: 'Tiempo para responder',
+      tooltip: TOOLTIP_TEXTS.responseTime,
       value: this.responseSeconds()() === 0 ? 'Sin límite' : `${this.responseSeconds()()}s`,
     },
-    { label: 'Penalización por fallo', value: `${this.penalty()()}%` },
+    {
+      label: 'Penalización por fallo',
+      tooltip: TOOLTIP_TEXTS.penalty,
+      value: `${this.penalty()()}%`,
+    },
   ]);
 
   private readonly presetSync = effect(() => {
@@ -132,6 +166,10 @@ export class LobbySetupComponent {
       this.selectedPreset.set(resolved);
     }
   });
+
+  tooltipText(key: keyof typeof TOOLTIP_TEXTS) {
+    return TOOLTIP_TEXTS[key];
+  }
 
   selectPreset(preset: PresetKey) {
     this.selectedPreset.set(preset);

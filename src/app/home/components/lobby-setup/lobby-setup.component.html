@@ -166,7 +166,7 @@
           Requiere PULSA
           <span class="tooltip">
             ?
-            <span class="tooltip-text">Obliga a pulsar el timbre antes de responder.</span>
+            <span class="tooltip-text">{{ tooltipText('requireBuzz') }}</span>
           </span>
         </label>
         <label class="toggle">
@@ -183,7 +183,13 @@
       <div class="preset-summary">
         @for (item of presetSummary(); track item.label) {
           <div class="preset-item">
-            <span>{{ item.label }}</span>
+            <span class="label-with-tip">
+              {{ item.label }}
+              <span class="tooltip">
+                ?
+                <span class="tooltip-text">{{ item.tooltip }}</span>
+              </span>
+            </span>
             <strong>{{ item.value }}</strong>
           </div>
         }
@@ -194,7 +200,7 @@
           Rondas
           <span class="tooltip">
             ?
-            <span class="tooltip-text">Número total de rondas de la partida.</span>
+            <span class="tooltip-text">{{ tooltipText('rounds') }}</span>
           </span>
         </label>
         <input
@@ -210,7 +216,7 @@
           Duracion de ronda (s)
           <span class="tooltip">
             ?
-            <span class="tooltip-text">Tiempo total que dura cada ronda.</span>
+            <span class="tooltip-text">{{ tooltipText('roundDuration') }}</span>
           </span>
         </label>
         <input
@@ -226,7 +232,7 @@
           Intentos por ronda
           <span class="tooltip">
             ?
-            <span class="tooltip-text">Máximo de intentos por jugador en cada ronda.</span>
+            <span class="tooltip-text">{{ tooltipText('maxGuesses') }}</span>
           </span>
         </label>
         <input
@@ -243,9 +249,7 @@
           Opciones por ronda
           <span class="tooltip">
             ?
-            <span class="tooltip-text">
-              Cantidad de canciones disponibles para elegir en cada ronda.
-            </span>
+            <span class="tooltip-text">{{ tooltipText('guessOptions') }}</span>
           </span>
         </label>
         <input
@@ -261,9 +265,7 @@
           Tiempo de bloqueo (s)
           <span class="tooltip">
             ?
-            <span class="tooltip-text">
-              Tiempo que un jugador queda bloqueado tras fallar o pulsar antes de tiempo.
-            </span>
+            <span class="tooltip-text">{{ tooltipText('lockout') }}</span>
           </span>
         </label>
         <input
@@ -280,9 +282,7 @@
           Tiempo para responder (s)
           <span class="tooltip">
             ?
-            <span class="tooltip-text">
-              Tiempo que tiene el jugador para responder tras pulsar el timbre.
-            </span>
+            <span class="tooltip-text">{{ tooltipText('responseTime') }}</span>
           </span>
         </label>
         <input
@@ -299,7 +299,7 @@
           Penalizacion por fallo: {{ penalty()() }}%
           <span class="tooltip">
             ?
-            <span class="tooltip-text">Porcentaje de puntos que se resta al fallar.</span>
+            <span class="tooltip-text">{{ tooltipText('penalty') }}</span>
           </span>
         </label>
         <input

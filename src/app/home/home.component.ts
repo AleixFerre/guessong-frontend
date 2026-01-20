@@ -68,7 +68,7 @@ export class HomeComponent {
   readonly maxPlayers = signal(8);
   readonly totalRoundsInput = signal(BEGINNER_TOTAL_ROUNDS);
   readonly maxGuessesPerRound = signal(BEGINNER_MAX_GUESSES_PER_ROUND);
-  readonly guessOptionsLimit = signal(0);
+  readonly guessOptionsLimit = signal(4);
   readonly requireBuzzToGuess = signal(false);
   readonly lockoutSeconds = signal(BEGINNER_LOCKOUT_SECONDS);
   readonly responseSeconds = signal(BEGINNER_RESPONSE_SECONDS);
@@ -1034,7 +1034,7 @@ export class HomeComponent {
     this.maxPlayers.set(8);
     this.totalRoundsInput.set(BEGINNER_TOTAL_ROUNDS);
     this.maxGuessesPerRound.set(BEGINNER_MAX_GUESSES_PER_ROUND);
-    this.guessOptionsLimit.set(0);
+    this.guessOptionsLimit.set(4);
     this.requireBuzzToGuess.set(false);
     this.lockoutSeconds.set(BEGINNER_LOCKOUT_SECONDS);
     this.responseSeconds.set(BEGINNER_RESPONSE_SECONDS);
