@@ -40,7 +40,7 @@
           <span class="tooltip">
             ?
             <span class="tooltip-text">
-              Las salas públicas se verán en la lista pública y no requieren contraseña.
+              Las salas públicas se verán en la lista pública; las privadas solo con enlace.
             </span>
           </span>
         </label>
@@ -63,24 +63,6 @@
           </button>
         </div>
       </div>
-      @if (!isPublicLobby()()) {
-        <div class="field">
-          <label class="label-with-tip">
-            Contraseña de sala
-            <span class="tooltip">
-              ?
-              <span class="tooltip-text">Clave para que otros jugadores puedan unirse.</span>
-            </span>
-          </label>
-          <input
-            type="password"
-            minlength="5"
-            [value]="createPassword()()"
-            (input)="createPassword().set($any($event.target).value)"
-          />
-          <small>Mínimo 5 caracteres</small>
-        </div>
-      }
     }
     <div class="field">
       <label class="label-with-tip">
@@ -384,24 +366,6 @@
         placeholder="Codigo"
       />
     </div>
-    @if (joinRequiresPassword()) {
-      <div class="field">
-        <label class="label-with-tip">
-          Contraseña
-          <span class="tooltip">
-            ?
-            <span class="tooltip-text">Contraseña de la sala.</span>
-          </span>
-        </label>
-        <input
-          type="password"
-          minlength="5"
-          [value]="joinPassword()()"
-          (input)="joinPassword().set($any($event.target).value)"
-          placeholder="Contraseña"
-        />
-      </div>
-    }
     <div class="join-actions">
       <button class="secondary" (click)="joinLobbyRequest.emit()">Unirse</button>
       <button class="ghost" type="button" (click)="togglePublicLobbiesRequest.emit()">

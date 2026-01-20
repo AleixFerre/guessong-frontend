@@ -87,9 +87,6 @@ export class LobbySetupComponent {
   readonly publicLobbies = input<PublicLobbyInfo[]>([]);
   readonly publicLobbiesLoading = input<boolean>(false);
   readonly showPublicLobbies = input<boolean>(false);
-  readonly createPassword = input.required<WritableSignal<string>>();
-  readonly joinPassword = input.required<WritableSignal<string>>();
-  readonly joinRequiresPassword = input<boolean>(false);
   readonly canSave = input<boolean>(true);
   readonly entryMode = input.required<'create' | 'join' | 'edit'>();
 

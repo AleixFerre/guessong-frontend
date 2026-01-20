@@ -73,11 +73,6 @@ export class HomeComponent {
   readonly lockoutSeconds = signal(BEGINNER_LOCKOUT_SECONDS);
   readonly responseSeconds = signal(BEGINNER_RESPONSE_SECONDS);
   readonly isPublicLobby = signal(true);
-  readonly createPassword = signal('');
-  readonly joinPassword = signal('');
-  readonly joinRequiresPassword = signal(false);
-  readonly joinPasswordInfoShown = signal(false);
-  readonly lobbyPassword = signal('');
   readonly entryMode = signal<'create' | 'join' | null>(null);
   readonly showPublicLobbies = signal(false);
 
@@ -113,7 +108,6 @@ export class HomeComponent {
     lockoutSeconds: number;
     responseSeconds: number;
     isPublic: boolean;
-    password: string;
   } | null>(null);
   readonly volume = signal(Math.round(this.audio.getVolume() * 100));
   readonly audioUnavailable = signal(false);
@@ -386,17 +380,12 @@ export class HomeComponent {
   async createLobby() {
     const username = this.username().trim();
     const lobbyName = this.lobbyName().trim();
-    const password = this.isPublicLobby() ? '' : this.createPassword().trim();
     if (!username) {
       this.toast.show('Elige un nombre primero.', 'error');
       return;
     }
     if (!lobbyName) {
       this.toast.show('Elige un nombre para la sala.', 'error');
-      return;
-    }
-    if (!this.isPublicLobby() && password.length < 5) {
-      this.toast.show('La contraseña debe tener al menos 5 caracteres.', 'error');
       return;
     }
     const library = this.library();
@@ -410,7 +399,6 @@ export class HomeComponent {
         this.api.createLobby({
           username,
           name: lobbyName,
-          password,
           isPublic: this.isPublicLobby(),
           mode: 'BUZZ',
           library,
@@ -426,7 +414,6 @@ export class HomeComponent {
         }),
       );
       window.scrollTo({ top: 0, behavior: 'smooth' });
-      this.lobbyPassword.set(password);
       this.handleLobbyResponse(response);
     } catch (_error) {
       this.toast.show('No se pudo crear la sala.', 'error');
@@ -435,7 +422,6 @@ export class HomeComponent {
 
   async joinLobby() {
     const username = this.username().trim();
-    const password = this.joinPassword().trim();
     const lobbyId = this.joinLobbyId().trim();
     if (!username) {
       this.toast.show('Se requiere nombre.', 'error');
@@ -445,34 +431,15 @@ export class HomeComponent {
       this.toast.show('Se requiere código de sala.', 'error');
       return;
     }
-    if (this.joinRequiresPassword() && password.length < 5) {
-      this.toast.show('La contraseña debe tener al menos 5 caracteres.', 'error');
-      return;
-    }
 
     try {
-      const response = await firstValueFrom(this.api.joinLobby(lobbyId, username, password));
-      this.lobbyPassword.set(password);
-      this.joinRequiresPassword.set(false);
+      const response = await firstValueFrom(this.api.joinLobby(lobbyId, username));
       this.handleLobbyResponse(response);
     } catch (error) {
       const serverMessage =
         typeof (error as { error?: { error?: string } })?.error?.error === 'string'
           ? (error as { error?: { error?: string } }).error?.error
           : '';
-      if (serverMessage === 'Password is required') {
-        if (!this.joinRequiresPassword() && !this.joinPasswordInfoShown()) {
-          this.toast.show('Esta sala requiere contraseña.', 'info');
-          this.joinPasswordInfoShown.set(true);
-        }
-        this.joinRequiresPassword.set(true);
-        return;
-      }
-      if (serverMessage === 'Lobby password is invalid') {
-        this.joinRequiresPassword.set(true);
-        this.toast.show('La contraseña es incorrecta.', 'error');
-        return;
-      }
       if (serverMessage === 'Lobby not found') {
         this.toast.show('La sala no existe', 'error');
         return;
@@ -522,22 +489,10 @@ export class HomeComponent {
       return;
     }
     const lobbyName = this.lobbyName().trim();
-    const password = this.createPassword().trim();
     const isPublic = this.isPublicLobby();
     if (!lobbyName) {
       this.toast.show('El nombre de la sala es obligatorio.', 'error');
       return;
-    }
-    if (!isPublic) {
-      const isSwitchingToPrivate = lobby.isPublic;
-      if (password && password.length < 5) {
-        this.toast.show('La contraseña debe tener al menos 5 caracteres.', 'error');
-        return;
-      }
-      if (isSwitchingToPrivate && password.length < 5) {
-        this.toast.show('La contraseña debe tener al menos 5 caracteres.', 'error');
-        return;
-      }
     }
     const library = this.library();
     if (!library) {
@@ -547,7 +502,6 @@ export class HomeComponent {
     this.ws.send('UPDATE_SETTINGS', {
       name: lobbyName,
       isPublic,
-      password,
       library,
       roundDuration: this.roundDuration(),
       penalty: this.penalty(),
@@ -579,7 +533,6 @@ export class HomeComponent {
     this.excludedGuessOptions.set([]);
     this.guessCounts.set({});
     this.clearDissolveCountdown();
-    this.lobbyPassword.set('');
     this.rematchRequested.set(false);
     this.settingsBaseline.set(null);
   }
@@ -610,8 +563,6 @@ export class HomeComponent {
     this.entryMode.set(mode);
     if (mode === 'join') {
       this.showPublicLobbies.set(true);
-      this.joinRequiresPassword.set(false);
-      this.joinPasswordInfoShown.set(false);
       void this.loadPublicLobbies();
     } else {
       this.showPublicLobbies.set(false);
@@ -621,8 +572,6 @@ export class HomeComponent {
   resetEntryMode() {
     this.entryMode.set(null);
     this.showPublicLobbies.set(false);
-    this.joinRequiresPassword.set(false);
-    this.joinPasswordInfoShown.set(false);
   }
 
   updateVolume(value: number) {
@@ -652,7 +601,6 @@ export class HomeComponent {
 
   joinPublicLobby(lobbyId: string) {
     this.joinLobbyId.set(lobbyId);
-    this.joinPassword.set('');
     void this.joinLobby();
   }
 
@@ -736,7 +684,6 @@ export class HomeComponent {
       lobbyId,
       playerId,
       username: this.username().trim(),
-      password: this.lobbyPassword().trim(),
     });
   }
 
@@ -1017,7 +964,6 @@ export class HomeComponent {
     this.lockoutSeconds.set(lobby.settings.lockoutSeconds ?? DEFAULT_LOCKOUT_SECONDS);
     this.responseSeconds.set(lobby.settings.responseSeconds ?? DEFAULT_RESPONSE_SECONDS);
     this.isPublicLobby.set(lobby.isPublic);
-    this.createPassword.set('');
     if (lobby.state === 'WAITING') {
       this.settingsBaseline.set(this.buildSettingsSnapshotFromLobby(lobby));
     }
@@ -1039,10 +985,6 @@ export class HomeComponent {
     this.lockoutSeconds.set(BEGINNER_LOCKOUT_SECONDS);
     this.responseSeconds.set(BEGINNER_RESPONSE_SECONDS);
     this.isPublicLobby.set(true);
-    this.createPassword.set('');
-    this.joinPassword.set('');
-    this.joinRequiresPassword.set(false);
-    this.joinPasswordInfoShown.set(false);
     this.settingsBaseline.set(null);
   }
 
@@ -1092,7 +1034,6 @@ export class HomeComponent {
       lockoutSeconds: lobby.settings.lockoutSeconds ?? DEFAULT_LOCKOUT_SECONDS,
       responseSeconds: lobby.settings.responseSeconds ?? DEFAULT_RESPONSE_SECONDS,
       isPublic: lobby.isPublic,
-      password: '',
     };
   }
 
@@ -1110,7 +1051,6 @@ export class HomeComponent {
       lockoutSeconds: this.lockoutSeconds(),
       responseSeconds: this.responseSeconds(),
       isPublic: this.isPublicLobby(),
-      password: this.createPassword().trim(),
     };
   }
 
@@ -1130,8 +1070,7 @@ export class HomeComponent {
       left.requireBuzzToGuess === right.requireBuzzToGuess &&
       left.lockoutSeconds === right.lockoutSeconds &&
       left.responseSeconds === right.responseSeconds &&
-      left.isPublic === right.isPublic &&
-      left.password === right.password
+      left.isPublic === right.isPublic
     );
   }
 

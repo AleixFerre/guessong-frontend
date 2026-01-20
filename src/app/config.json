@@ -1,5 +1,5 @@
 {
-  "isProd": true,
+  "isProd": false,
   "BACKEND_URL_LOCAL": "http://localhost:3000",
   "BACKEND_URL_PROD": "https://guessong-backend-production.up.railway.app"
 }
