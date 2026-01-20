@@ -5,58 +5,6 @@
   margin-bottom: 1rem;
 }
 
-.label-with-tip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.tooltip {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.2rem;
-  height: 1.2rem;
-  border-radius: 50%;
-  border: 2px solid var(--border);
-  background: #fff;
-  color: #1f355b;
-  font-size: 0.75rem;
-  font-weight: 700;
-  cursor: help;
-  position: relative;
-}
-
-.tooltip-text {
-  position: absolute;
-  letter-spacing: 0.08em;
-  bottom: calc(100% + 0.4rem);
-  left: 50%;
-  transform: translateX(-50%);
-  min-width: 200px;
-  max-width: 260px;
-  padding: 0.5rem 0.7rem;
-  border-radius: 0.6rem;
-  background: #fff;
-  border: 2px solid var(--border);
-  color: #1f355b !important;
-  font-size: 0.85rem;
-  line-height: 1.3;
-  box-shadow: 0 10px 20px rgba(31, 53, 91, 0.18);
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transition:
-    opacity 0.15s ease,
-    transform 0.15s ease;
-}
-
-.tooltip:hover .tooltip-text,
-.tooltip:focus-within .tooltip-text {
-  opacity: 1;
-  visibility: visible;
-  transform: translateX(-50%) translateY(-2px);
-}
 
 .field.inline {
   display: grid;
@@ -75,44 +23,6 @@
   margin-bottom: 1rem;
 }
 
-.field input[type='range'] {
-  appearance: none;
-  width: 100%;
-  height: 10px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, var(--accent) 0%, var(--accent-2) 100%);
-  outline: none;
-  border: 2px solid rgba(31, 140, 255, 0.3);
-  box-shadow: inset 0 2px 6px rgba(31, 140, 255, 0.15);
-}
-
-.field input[type='range']::-webkit-slider-thumb {
-  appearance: none;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: #ffffff;
-  border: 2px solid var(--bg-accent);
-  box-shadow: 0 6px 12px rgba(31, 140, 255, 0.25);
-  cursor: pointer;
-}
-
-.field input[type='range']::-moz-range-thumb {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: #ffffff;
-  border: 2px solid var(--bg-accent);
-  box-shadow: 0 6px 12px rgba(31, 140, 255, 0.25);
-  cursor: pointer;
-}
-
-.field input[type='range']::-moz-range-track {
-  height: 10px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, var(--accent) 0%, var(--accent-2) 100%);
-  border: 2px solid rgba(31, 140, 255, 0.3);
-}
 
 .pill-row {
   display: flex;
