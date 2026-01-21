@@ -37,6 +37,10 @@ export class LobbyPanelComponent {
     const players = this.playersOverride() ?? this.lobby()?.players ?? [];
     return [...players].sort((a, b) => b.score - a.score);
   });
+  readonly playersCount = computed(
+    () => (this.playersOverride() ?? this.lobby()?.players ?? []).length,
+  );
+  readonly maxPlayers = computed(() => this.lobby()?.settings.maxPlayers ?? 0);
 
   lockoutDuration(player: Player) {
     const until = player.lockedUntilMs;

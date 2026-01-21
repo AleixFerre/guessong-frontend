@@ -1,6 +1,9 @@
 @if (lobby(); as activeLobby) {
   <div class="lobby-header">
-    <h2 class="lobby-title">{{ activeLobby.name || 'Sala y puntuaciones' }}</h2>
+    <h2 class="lobby-title">
+      <span>{{ activeLobby.name || 'Sala y puntuaciones' }}</span>
+      <span class="lobby-count">{{ playersCount() }}/{{ maxPlayers() }}</span>
+    </h2>
     @if (showCopyLink()) {
       <button class="ghost copy-link" (click)="copyLinkRequest.emit()">Copiar link</button>
     }

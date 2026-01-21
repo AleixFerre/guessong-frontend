@@ -16,6 +16,16 @@
   margin: 0;
   font-family: 'Luckiest Guy', cursive;
   letter-spacing: 0.04em;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.lobby-count {
+  font-size: 0.9rem;
+  color: var(--muted);
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 :host-context(.panel--lobby-centered) .lobby-title {
