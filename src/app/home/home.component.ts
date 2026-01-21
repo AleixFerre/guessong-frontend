@@ -217,6 +217,13 @@ export class HomeComponent {
     }
     return this.lobby()?.players.find((player) => player.id === winnerId)?.username ?? null;
   });
+  readonly roundWinnerPlayer = computed(() => {
+    const winnerId = this.roundResult()?.winnerId;
+    if (!winnerId) {
+      return null;
+    }
+    return this.lobby()?.players.find((player) => player.id === winnerId) ?? null;
+  });
   readonly isRoundWinner = computed(() => {
     const winnerId = this.roundResult()?.winnerId;
     if (!winnerId) {

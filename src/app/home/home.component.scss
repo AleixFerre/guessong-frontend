@@ -124,6 +124,24 @@
   font-weight: 700;
 }
 
+.winner-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.winner-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  border: 2px solid rgba(31, 140, 255, 0.35);
+  background-color: #fff;
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 6px 12px rgba(31, 53, 91, 0.18);
+}
+
 .next-round {
   margin-top: 0.75rem;
   font-weight: 700;
@@ -272,13 +290,24 @@
 
 .end-player {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto auto 1fr auto;
   gap: 0.75rem;
   align-items: center;
   padding: 0.75rem 1rem;
   border-radius: 1rem;
   background: #f2f8ff;
   border: 2px solid var(--border);
+}
+
+.end-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 2px solid rgba(31, 140, 255, 0.35);
+  background-color: #fff;
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 6px 12px rgba(31, 53, 91, 0.18);
 }
 
 .end-rank {
@@ -298,7 +327,7 @@
 .end-rank--leader {
   background: linear-gradient(135deg, #ffe29a, #f6b84c);
   color: #3a2b12;
-  border-color: transparent;
+  border: none;
   box-shadow:
     0 6px 10px rgba(246, 184, 76, 0.35),
     0 0 0 2px rgba(255, 226, 154, 0.6);
@@ -307,7 +336,7 @@
 .end-rank--silver {
   background: linear-gradient(135deg, #f1f5f9, #b8c4d9);
   color: #2f3a4a;
-  border-color: transparent;
+  border: none;
   box-shadow:
     0 6px 10px rgba(148, 163, 184, 0.35),
     0 0 0 2px rgba(226, 232, 240, 0.75);
@@ -316,7 +345,7 @@
 .end-rank--bronze {
   background: linear-gradient(135deg, #f7c59f, #c77d4f);
   color: #3a2414;
-  border-color: transparent;
+  border: none;
   box-shadow:
     0 6px 10px rgba(199, 125, 79, 0.35),
     0 0 0 2px rgba(247, 197, 159, 0.6);

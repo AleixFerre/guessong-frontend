@@ -306,7 +306,18 @@
           <h3>Resultado</h3>
           <p>{{ result.revealedTrackMeta.artist }} - {{ result.revealedTrackMeta.title }}</p>
           @if (roundWinnerName()) {
-            <p>Ganador: {{ roundWinnerName() }}</p>
+            <div class="winner-row">
+              @if (roundWinnerPlayer(); as winner) {
+                <span
+                  class="winner-avatar"
+                  [style.backgroundImage]="
+                    winner.avatar ? 'url(avatars/' + winner.avatar + ')' : null
+                  "
+                  aria-hidden="true"
+                ></span>
+              }
+              <p>Ganador: {{ roundWinnerName() }}</p>
+            </div>
           } @else {
             <p class="no-winner">No ha habido ganador</p>
           }
@@ -339,6 +350,13 @@
         <div class="end-players">
           @for (player of sortedPlayers(); track player.id) {
             <div class="end-player">
+              <span
+                class="end-avatar"
+                [style.backgroundImage]="
+                  player.avatar ? 'url(avatars/' + player.avatar + ')' : null
+                "
+                aria-hidden="true"
+              ></span>
               <span
                 class="end-rank"
                 [class.end-rank--leader]="$index === 0"
