@@ -1,7 +1,7 @@
 import { Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { firstValueFrom } from 'rxjs';
 import confetti from '@hiseb/confetti';
+import { firstValueFrom } from 'rxjs';
 import config from '../config.json';
 import {
   AVATAR_CREDIT,
@@ -35,6 +35,7 @@ import {
   RoundEndPayload,
   RoundStartPayload,
 } from '../models';
+import { NicknameGenerator, createNicknameGenerator } from '../nicknames.model';
 import { ApiService } from '../services/api.service';
 import { AudioService } from '../services/audio.service';
 import { ToastService } from '../services/toast.service';
@@ -158,6 +159,7 @@ export class HomeComponent {
   private lastPauseAtServerTs: number | null = null;
   private roundEndAtServerTs: number | null = null;
   private readonly init = this.setup();
+  private nicknameGenerator: NicknameGenerator | null = null;
   readonly viewState = computed(() => {
     const lobby = this.lobby();
     if (!lobby) {
@@ -293,6 +295,10 @@ export class HomeComponent {
   private setup() {
     this.applyLobbyLinkFromUrl();
     this.shuffleAvatars();
+    this.nicknameGenerator = createNicknameGenerator(5, 200);
+    if (!this.username().trim()) {
+      this.setRandomUsername();
+    }
     this.ws.messages$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((message) => {
       this.handleWsMessage(message.type, message.payload);
     });
@@ -1116,6 +1122,10 @@ export class HomeComponent {
     this.selectedAvatar.set(this.avatarOptions[randomIndex]);
   }
 
+  setRandomUsername() {
+    this.username.set(this.generateRandomUsername());
+  }
+
   private shuffleAvatars() {
     const shuffled = [...AVATAR_OPTIONS];
     for (let i = shuffled.length - 1; i > 0; i -= 1) {
@@ -1124,6 +1134,13 @@ export class HomeComponent {
     }
     this.avatarOptions = shuffled;
     this.selectedAvatar.set(shuffled[0] ?? '');
+  }
+
+  private generateRandomUsername() {
+    if (!this.nicknameGenerator) {
+      this.nicknameGenerator = createNicknameGenerator(5, 200);
+    }
+    return this.nicknameGenerator.next();
   }
 
   showFinalClassification() {

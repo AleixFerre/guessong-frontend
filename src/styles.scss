@@ -270,6 +270,48 @@ select {
   margin-bottom: 0;
 }
 
+.menu-identity .name-input {
+  display: flex;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+
+.menu-identity .name-input input {
+  flex: 1;
+}
+
+.name-random {
+  width: 3rem;
+  border-radius: 1rem;
+  border: 2px solid var(--border);
+  background: #fff;
+  color: #1f355b;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  box-shadow: 0 8px 14px rgba(31, 53, 91, 0.12);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.35s ease,
+    border-color 0.35s ease;
+}
+
+.name-random:hover {
+  transform: translateY(-2px);
+  border-color: rgba(31, 140, 255, 0.55);
+}
+
+.name-random:focus-visible {
+  outline: none;
+  border-color: var(--bg-accent);
+  box-shadow: 0 0 0 4px rgba(31, 140, 255, 0.15);
+}
+
+.name-random svg {
+  width: 20px;
+  height: 20px;
+}
+
 .avatar-picker {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(52px, 1fr));

@@ -120,12 +120,39 @@
                   </span>
                 </span>
               </label>
-              <input
-                type="text"
-                [value]="username()"
-                (input)="username.set($any($event.target).value)"
-                placeholder="Tu nombre"
-              />
+              <div class="name-input">
+                <input
+                  type="text"
+                  [value]="username()"
+                  (input)="username.set($any($event.target).value)"
+                  placeholder="Tu nombre"
+                />
+                <button
+                  type="button"
+                  class="name-random"
+                  (click)="setRandomUsername()"
+                  aria-label="Generar nombre aleatorio"
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <rect
+                      x="3"
+                      y="3"
+                      width="18"
+                      height="18"
+                      rx="4"
+                      ry="4"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    ></rect>
+                    <circle cx="8" cy="8" r="1.5" fill="currentColor"></circle>
+                    <circle cx="16" cy="8" r="1.5" fill="currentColor"></circle>
+                    <circle cx="8" cy="16" r="1.5" fill="currentColor"></circle>
+                    <circle cx="16" cy="16" r="1.5" fill="currentColor"></circle>
+                    <circle cx="12" cy="12" r="1.5" fill="currentColor"></circle>
+                  </svg>
+                </button>
+              </div>
             </div>
             <div class="avatar-picker">
               @for (avatar of avatarOptions; track avatar) {

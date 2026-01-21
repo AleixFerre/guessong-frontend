@@ -1,5 +1,6 @@
 import { Component, WritableSignal, computed, effect, input, output, signal } from '@angular/core';
 import { LibraryInfo, PublicLobbyInfo } from '../../../models';
+import { LobbyNameGenerator, createLobbyNameGenerator } from '../../../nicknames.model';
 
 type PresetKey = 'beginner' | 'intermediate' | 'hard' | 'custom';
 
@@ -149,6 +150,8 @@ export class LobbySetupComponent {
     },
   ]);
 
+  private lobbyNameGenerator: LobbyNameGenerator | null = null;
+
   private readonly presetSync = effect(() => {
     const mode = this.entryMode();
     if (mode !== 'create' && mode !== 'edit') {
@@ -160,6 +163,20 @@ export class LobbySetupComponent {
     }
     if (this.selectedPreset() !== resolved) {
       this.selectedPreset.set(resolved);
+    }
+  });
+
+  private readonly lobbyNameInit = effect(() => {
+    const mode = this.entryMode();
+    if (mode !== 'create') {
+      return;
+    }
+    if (!this.lobbyNameGenerator) {
+      this.lobbyNameGenerator = createLobbyNameGenerator(10, 18);
+    }
+    const lobbyNameSignal = this.lobbyName();
+    if (!lobbyNameSignal().trim()) {
+      lobbyNameSignal.set(this.lobbyNameGenerator.next());
     }
   });
 
@@ -184,6 +201,13 @@ export class LobbySetupComponent {
     this.lockoutSeconds().set(values.lockoutSeconds);
     this.responseSeconds().set(values.responseSeconds);
     this.penalty().set(values.penalty);
+  }
+
+  setRandomLobbyName() {
+    if (!this.lobbyNameGenerator) {
+      this.lobbyNameGenerator = createLobbyNameGenerator(10, 18);
+    }
+    this.lobbyName().set(this.lobbyNameGenerator.next());
   }
 
   private resolvePresetKey(): PresetKey {

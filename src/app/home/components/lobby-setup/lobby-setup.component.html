@@ -8,13 +8,40 @@
           <span class="tooltip-text">Nombre visible en la lista de salas públicas.</span>
         </span>
       </label>
-      <input
-        type="text"
-        required
-        [value]="lobbyName()()"
-        (input)="lobbyName().set($any($event.target).value)"
-        placeholder="Sala de amigos"
-      />
+      <div class="input-with-action">
+        <input
+          type="text"
+          required
+          [value]="lobbyName()()"
+          (input)="lobbyName().set($any($event.target).value)"
+          placeholder="Sala de amigos"
+        />
+        <button
+          type="button"
+          class="name-random"
+          (click)="setRandomLobbyName()"
+          aria-label="Generar nombre de sala aleatorio"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect
+              x="3"
+              y="3"
+              width="18"
+              height="18"
+              rx="4"
+              ry="4"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            ></rect>
+            <circle cx="8" cy="8" r="1.5" fill="currentColor"></circle>
+            <circle cx="16" cy="8" r="1.5" fill="currentColor"></circle>
+            <circle cx="8" cy="16" r="1.5" fill="currentColor"></circle>
+            <circle cx="16" cy="16" r="1.5" fill="currentColor"></circle>
+            <circle cx="12" cy="12" r="1.5" fill="currentColor"></circle>
+          </svg>
+        </button>
+      </div>
     </div>
     @if (entryMode() === 'create' || entryMode() === 'edit') {
       <div class="field">
