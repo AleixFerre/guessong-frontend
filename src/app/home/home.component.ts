@@ -1,6 +1,7 @@
 import { Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { firstValueFrom } from 'rxjs';
+import confetti from '@hiseb/confetti';
 import config from '../config.json';
 import {
   AVATAR_CREDIT,
@@ -152,6 +153,8 @@ export class HomeComponent {
   private dissolveIntervalId?: number;
   private dissolveTimeoutId?: number;
   private dissolveStartAtMs: number | null = null;
+  private lastRoundCelebrated: number | null = null;
+  private finalCelebrated = false;
   private lastPauseAtServerTs: number | null = null;
   private roundEndAtServerTs: number | null = null;
   private readonly init = this.setup();
@@ -405,6 +408,33 @@ export class HomeComponent {
       }
     });
 
+    effect(() => {
+      const roundResult = this.roundResult();
+      const currentRound = this.lobby()?.currentRound ?? null;
+      if (!roundResult || !this.showResultModal() || !this.isRoundWinner()) {
+        return;
+      }
+      if (currentRound === null || this.lastRoundCelebrated === currentRound) {
+        return;
+      }
+      this.lastRoundCelebrated = currentRound;
+      this.launchConfetti('round');
+    });
+
+    effect(() => {
+      const showFinal = this.showFinalOverlay() && this.viewState() === 'FINISHED';
+      if (!showFinal) {
+        this.finalCelebrated = false;
+        return;
+      }
+      const topPlayerId = this.sortedPlayers()[0]?.id ?? null;
+      if (!topPlayerId || topPlayerId !== this.playerId() || this.finalCelebrated) {
+        return;
+      }
+      this.finalCelebrated = true;
+      this.launchConfetti('final');
+    });
+
     const interval = window.setInterval(() => this.tickElapsed(), 50);
     this.destroyRef.onDestroy(() => window.clearInterval(interval));
     this.destroyRef.onDestroy(() => this.clearDissolveCountdown());
@@ -571,6 +601,8 @@ export class HomeComponent {
     this.clearDissolveCountdown();
     this.rematchRequested.set(false);
     this.settingsBaseline.set(null);
+    this.lastRoundCelebrated = null;
+    this.finalCelebrated = false;
   }
 
   private startDissolveCountdown() {
@@ -942,6 +974,26 @@ export class HomeComponent {
   private addNotice(message: string) {
     const next = [...this.notifications().slice(-3), message];
     this.notifications.set(next);
+  }
+
+  private launchConfetti(kind: 'round' | 'final') {
+    const isFinal = kind === 'final';
+    const count = isFinal ? 160 : 90;
+    const size = isFinal ? 1.2 : 0.9;
+    const velocity = isFinal ? 260 : 200;
+    const position = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+    confetti({ position, count, size, velocity, fade: true });
+    if (isFinal) {
+      window.setTimeout(() => {
+        confetti({
+          position,
+          count: Math.round(count * 0.7),
+          size,
+          velocity: velocity * 0.9,
+          fade: true,
+        });
+      }, 180);
+    }
   }
 
   private incrementGuessCount(playerId: string) {
