@@ -3,36 +3,36 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { firstValueFrom } from 'rxjs';
 import config from '../config.json';
 import {
-  BuzzAcceptedPayload,
-  BuzzTimeoutPayload,
-  DEFAULT_GUESSES_PER_ROUND,
-  DEFAULT_LOCKOUT_SECONDS,
-  DEFAULT_RESPONSE_SECONDS,
+  AVATAR_CREDIT,
+  AVATAR_OPTIONS,
   BEGINNER_LOCKOUT_SECONDS,
   BEGINNER_MAX_GUESSES_PER_ROUND,
   BEGINNER_PENALTY,
   BEGINNER_RESPONSE_SECONDS,
   BEGINNER_ROUND_DURATION,
   BEGINNER_TOTAL_ROUNDS,
-  MAX_GUESSES_PER_ROUND,
-  MAX_LOCKOUT_SECONDS,
-  MAX_PLAYERS,
-  MAX_RESPONSE_SECONDS,
-  MAX_ROUND_DURATION_SEC,
-  NEXT_ROUND_DELAY_SEC,
+  BuzzAcceptedPayload,
+  BuzzTimeoutPayload,
+  DEFAULT_GUESSES_PER_ROUND,
+  DEFAULT_LOCKOUT_SECONDS,
+  DEFAULT_RESPONSE_SECONDS,
   EarlyBuzzPayload,
   GuessResultPayload,
   LibraryId,
   LibraryInfo,
   LibraryTrack,
   LobbySnapshot,
+  MAX_GUESSES_PER_ROUND,
+  MAX_LOCKOUT_SECONDS,
+  MAX_PLAYERS,
+  MAX_RESPONSE_SECONDS,
+  MAX_ROUND_DURATION_SEC,
+  NEXT_ROUND_DELAY_SEC,
   PausePayload,
   PlayPayload,
   PublicLobbyInfo,
   RoundEndPayload,
   RoundStartPayload,
-  AVATAR_CREDIT,
-  AVATAR_OPTIONS,
 } from '../models';
 import { ApiService } from '../services/api.service';
 import { AudioService } from '../services/audio.service';
@@ -42,6 +42,8 @@ import { GamePanelComponent } from './components/game-panel/game-panel.component
 import { HeroComponent } from './components/hero/hero.component';
 import { LobbyPanelComponent } from './components/lobby-panel/lobby-panel.component';
 import { LobbySetupComponent } from './components/lobby-setup/lobby-setup.component';
+
+const DISSOLVE_COUNTDOWN_SEC = 10;
 
 @Component({
   selector: 'app-home',
@@ -99,6 +101,19 @@ export class HomeComponent {
   readonly roundResult = signal<RoundEndPayload | null>(null);
   readonly nextRoundCountdownSec = signal<number | null>(null);
   readonly notifications = signal<string[]>([]);
+  readonly nextRoundProgress = computed(() => {
+    const remaining = this.nextRoundCountdownSec();
+    if (remaining === null) {
+      return null;
+    }
+    if (!NEXT_ROUND_DELAY_SEC) {
+      return 0;
+    }
+    return Math.max(
+      0,
+      Math.min(100, ((NEXT_ROUND_DELAY_SEC - remaining) / NEXT_ROUND_DELAY_SEC) * 100),
+    );
+  });
   readonly settingsBaseline = signal<{
     name: string;
     library: LibraryId | '';
@@ -116,6 +131,19 @@ export class HomeComponent {
   readonly volume = signal(Math.round(this.audio.getVolume() * 100));
   readonly audioUnavailable = signal(false);
   readonly dissolveCountdown = signal(0);
+  readonly dissolveCountdownDisplay = computed(() =>
+    Math.max(0, Math.ceil(this.dissolveCountdown())),
+  );
+  readonly dissolveProgress = computed(() => {
+    const remaining = this.dissolveCountdown();
+    if (!DISSOLVE_COUNTDOWN_SEC) {
+      return 0;
+    }
+    return Math.max(
+      0,
+      Math.min(100, ((DISSOLVE_COUNTDOWN_SEC - remaining) / DISSOLVE_COUNTDOWN_SEC) * 100),
+    );
+  });
   readonly showResultModal = signal(false);
   readonly showFinalOverlay = signal(false);
   readonly rematchRequested = signal(false);
@@ -123,6 +151,7 @@ export class HomeComponent {
   readonly publicLobbiesLoading = signal(false);
   private dissolveIntervalId?: number;
   private dissolveTimeoutId?: number;
+  private dissolveStartAtMs: number | null = null;
   private lastPauseAtServerTs: number | null = null;
   private roundEndAtServerTs: number | null = null;
   private readonly init = this.setup();
@@ -546,11 +575,20 @@ export class HomeComponent {
 
   private startDissolveCountdown() {
     this.clearDissolveCountdown();
-    this.dissolveCountdown.set(10);
+    this.dissolveStartAtMs = Date.now();
+    this.dissolveCountdown.set(DISSOLVE_COUNTDOWN_SEC);
     this.dissolveIntervalId = window.setInterval(() => {
-      this.dissolveCountdown.update((value) => Math.max(0, value - 1));
-    }, 1000);
-    this.dissolveTimeoutId = window.setTimeout(() => this.clearDissolveCountdown(), 10000);
+      if (this.dissolveStartAtMs === null) {
+        return;
+      }
+      const elapsedMs = Date.now() - this.dissolveStartAtMs;
+      const remainingMs = Math.max(0, DISSOLVE_COUNTDOWN_SEC * 1000 - elapsedMs);
+      this.dissolveCountdown.set(remainingMs / 1000);
+    }, 50);
+    this.dissolveTimeoutId = window.setTimeout(
+      () => this.clearDissolveCountdown(),
+      DISSOLVE_COUNTDOWN_SEC * 1000,
+    );
   }
 
   private clearDissolveCountdown() {
@@ -562,6 +600,7 @@ export class HomeComponent {
       window.clearTimeout(this.dissolveTimeoutId);
       this.dissolveTimeoutId = undefined;
     }
+    this.dissolveStartAtMs = null;
     this.dissolveCountdown.set(0);
   }
 
