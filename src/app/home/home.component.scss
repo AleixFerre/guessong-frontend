@@ -188,7 +188,7 @@
 }
 
 .grid--menu {
-  grid-template-columns: minmax(0, 900px);
+  grid-template-columns: minmax(0, 910px);
   justify-content: center;
 }
 
@@ -216,7 +216,6 @@
   grid-template-areas: 'lobby game';
   align-items: start;
 }
-
 
 .end-overlay {
   position: fixed;
@@ -302,7 +301,6 @@
   color: #1f355b;
 }
 
-
 .page::before,
 .page::after {
   content: '';
@@ -353,7 +351,6 @@
   }
 }
 
-
 @media (max-width: 900px) {
   .grid--menu,
   .grid--waiting,
@@ -385,7 +382,6 @@
   .config-readonly {
     flex-direction: column;
   }
-
 }
 
 @media (min-width: 1200px) {

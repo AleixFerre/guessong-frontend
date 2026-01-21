@@ -13,15 +13,16 @@
         loading="lazy"
       />
     </div>
-    <div class="hero-actions">
+    <div class="hero-actions hero-actions--left">
       @if (lobby()) {
         <button class="ghost" (click)="leave.emit()">Salir de la sala</button>
       }
       @if (pingMs() !== null) {
         <div class="ping">Ping {{ formatPing(pingMs()) }}</div>
       }
+    </div>
+    <div class="hero-actions hero-actions--right">
       @if (lobby()) {
-        <div class="spacer"></div>
         <div class="volume-control">
           <label for="volume-slider">Volumen</label>
           <input

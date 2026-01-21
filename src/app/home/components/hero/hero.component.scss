@@ -5,13 +5,22 @@
   align-items: center;
 }
 
+.hero-copy {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1rem;
+  position: relative;
+}
+
 .hero-copy h1 {
   font-family: 'Atma', 'Baloo 2', sans-serif;
   font-size: clamp(2.6rem, 4.5vw, 4rem);
-  margin-bottom: 0.75rem;
   letter-spacing: 0.02em;
   color: #1f355b;
   width: 100%;
+  grid-row: 1;
+  grid-column: 2;
 }
 
 .title {
@@ -26,8 +35,8 @@
   flex-wrap: wrap;
   text-align: center;
   width: 100%;
-  position: relative;
   z-index: 2;
+  line-height: 1em;
 }
 
 .hero-title__word {
@@ -35,18 +44,27 @@
 }
 
 .hero-title__word--base {
-  font-family: 'Atma', 'Baloo 2', sans-serif;
+  font-family: 'Story Script', 'Baloo 2', sans-serif;
 }
 
 .hero-title__word--accent {
-  font-family: 'Story Script', cursive;
+  font-family: 'Atma', 'Baloo 2', cursive;
   letter-spacing: 0.08em;
-  line-height: 1.5rem;
   font-size: 1.12em;
-  font-weight: black;
+  font-weight: bolder;
   color: #032c57;
   display: block;
   width: 100%;
+  animation: title-float 3.2s ease-in-out infinite;
+}
+
+.hero-title,
+.hero-icons {
+  animation: hero-intro 0.8s ease both;
+}
+
+.hero-icons {
+  animation-delay: 0.15s;
 }
 
 .hero-icons {
@@ -54,11 +72,8 @@
   justify-content: center;
   align-items: center;
   gap: 23rem;
-  margin-top: -5rem;
-  margin-bottom: 2rem;
-  width: 100%;
-  position: absolute;
-  left: 0;
+  grid-row: 1;
+  grid-column: 2;
   z-index: 1;
   opacity: 0.4;
 }
@@ -85,6 +100,26 @@
   }
   50% {
     transform: translateY(-6px) rotate(2deg);
+  }
+}
+
+@keyframes hero-intro {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes title-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-4px) rotate(1deg);
   }
 }
 
@@ -116,8 +151,18 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  margin-top: 1.25rem;
+  margin-top: 0;
   flex-wrap: wrap;
+}
+
+.hero-actions--left {
+  grid-column: 1;
+  justify-self: start;
+}
+
+.hero-actions--right {
+  grid-column: 3;
+  justify-self: end;
 }
 
 .volume-control {
@@ -127,6 +172,24 @@
 }
 
 @media (max-width: 720px) {
+  .hero-copy {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-copy h1 {
+    grid-column: 1;
+  }
+
+  .hero-actions {
+    grid-column: 1;
+    justify-self: center;
+    margin-top: 1rem;
+  }
+
+  .hero-actions--right {
+    order: 3;
+  }
+
   .volume-control {
     display: none;
   }
