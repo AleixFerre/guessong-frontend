@@ -21,8 +21,29 @@
           <div class="menu-actions-block">
             @if (entryMode(); as selectedEntry) {
               <div class="menu-heading">
-                <button class="icon-button" (click)="resetEntryMode()" aria-label="Volver">
-                  ←
+                <button
+                  class="icon-button icon-button--back"
+                  (click)="resetEntryMode()"
+                  aria-label="Volver"
+                >
+                  <span class="icon-button__glow" aria-hidden="true"></span>
+                  <svg viewBox="0 0 24 24" role="presentation" aria-hidden="true">
+                    <path
+                      d="M15.5 5.5l-6 6 6 6"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.4"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    ></path>
+                    <path
+                      d="M9.5 11.5h9"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.4"
+                      stroke-linecap="round"
+                    ></path>
+                  </svg>
                 </button>
                 <h2>{{ selectedEntry === 'create' ? 'Crear sala' : 'Unirse a sala' }}</h2>
               </div>
@@ -125,15 +146,22 @@
                   type="text"
                   [value]="username()"
                   (input)="username.set($any($event.target).value)"
+                  [class.name-input--reveal]="randomNameRevealed()"
+                  (animationend)="finishRandomNameReveal()"
                   placeholder="Tu nombre"
                 />
                 <button
                   type="button"
                   class="name-random"
-                  (click)="setRandomUsername()"
+                  [class.name-random--rolling]="randomNameRolling()"
+                  (click)="randomizeUsername()"
                   aria-label="Generar nombre aleatorio"
                 >
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <svg
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                    (animationend)="finishRandomNameRoll()"
+                  >
                     <rect
                       x="3"
                       y="3"

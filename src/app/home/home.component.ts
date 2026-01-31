@@ -80,6 +80,10 @@ export class HomeComponent {
   readonly isPublicLobby = signal(true);
   readonly entryMode = signal<'create' | 'join' | null>(null);
   readonly showPublicLobbies = signal(false);
+  readonly randomNameRolling = signal(false);
+  readonly randomNamePending = signal<string | null>(null);
+  readonly randomNameRevealed = signal(false);
+  private randomNameRevealTimeoutId?: number;
   avatarOptions = [...AVATAR_OPTIONS];
   readonly avatarCredit = AVATAR_CREDIT;
   readonly selectedAvatar = signal(this.avatarOptions[0]);
@@ -451,6 +455,11 @@ export class HomeComponent {
     const interval = window.setInterval(() => this.tickElapsed(), 50);
     this.destroyRef.onDestroy(() => window.clearInterval(interval));
     this.destroyRef.onDestroy(() => this.clearDissolveCountdown());
+    this.destroyRef.onDestroy(() => {
+      if (this.randomNameRevealTimeoutId) {
+        window.clearTimeout(this.randomNameRevealTimeoutId);
+      }
+    });
   }
 
   async createLobby() {
@@ -1122,8 +1131,57 @@ export class HomeComponent {
     this.selectedAvatar.set(this.avatarOptions[randomIndex]);
   }
 
+  randomizeUsername() {
+    const next = this.generateRandomUsername();
+    this.randomNamePending.set(next);
+    this.triggerRandomNameRoll();
+  }
+
   setRandomUsername() {
     this.username.set(this.generateRandomUsername());
+  }
+
+  finishRandomNameRoll() {
+    this.randomNameRolling.set(false);
+  }
+
+  finishRandomNameReveal() {
+    this.randomNameRevealed.set(false);
+  }
+
+  private triggerRandomNameRoll() {
+    if (this.randomNameRolling()) {
+      this.randomNameRolling.set(false);
+      requestAnimationFrame(() => this.randomNameRolling.set(true));
+      this.scheduleRandomNameReveal();
+      return;
+    }
+    this.randomNameRolling.set(true);
+    this.scheduleRandomNameReveal();
+  }
+
+  private triggerRandomNameReveal() {
+    if (this.randomNameRevealed()) {
+      this.randomNameRevealed.set(false);
+      requestAnimationFrame(() => this.randomNameRevealed.set(true));
+      return;
+    }
+    this.randomNameRevealed.set(true);
+  }
+
+  private scheduleRandomNameReveal() {
+    if (this.randomNameRevealTimeoutId) {
+      window.clearTimeout(this.randomNameRevealTimeoutId);
+    }
+    this.randomNameRevealTimeoutId = window.setTimeout(() => {
+      const pending = this.randomNamePending();
+      if (pending) {
+        this.username.set(pending);
+        this.randomNamePending.set(null);
+      }
+      this.triggerRandomNameReveal();
+      this.randomNameRevealTimeoutId = undefined;
+    }, 300);
   }
 
   private shuffleAvatars() {

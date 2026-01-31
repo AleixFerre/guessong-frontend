@@ -14,15 +14,18 @@
           required
           [value]="lobbyName()()"
           (input)="lobbyName().set($any($event.target).value)"
+          [class.name-input--reveal]="lobbyNameRevealed()"
+          (animationend)="finishLobbyNameReveal()"
           placeholder="Sala de amigos"
         />
         <button
           type="button"
           class="name-random"
+          [class.name-random--rolling]="lobbyNameRolling()"
           (click)="setRandomLobbyName()"
           aria-label="Generar nombre de sala aleatorio"
         >
-          <svg viewBox="0 0 24 24" aria-hidden="true">
+          <svg viewBox="0 0 24 24" aria-hidden="true" (animationend)="finishLobbyNameRoll()">
             <rect
               x="3"
               y="3"

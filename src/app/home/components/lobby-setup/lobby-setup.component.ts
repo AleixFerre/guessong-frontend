@@ -99,6 +99,10 @@ export class LobbySetupComponent {
 
   readonly selectedPreset = signal<PresetKey>('beginner');
   readonly refreshCooldownActive = signal(false);
+  readonly lobbyNameRolling = signal(false);
+  readonly lobbyNamePending = signal<string | null>(null);
+  readonly lobbyNameRevealed = signal(false);
+  private lobbyNameRevealTimeoutId?: number;
   readonly lastRefreshAtMs = signal<number | null>(null);
   readonly refreshCooldownRemainingSec = signal(0);
   readonly refreshButtonLabel = computed(() =>
@@ -207,7 +211,16 @@ export class LobbySetupComponent {
     if (!this.lobbyNameGenerator) {
       this.lobbyNameGenerator = createLobbyNameGenerator(10, 18);
     }
-    this.lobbyName().set(this.lobbyNameGenerator.next());
+    this.lobbyNamePending.set(this.lobbyNameGenerator.next());
+    this.triggerLobbyNameRoll();
+  }
+
+  finishLobbyNameRoll() {
+    this.lobbyNameRolling.set(false);
+  }
+
+  finishLobbyNameReveal() {
+    this.lobbyNameRevealed.set(false);
   }
 
   private resolvePresetKey(): PresetKey {
@@ -250,6 +263,41 @@ export class LobbySetupComponent {
       return 'hard';
     }
     return 'custom';
+  }
+
+  private triggerLobbyNameRoll() {
+    if (this.lobbyNameRolling()) {
+      this.lobbyNameRolling.set(false);
+      requestAnimationFrame(() => this.lobbyNameRolling.set(true));
+      this.scheduleLobbyNameReveal();
+      return;
+    }
+    this.lobbyNameRolling.set(true);
+    this.scheduleLobbyNameReveal();
+  }
+
+  private triggerLobbyNameReveal() {
+    if (this.lobbyNameRevealed()) {
+      this.lobbyNameRevealed.set(false);
+      requestAnimationFrame(() => this.lobbyNameRevealed.set(true));
+      return;
+    }
+    this.lobbyNameRevealed.set(true);
+  }
+
+  private scheduleLobbyNameReveal() {
+    if (this.lobbyNameRevealTimeoutId) {
+      window.clearTimeout(this.lobbyNameRevealTimeoutId);
+    }
+    this.lobbyNameRevealTimeoutId = window.setTimeout(() => {
+      const pending = this.lobbyNamePending();
+      if (pending) {
+        this.lobbyName().set(pending);
+        this.lobbyNamePending.set(null);
+      }
+      this.triggerLobbyNameReveal();
+      this.lobbyNameRevealTimeoutId = undefined;
+    }, 300);
   }
 
   requestRefreshPublicLobbies() {

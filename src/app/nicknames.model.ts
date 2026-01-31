@@ -42,16 +42,21 @@ type LobbyNameOptions = {
 };
 
 const ADJECTIVES = [
-  'agil',
+  'ágil',
   'alto',
   'bajo',
   'bravo',
   'claro',
   'cósmico',
+  'eléctrico',
   'dulce',
+  'fantástico',
   'fiero',
   'fresco',
   'funky',
+  'heroico',
+  'luminoso',
+  'magnético',
   'misterioso',
   'rápido',
   'rítmico',
@@ -65,21 +70,56 @@ const NOUNS = [
   'beat',
   'cometa',
   'eco',
+  'estrella',
+  'guitarra',
   'fuego',
   'jaguar',
   'lince',
   'lobo',
   'luna',
+  'melodía',
   'neón',
   'puma',
+  'rosa',
+  'sirena',
+  'sol',
+  'satélite',
   'rayo',
   'ritmo',
   'tango',
   'tigre',
+  'trueno',
   'vinilo',
   'viento',
   'zorro',
 ];
+
+const NOUN_GENDER: Record<string, 'f' | 'm'> = {
+  cometa: 'm',
+  eco: 'm',
+  estrella: 'f',
+  guitarra: 'f',
+  fuego: 'm',
+  jaguar: 'm',
+  lince: 'm',
+  lobo: 'm',
+  luna: 'f',
+  melodía: 'f',
+  neón: 'm',
+  puma: 'm',
+  rayo: 'm',
+  ritmo: 'm',
+  rosa: 'f',
+  satélite: 'm',
+  sirena: 'f',
+  sol: 'm',
+  tango: 'm',
+  tigre: 'm',
+  trueno: 'm',
+  vinilo: 'm',
+  viento: 'm',
+  zorro: 'm',
+};
 
 const PROPER_NAMES = [
   'alma',
@@ -172,6 +212,19 @@ const LOBBY_ADJECTIVES = [
   'brillante',
   'oscura',
 ];
+
+const LOBBY_PLACE_GENDER: Record<string, 'f' | 'm'> = {
+  Sala: 'f',
+  Club: 'm',
+  Guarida: 'f',
+  Estudio: 'm',
+  Rincón: 'm',
+  Refugio: 'm',
+  Cabina: 'f',
+  Hangar: 'm',
+  Escenario: 'm',
+  Cueva: 'f',
+};
 
 const TEMPLATES: NicknameTemplate[] = [
   { parts: ['adjective', 'noun'], weight: 40 },
@@ -271,7 +324,6 @@ function generateRandomNickname(options: NicknameOptions = {}) {
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt += 1) {
     const template = pickWeightedTemplate(TEMPLATES);
     const parts: NicknameParts = {};
-    const words: string[] = [];
     const usedWords = new Set<string>();
     for (const partName of template.parts) {
       const pool = PART_SOURCES[partName];
@@ -279,11 +331,10 @@ function generateRandomNickname(options: NicknameOptions = {}) {
       const avoidValues = [previousValue, ...usedWords].filter(Boolean) as string[];
       const value = pickDifferent(pool, avoidValues);
       parts[partName] = value;
-      words.push(formatWord(value, partName));
       usedWords.add(value);
     }
 
-    const nickname = words.join(' ').trim();
+    const nickname = formatNickname(template.parts, parts);
     if (!nickname) {
       continue;
     }
@@ -325,6 +376,9 @@ function generateRandomLobbyName(options: LobbyNameOptions = {}) {
     if (!name) {
       continue;
     }
+    if (hasRedundantLobbyParts(parts)) {
+      continue;
+    }
     if (name.length < minLength || name.length > maxLength) {
       continue;
     }
@@ -336,6 +390,26 @@ function generateRandomLobbyName(options: LobbyNameOptions = {}) {
 
   const fallback = findFallbackLobbyName(minLength, maxLength);
   return { name: fallback || 'Sala', parts: {} };
+}
+
+function hasRedundantLobbyParts(parts: LobbyNameParts) {
+  const theme = parts.theme;
+  const descriptor = parts.descriptor;
+  if (theme && descriptor) {
+    const normalizedTheme = normalizeWord(theme);
+    const normalizedDescriptor = normalizeWord(descriptor);
+    if (normalizedDescriptor.includes(normalizedTheme)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function normalizeWord(value: string) {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
 }
 
 function pickWeightedTemplate<T extends { weight: number }>(templates: T[]) {
@@ -369,6 +443,14 @@ function pickDifferent(pool: string[], avoidValues: string[] = []) {
 }
 
 function formatNickname(order: TemplatePart[], parts: NicknameParts) {
+  if (order.length === 2 && order[0] === 'adjective' && order[1] === 'noun') {
+    const adjective = parts.adjective;
+    const noun = parts.noun;
+    if (!adjective || !noun) {
+      return '';
+    }
+    return formatAdjectiveNoun(adjective, noun);
+  }
   const words: string[] = [];
   for (const partName of order) {
     const rawValue = parts[partName];
@@ -385,6 +467,25 @@ function formatWord(value: string, partName: TemplatePart) {
     return value;
   }
   return capitalizeWord(value);
+}
+
+function formatAdjectiveNoun(adjective: string, noun: string) {
+  const resolvedAdjective = inflectAdjectiveForNoun(adjective, noun);
+  return `${capitalizeWord(noun)} ${capitalizeWord(resolvedAdjective)}`.trim();
+}
+
+function inflectAdjectiveForNoun(adjective: string, noun: string) {
+  if (!isFeminineNoun(noun)) {
+    return adjective;
+  }
+  if (adjective.endsWith('o')) {
+    return `${adjective.slice(0, -1)}a`;
+  }
+  return adjective;
+}
+
+function isFeminineNoun(noun: string) {
+  return NOUN_GENDER[noun] === 'f';
 }
 
 function capitalizeWord(word: string) {
@@ -407,6 +508,14 @@ function findFallbackNickname(minLength: number, maxLength: number) {
 }
 
 function formatLobbyName(order: LobbyTemplatePart[], parts: LobbyNameParts) {
+  if (order.length === 2 && order[0] === 'place' && order[1] === 'adjective') {
+    const place = parts.place;
+    const adjective = parts.adjective;
+    if (!place || !adjective) {
+      return '';
+    }
+    return formatPlaceAdjective(place, adjective);
+  }
   const words: string[] = [];
   for (const partName of order) {
     const rawValue = parts[partName];
@@ -423,6 +532,25 @@ function formatLobbyWord(value: string, partName: LobbyTemplatePart) {
     return value;
   }
   return capitalizeWord(value);
+}
+
+function formatPlaceAdjective(place: string, adjective: string) {
+  const resolvedAdjective = inflectAdjectiveForPlace(adjective, place);
+  return `${capitalizeWord(place)} ${capitalizeWord(resolvedAdjective)}`.trim();
+}
+
+function inflectAdjectiveForPlace(adjective: string, place: string) {
+  const gender = LOBBY_PLACE_GENDER[place];
+  if (!gender) {
+    return adjective;
+  }
+  if (gender === 'f' && adjective.endsWith('o')) {
+    return `${adjective.slice(0, -1)}a`;
+  }
+  if (gender === 'm' && adjective.endsWith('a')) {
+    return `${adjective.slice(0, -1)}o`;
+  }
+  return adjective;
 }
 
 function findFallbackLobbyName(minLength: number, maxLength: number) {

@@ -191,6 +191,10 @@ select {
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
+.panel--menu .menu-actions-block > * {
+  animation: menu-swap 0.45s ease;
+}
+
 .menu-card {
   display: flex;
   align-items: center;
@@ -310,6 +314,15 @@ select {
 .name-random svg {
   width: 20px;
   height: 20px;
+  transform-origin: center;
+}
+
+.name-random--rolling svg {
+  animation: dice-roll 0.6s ease-out;
+}
+
+.name-input--reveal {
+  animation: name-reveal 0.45s ease;
 }
 
 .avatar-picker {
@@ -419,6 +432,36 @@ select {
     transform 0.2s ease,
     box-shadow 0.2s ease,
     filter 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.icon-button svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+.icon-button__glow {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255, 213, 95, 0.35), transparent 55%),
+    radial-gradient(circle at 80% 70%, rgba(139, 255, 204, 0.3), transparent 50%);
+  transition: opacity 0.25s ease;
+}
+
+.icon-button--back {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(223, 242, 255, 0.9));
+  border-color: rgba(31, 140, 255, 0.4);
+  box-shadow:
+    0 10px 18px rgba(31, 140, 255, 0.18),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+}
+
+.icon-button--back svg {
+  transform: translateX(-2px);
 }
 
 .icon-button:hover {
@@ -426,8 +469,16 @@ select {
   filter: brightness(1.05);
 }
 
+.icon-button:hover .icon-button__glow {
+  opacity: 1;
+}
+
 .icon-button:active {
   transform: translateY(1px);
+}
+
+.icon-button--back:active {
+  transform: translateY(1px) scale(0.98);
 }
 
 @keyframes avatar-pulse {
@@ -463,6 +514,44 @@ select {
   }
   50% {
     transform: rotate(-6deg);
+  }
+}
+
+@keyframes menu-swap {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes dice-roll {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes name-reveal {
+  0% {
+    transform: translateY(6px) scale(0.98);
+    opacity: 0.2;
+    box-shadow: 0 0 0 rgba(255, 213, 95, 0);
+  }
+  60% {
+    transform: translateY(-2px) scale(1.01);
+    opacity: 1;
+    box-shadow: 0 0 0 6px rgba(255, 213, 95, 0.18);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+    box-shadow: 0 0 0 rgba(255, 213, 95, 0);
   }
 }
 
