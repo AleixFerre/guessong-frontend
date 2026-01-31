@@ -62,6 +62,8 @@ export class HomeComponent {
   private readonly destroyRef = inject(DestroyRef);
   private libraryTracksRequestId = 0;
   private lastLoadedLibraryId: LibraryId | null = null;
+  private avatarSpinTimeoutId?: number;
+  private avatarSpinning = false;
 
   readonly libraries = signal<LibraryInfo[]>([]);
   readonly username = signal('');
@@ -459,6 +461,12 @@ export class HomeComponent {
       if (this.randomNameRevealTimeoutId) {
         window.clearTimeout(this.randomNameRevealTimeoutId);
       }
+    });
+    this.destroyRef.onDestroy(() => {
+      if (this.avatarSpinTimeoutId) {
+        window.clearTimeout(this.avatarSpinTimeoutId);
+      }
+      this.avatarSpinning = false;
     });
   }
 
@@ -1124,11 +1132,44 @@ export class HomeComponent {
   }
 
   selectRandomAvatar() {
-    if (!this.avatarOptions.length) {
+    if (!this.avatarOptions.length || this.avatarSpinning) {
       return;
     }
-    const randomIndex = Math.floor(Math.random() * this.avatarOptions.length);
-    this.selectedAvatar.set(this.avatarOptions[randomIndex]);
+    this.avatarSpinning = true;
+    const steps = this.randomSpinSteps(this.avatarOptions.length);
+    let stepIndex = 0;
+    let delay = 70;
+    const spin = () => {
+      if (!this.avatarSpinning) {
+        return;
+      }
+      const nextIndex = this.nextAvatarIndex();
+      this.selectedAvatar.set(this.avatarOptions[nextIndex]);
+      stepIndex += 1;
+      if (stepIndex >= steps) {
+        this.avatarSpinning = false;
+        this.avatarSpinTimeoutId = undefined;
+        return;
+      }
+      delay *= 1.18;
+      this.avatarSpinTimeoutId = window.setTimeout(spin, delay);
+    };
+    this.avatarSpinTimeoutId = window.setTimeout(spin, delay);
+  }
+
+  private nextAvatarIndex() {
+    const current = this.selectedAvatar();
+    const currentIndex = this.avatarOptions.findIndex((avatar) => avatar === current);
+    if (currentIndex === -1) {
+      return 0;
+    }
+    return (currentIndex + 1) % this.avatarOptions.length;
+  }
+
+  private randomSpinSteps(total: number) {
+    const min = Math.max(4, Math.min(6, total));
+    const max = Math.max(min + 4, Math.min(12, total + 6));
+    return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 
   randomizeUsername() {
