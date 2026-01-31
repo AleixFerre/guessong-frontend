@@ -202,16 +202,25 @@ const LOBBY_DESCRIPTORS = [
 ];
 
 const LOBBY_ADJECTIVES = [
-  'secreta',
-  'nocturna',
-  'eléctrica',
-  'sonora',
+  'secreto',
+  'nocturno',
+  'eléctrico',
+  'sonoro',
   'retro',
-  'legendaria',
+  'legendario',
   'salvaje',
   'brillante',
-  'oscura',
+  'oscuro',
 ];
+
+const LOBBY_ADJECTIVE_FORMS: Record<string, { f: string; m: string }> = {
+  secreto: { f: 'secreta', m: 'secreto' },
+  nocturno: { f: 'nocturna', m: 'nocturno' },
+  eléctrico: { f: 'eléctrica', m: 'eléctrico' },
+  sonoro: { f: 'sonora', m: 'sonoro' },
+  legendario: { f: 'legendaria', m: 'legendario' },
+  oscuro: { f: 'oscura', m: 'oscuro' },
+};
 
 const LOBBY_PLACE_GENDER: Record<string, 'f' | 'm'> = {
   Sala: 'f',
@@ -225,6 +234,8 @@ const LOBBY_PLACE_GENDER: Record<string, 'f' | 'm'> = {
   Escenario: 'm',
   Cueva: 'f',
 };
+
+const LOBBY_THEME_ADJECTIVES = new Set(['Bajo']);
 
 const TEMPLATES: NicknameTemplate[] = [
   { parts: ['adjective', 'noun'], weight: 40 },
@@ -360,7 +371,6 @@ function generateRandomLobbyName(options: LobbyNameOptions = {}) {
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt += 1) {
     const template = pickWeightedTemplate(LOBBY_TEMPLATES);
     const parts: LobbyNameParts = {};
-    const words: string[] = [];
     const usedWords = new Set<string>();
     for (const partName of template.parts) {
       const pool = LOBBY_PART_SOURCES[partName];
@@ -368,11 +378,10 @@ function generateRandomLobbyName(options: LobbyNameOptions = {}) {
       const avoidValues = [previousValue, ...usedWords].filter(Boolean) as string[];
       const value = pickDifferent(pool, avoidValues);
       parts[partName] = value;
-      words.push(formatLobbyWord(value, partName));
       usedWords.add(value);
     }
 
-    const name = words.join(' ').trim();
+    const name = formatLobbyName(template.parts, parts);
     if (!name) {
       continue;
     }
@@ -508,6 +517,14 @@ function findFallbackNickname(minLength: number, maxLength: number) {
 }
 
 function formatLobbyName(order: LobbyTemplatePart[], parts: LobbyNameParts) {
+  if (order.length === 2 && order[0] === 'place' && order[1] === 'theme') {
+    const place = parts.place;
+    const theme = parts.theme;
+    if (!place || !theme) {
+      return '';
+    }
+    return formatPlaceTheme(place, theme);
+  }
   if (order.length === 2 && order[0] === 'place' && order[1] === 'adjective') {
     const place = parts.place;
     const adjective = parts.adjective;
@@ -539,10 +556,19 @@ function formatPlaceAdjective(place: string, adjective: string) {
   return `${capitalizeWord(place)} ${capitalizeWord(resolvedAdjective)}`.trim();
 }
 
+function formatPlaceTheme(place: string, theme: string) {
+  const resolvedTheme = inflectThemeForPlace(theme, place);
+  return `${capitalizeWord(place)} ${capitalizeWord(resolvedTheme)}`.trim();
+}
+
 function inflectAdjectiveForPlace(adjective: string, place: string) {
   const gender = LOBBY_PLACE_GENDER[place];
   if (!gender) {
     return adjective;
+  }
+  const mapped = LOBBY_ADJECTIVE_FORMS[adjective];
+  if (mapped) {
+    return gender === 'f' ? mapped.f : mapped.m;
   }
   if (gender === 'f' && adjective.endsWith('o')) {
     return `${adjective.slice(0, -1)}a`;
@@ -551,6 +577,17 @@ function inflectAdjectiveForPlace(adjective: string, place: string) {
     return `${adjective.slice(0, -1)}o`;
   }
   return adjective;
+}
+
+function inflectThemeForPlace(theme: string, place: string) {
+  if (!LOBBY_THEME_ADJECTIVES.has(theme)) {
+    return theme;
+  }
+  const gender = LOBBY_PLACE_GENDER[place];
+  if (gender === 'f' && theme.endsWith('o')) {
+    return `${theme.slice(0, -1)}a`;
+  }
+  return theme;
 }
 
 function findFallbackLobbyName(minLength: number, maxLength: number) {
