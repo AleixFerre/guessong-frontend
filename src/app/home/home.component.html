@@ -157,28 +157,12 @@
                   (click)="randomizeUsername()"
                   aria-label="Generar nombre aleatorio"
                 >
-                  <svg
-                    viewBox="0 0 24 24"
+                  <img
+                    src="/icons/dice.svg"
+                    alt=""
                     aria-hidden="true"
                     (animationend)="finishRandomNameRoll()"
-                  >
-                    <rect
-                      x="3"
-                      y="3"
-                      width="18"
-                      height="18"
-                      rx="4"
-                      ry="4"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                    ></rect>
-                    <circle cx="8" cy="8" r="1.5" fill="currentColor"></circle>
-                    <circle cx="16" cy="8" r="1.5" fill="currentColor"></circle>
-                    <circle cx="8" cy="16" r="1.5" fill="currentColor"></circle>
-                    <circle cx="16" cy="16" r="1.5" fill="currentColor"></circle>
-                    <circle cx="12" cy="12" r="1.5" fill="currentColor"></circle>
-                  </svg>
+                  />
                 </button>
               </div>
             </div>
@@ -199,7 +183,7 @@
                 (click)="selectRandomAvatar()"
                 aria-label="Seleccionar avatar aleatorio"
               >
-                ?
+                <img src="/icons/dice.svg" alt="" aria-hidden="true" />
               </button>
             </div>
             <p class="avatar-credit">{{ avatarCredit }}</p>
