@@ -15,9 +15,16 @@
   @if (audioUnavailable()) {
     <div class="audio-warning">No hay audio disponible para esta ronda.</div>
   }
-  @if (requireBuzzToGuess()) {
+  @if (requireBuzzToGuess() || canReplayClip()) {
     <div class="controls">
-      <button class="buzz" [disabled]="!canBuzz()" (click)="buzzRequest.emit()">PULSA</button>
+      @if (requireBuzzToGuess()) {
+        <button class="buzz" [disabled]="!canBuzz()" (click)="buzzRequest.emit()">PULSA</button>
+      }
+      @if (canReplayClip()) {
+        <button class="secondary" type="button" (click)="replayClipRequest.emit()">
+          {{ clipLabel() }}
+        </button>
+      }
     </div>
   }
   @if (roundStatus() === 'PAUSED' && buzzCountdownSec() !== null) {
@@ -34,6 +41,8 @@
   <div class="guess">
     <app-guess-input
       [tracks]="guessTracks()"
+      [mode]="mode()"
+      [libraryId]="libraryId()"
       [disabled]="!canGuess() || !hasGuessesLeft()"
       (guessSelect)="onGuessSelect($event)"
     />

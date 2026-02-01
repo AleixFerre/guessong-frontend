@@ -5,6 +5,15 @@
   margin-bottom: 1rem;
 }
 
+.range-row {
+  display: flex;
+  align-items: center;
+}
+
+.range-row input[type='range'] {
+  width: 100%;
+}
+
 .input-with-action {
   display: flex;
   align-items: stretch;

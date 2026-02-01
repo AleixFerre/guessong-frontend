@@ -1,4 +1,4 @@
-export type LobbyMode = 'BUZZ' | 'WRITE' | 'ONE_SECOND';
+export type LobbyMode = 'CLASSIC' | 'BUZZ' | 'ORIGIN' | 'MID_CLIP' | 'WRITE' | 'ONE_SECOND';
 
 export enum LibraryId {
   ANIME = 'anime',
@@ -25,6 +25,7 @@ export interface LobbySnapshot {
     mode: LobbyMode;
     library: LibraryId;
     roundDuration: number;
+    clipSeconds: number;
     penalty: number;
     maxPlayers: number;
     totalRounds: number;
@@ -65,11 +66,13 @@ export interface LibraryTrack {
   title: string;
   artist: string;
   duration: number;
+  origin?: string;
 }
 
 export interface RoundStartPayload {
   clipUrl: string;
   clipDuration: number;
+  clipStartSeconds?: number;
   startAtServerTs: number;
   mode: LobbyMode;
   guessOptions: LibraryTrack[];
@@ -78,6 +81,7 @@ export interface RoundStartPayload {
 export interface PlayPayload {
   startAtServerTs: number;
   seekToSeconds?: number;
+  roundOffsetSeconds?: number;
 }
 
 export interface PausePayload {
@@ -90,7 +94,7 @@ export interface RoundEndPayload {
   reason: 'WIN' | 'TIMEOUT' | 'SKIP';
   winnerId: string | null;
   pointsAwarded: number;
-  revealedTrackMeta: { title: string; artist: string };
+  revealedTrackMeta: { title: string; artist: string; origin?: string };
   leaderboard: Player[];
 }
 

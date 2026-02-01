@@ -22,6 +22,7 @@ import {
   LibraryId,
   LibraryInfo,
   LibraryTrack,
+  LobbyMode,
   LobbySnapshot,
   MAX_GUESSES_PER_ROUND,
   MAX_LOCKOUT_SECONDS,
@@ -35,6 +36,7 @@ import {
   RoundEndPayload,
   RoundStartPayload,
 } from '../models';
+import { formatGuessLabel, formatSongGuessLabel, getModeLabel, isMidClipMode } from '../game-modes';
 import { NicknameGenerator, createNicknameGenerator } from '../nicknames.model';
 import { ApiService } from '../services/api.service';
 import { AudioService } from '../services/audio.service';
@@ -70,7 +72,9 @@ export class HomeComponent {
   readonly lobbyName = signal('');
   readonly joinLobbyId = signal('');
   readonly library = signal<LibraryId | ''>('');
+  readonly mode = signal<LobbyMode>('CLASSIC');
   readonly roundDuration = signal(BEGINNER_ROUND_DURATION);
+  readonly clipSeconds = signal(2);
   readonly penalty = signal(BEGINNER_PENALTY);
   readonly maxPlayers = signal(8);
   readonly totalRoundsInput = signal(BEGINNER_TOTAL_ROUNDS);
@@ -98,9 +102,11 @@ export class HomeComponent {
   readonly excludedGuessOptions = signal<string[]>([]);
   readonly guessCounts = signal<Record<string, number>>({});
   readonly roundStatus = signal<'IDLE' | 'PLAYING' | 'PAUSED' | 'ENDED'>('IDLE');
+  readonly roundMode = signal<LobbyMode>('CLASSIC');
   readonly roundStartAt = signal<number | null>(null);
   readonly roundDurationSec = signal(30);
   readonly clipDuration = signal(0);
+  readonly clipStartSeconds = signal(0);
   readonly pausedOffsetSeconds = signal<number | null>(null);
   readonly buzzDeadlineAt = signal<number | null>(null);
   readonly buzzCountdownSec = signal<number | null>(null);
@@ -125,7 +131,9 @@ export class HomeComponent {
   readonly settingsBaseline = signal<{
     name: string;
     library: LibraryId | '';
+    mode: LobbyMode;
     roundDuration: number;
+    clipSeconds: number;
     penalty: number;
     maxPlayers: number;
     totalRounds: number;
@@ -253,6 +261,15 @@ export class HomeComponent {
   readonly activeLibraryId = computed<LibraryId | ''>(
     () => this.lobby()?.settings.library ?? this.library(),
   );
+  readonly activeMode = computed(() => this.lobby()?.settings.mode ?? this.mode());
+  readonly effectiveMode = computed(() => {
+    const status = this.roundStatus();
+    if (status === 'PLAYING' || status === 'PAUSED' || status === 'ENDED') {
+      return this.roundMode();
+    }
+    return this.activeMode();
+  });
+  readonly isMidClipModeActive = computed(() => isMidClipMode(this.effectiveMode()));
 
   readonly isHost = computed(() => !!this.lobby() && this.lobby()?.hostId === this.playerId());
   readonly currentPlayer = computed(
@@ -287,6 +304,15 @@ export class HomeComponent {
     const remaining = this.remainingGuesses();
     const hasGuessesLeft = maxGuesses <= 0 || remaining === null || remaining > 0;
     return this.roundStatus() === 'PLAYING' && !player.lockedForRound && hasGuessesLeft;
+  });
+  readonly canReplayClip = computed(() => {
+    if (!this.isMidClipModeActive()) {
+      return false;
+    }
+    if (this.audioUnavailable()) {
+      return false;
+    }
+    return this.roundStatus() === 'PLAYING' && this.clipDuration() > 0;
   });
 
   readonly progressPercent = computed(() => {
@@ -358,6 +384,13 @@ export class HomeComponent {
         this.roundDuration.set(MAX_ROUND_DURATION_SEC);
       } else if (duration < 5) {
         this.roundDuration.set(5);
+      }
+
+      const clipSeconds = this.clipSeconds();
+      if (clipSeconds > 5) {
+        this.clipSeconds.set(5);
+      } else if (clipSeconds < 0.1) {
+        this.clipSeconds.set(0.1);
       }
 
       const players = this.maxPlayers();
@@ -494,15 +527,16 @@ export class HomeComponent {
           name: lobbyName,
           avatar: this.selectedAvatar() || undefined,
           isPublic: this.isPublicLobby(),
-          mode: 'BUZZ',
+          mode: this.mode(),
           library,
           roundDuration: this.roundDuration(),
+          clipSeconds: this.clipSeconds(),
           penalty: this.penalty(),
           maxPlayers: this.maxPlayers(),
           totalRounds: this.totalRoundsInput(),
           maxGuessesPerRound: this.maxGuessesPerRound(),
           guessOptionsLimit: this.guessOptionsLimit(),
-          requireBuzzToGuess: this.requireBuzzToGuess(),
+          requireBuzzToGuess: this.mode() === 'BUZZ',
           lockoutSeconds: this.lockoutSeconds(),
           responseSeconds: this.responseSeconds(),
         }),
@@ -560,6 +594,13 @@ export class HomeComponent {
     this.ws.send('GUESS', { guessText: text });
   }
 
+  replayClip() {
+    if (!this.canReplayClip()) {
+      return;
+    }
+    this.audio.playSnippet(this.clipStartSeconds(), this.clipDuration());
+  }
+
   requestRematch() {
     if (this.rematchRequested()) {
       return;
@@ -599,13 +640,15 @@ export class HomeComponent {
       name: lobbyName,
       isPublic,
       library,
+      mode: this.mode(),
       roundDuration: this.roundDuration(),
+      clipSeconds: this.clipSeconds(),
       penalty: this.penalty(),
       maxPlayers: this.maxPlayers(),
       totalRounds: this.totalRoundsInput(),
       maxGuessesPerRound: this.maxGuessesPerRound(),
       guessOptionsLimit: this.guessOptionsLimit(),
-      requireBuzzToGuess: this.requireBuzzToGuess(),
+      requireBuzzToGuess: this.mode() === 'BUZZ',
       lockoutSeconds: this.lockoutSeconds(),
       responseSeconds: this.responseSeconds(),
     });
@@ -622,6 +665,9 @@ export class HomeComponent {
     this.roundGuessOptions.set(null);
     this.notifications.set([]);
     this.roundStatus.set('IDLE');
+    this.roundMode.set(this.mode());
+    this.clipDuration.set(0);
+    this.clipStartSeconds.set(0);
     this.activeBuzzPlayerId.set(null);
     this.entryMode.set(null);
     this.audioUnavailable.set(false);
@@ -847,9 +893,11 @@ export class HomeComponent {
     this.excludedGuessOptions.set([]);
     this.guessCounts.set({});
     this.roundStatus.set('PLAYING');
+    this.roundMode.set(payload.mode);
     this.roundStartAt.set(payload.startAtServerTs);
     this.roundDurationSec.set(this.lobby()?.settings.roundDuration ?? 30);
     this.clipDuration.set(payload.clipDuration);
+    this.clipStartSeconds.set(payload.clipStartSeconds ?? 0);
     this.roundGuessOptions.set(payload.guessOptions ?? null);
     this.activeBuzzPlayerId.set(null);
     this.pausedOffsetSeconds.set(null);
@@ -878,12 +926,15 @@ export class HomeComponent {
     this.lastPauseAtServerTs = null;
     if (payload.startAtServerTs) {
       const seekSeconds = payload.seekToSeconds ?? 0;
-      this.roundStartAt.set(payload.startAtServerTs - seekSeconds * 1000);
+      const roundOffsetSeconds = payload.roundOffsetSeconds ?? seekSeconds;
+      this.roundStartAt.set(payload.startAtServerTs - roundOffsetSeconds * 1000);
     }
+    const stopAfterSeconds = this.isMidClipModeActive() ? this.clipDuration() : undefined;
     this.audio.schedulePlay(
       payload.startAtServerTs,
       this.ws.serverOffsetMs(),
       payload.seekToSeconds ?? 0,
+      stopAfterSeconds,
     );
   }
 
@@ -1082,13 +1133,15 @@ export class HomeComponent {
     }
     this.lobbyName.set(lobby.name);
     this.library.set(lobby.settings.library);
+    this.mode.set(lobby.settings.mode);
     this.roundDuration.set(lobby.settings.roundDuration);
+    this.clipSeconds.set(lobby.settings.clipSeconds ?? 2);
     this.penalty.set(lobby.settings.penalty);
     this.maxPlayers.set(lobby.settings.maxPlayers);
     this.totalRoundsInput.set(lobby.settings.totalRounds);
     this.maxGuessesPerRound.set(lobby.settings.maxGuessesPerRound ?? DEFAULT_GUESSES_PER_ROUND);
     this.guessOptionsLimit.set(lobby.settings.guessOptionsLimit);
-    this.requireBuzzToGuess.set(lobby.settings.requireBuzzToGuess);
+    this.requireBuzzToGuess.set(lobby.settings.mode === 'BUZZ');
     this.lockoutSeconds.set(lobby.settings.lockoutSeconds ?? DEFAULT_LOCKOUT_SECONDS);
     this.responseSeconds.set(lobby.settings.responseSeconds ?? DEFAULT_RESPONSE_SECONDS);
     this.isPublicLobby.set(lobby.isPublic);
@@ -1102,7 +1155,9 @@ export class HomeComponent {
     this.joinLobbyId.set('');
     const firstLibrary = this.libraries()[0]?.id ?? '';
     this.library.set(firstLibrary);
+    this.mode.set('CLASSIC');
     this.roundDuration.set(BEGINNER_ROUND_DURATION);
+    this.clipSeconds.set(2);
     this.penalty.set(BEGINNER_PENALTY);
     this.maxPlayers.set(8);
     this.totalRoundsInput.set(BEGINNER_TOTAL_ROUNDS);
@@ -1120,6 +1175,7 @@ export class HomeComponent {
     this.showResultModal.set(false);
     this.showFinalOverlay.set(false);
     this.roundStatus.set('IDLE');
+    this.roundMode.set(this.activeMode());
     this.roundStartAt.set(null);
     this.pausedOffsetSeconds.set(null);
     this.buzzDeadlineAt.set(null);
@@ -1127,6 +1183,7 @@ export class HomeComponent {
     this.nextRoundCountdownSec.set(null);
     this.activeBuzzPlayerId.set(null);
     this.roundGuessOptions.set(null);
+    this.clipStartSeconds.set(0);
     this.roundEndAtServerTs = null;
     this.audio.stop();
   }
@@ -1262,13 +1319,15 @@ export class HomeComponent {
     return {
       name: lobby.name,
       library: lobby.settings.library,
+      mode: lobby.settings.mode,
       roundDuration: lobby.settings.roundDuration,
+      clipSeconds: lobby.settings.clipSeconds ?? 2,
       penalty: lobby.settings.penalty,
       maxPlayers: lobby.settings.maxPlayers,
       totalRounds: lobby.settings.totalRounds,
       maxGuessesPerRound: lobby.settings.maxGuessesPerRound ?? DEFAULT_GUESSES_PER_ROUND,
       guessOptionsLimit: lobby.settings.guessOptionsLimit,
-      requireBuzzToGuess: lobby.settings.requireBuzzToGuess,
+      requireBuzzToGuess: lobby.settings.mode === 'BUZZ',
       lockoutSeconds: lobby.settings.lockoutSeconds ?? DEFAULT_LOCKOUT_SECONDS,
       responseSeconds: lobby.settings.responseSeconds ?? DEFAULT_RESPONSE_SECONDS,
       isPublic: lobby.isPublic,
@@ -1279,13 +1338,15 @@ export class HomeComponent {
     return {
       name: this.lobbyName().trim(),
       library: this.library(),
+      mode: this.mode(),
       roundDuration: this.roundDuration(),
+      clipSeconds: this.clipSeconds(),
       penalty: this.penalty(),
       maxPlayers: this.maxPlayers(),
       totalRounds: this.totalRoundsInput(),
       maxGuessesPerRound: this.maxGuessesPerRound(),
       guessOptionsLimit: this.guessOptionsLimit(),
-      requireBuzzToGuess: this.requireBuzzToGuess(),
+      requireBuzzToGuess: this.mode() === 'BUZZ',
       lockoutSeconds: this.lockoutSeconds(),
       responseSeconds: this.responseSeconds(),
       isPublic: this.isPublicLobby(),
@@ -1299,7 +1360,9 @@ export class HomeComponent {
     return (
       left.name === right.name &&
       left.library === right.library &&
+      left.mode === right.mode &&
       left.roundDuration === right.roundDuration &&
+      left.clipSeconds === right.clipSeconds &&
       left.penalty === right.penalty &&
       left.maxPlayers === right.maxPlayers &&
       left.totalRounds === right.totalRounds &&
@@ -1313,8 +1376,11 @@ export class HomeComponent {
   }
 
   private formatGuessOption(track: LibraryTrack) {
-    const artist = track.artist.trim();
-    return artist ? `${artist} - ${track.title}` : track.title;
+    const libraryId = this.activeLibraryId();
+    if (!libraryId) {
+      return formatSongGuessLabel(track);
+    }
+    return formatGuessLabel(track, this.effectiveMode(), libraryId);
   }
 
   private normalizeGuessOption(value: string) {
@@ -1324,6 +1390,13 @@ export class HomeComponent {
   formatCountdown(seconds: number) {
     const safe = Math.max(0, Math.ceil(seconds));
     return `${safe}s`;
+  }
+
+  formatModeLabel(mode: LobbyMode | null | undefined) {
+    if (!mode) {
+      return '';
+    }
+    return getModeLabel(mode);
   }
 
   private applyLobbyLinkFromUrl() {

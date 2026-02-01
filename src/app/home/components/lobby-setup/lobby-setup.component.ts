@@ -1,13 +1,14 @@
 import { Component, WritableSignal, computed, effect, input, output, signal } from '@angular/core';
-import { LibraryInfo, PublicLobbyInfo } from '../../../models';
+import { BaseMode, GAME_MODES, resolveBaseMode } from '../../../game-modes';
+import { LibraryInfo, LobbyMode, PublicLobbyInfo } from '../../../models';
 import { LobbyNameGenerator, createLobbyNameGenerator } from '../../../nicknames.model';
 
 type PresetKey = 'beginner' | 'intermediate' | 'hard' | 'custom';
 
 const TOOLTIP_TEXTS = {
-  requireBuzz: 'Obliga a pulsar el timbre antes de responder.',
   rounds: 'Número total de rondas de la partida.',
   roundDuration: 'Tiempo total que dura cada ronda.',
+  clipSeconds: 'Duración del fragmento reproducido en el modo de clip.',
   maxGuesses: 'Máximo de intentos por jugador en cada ronda.',
   guessOptions: 'Cantidad de canciones disponibles para elegir en cada ronda.',
   lockout: 'Tiempo que un jugador queda bloqueado tras fallar o pulsar antes de tiempo.',
@@ -16,7 +17,6 @@ const TOOLTIP_TEXTS = {
 } as const;
 
 interface PresetValues {
-  requireBuzzToGuess: boolean;
   roundDuration: number;
   totalRounds: number;
   maxGuessesPerRound: number;
@@ -28,7 +28,6 @@ interface PresetValues {
 
 const PRESETS: Record<Exclude<PresetKey, 'custom'>, PresetValues> = {
   beginner: {
-    requireBuzzToGuess: false,
     roundDuration: 30,
     totalRounds: 5,
     maxGuessesPerRound: 0,
@@ -38,7 +37,6 @@ const PRESETS: Record<Exclude<PresetKey, 'custom'>, PresetValues> = {
     penalty: 0,
   },
   intermediate: {
-    requireBuzzToGuess: false,
     roundDuration: 20,
     totalRounds: 6,
     maxGuessesPerRound: 3,
@@ -48,7 +46,6 @@ const PRESETS: Record<Exclude<PresetKey, 'custom'>, PresetValues> = {
     penalty: 10,
   },
   hard: {
-    requireBuzzToGuess: false,
     roundDuration: 12,
     totalRounds: 7,
     maxGuessesPerRound: 2,
@@ -74,13 +71,14 @@ export class LobbySetupComponent {
   readonly lobbyName = input.required<WritableSignal<string>>();
   readonly joinLobbyId = input.required<WritableSignal<string>>();
   readonly library = input.required<WritableSignal<string>>();
+  readonly mode = input.required<WritableSignal<LobbyMode>>();
   readonly roundDuration = input.required<WritableSignal<number>>();
+  readonly clipSeconds = input.required<WritableSignal<number>>();
   readonly penalty = input.required<WritableSignal<number>>();
   readonly maxPlayers = input.required<WritableSignal<number>>();
   readonly totalRounds = input.required<WritableSignal<number>>();
   readonly maxGuessesPerRound = input.required<WritableSignal<number>>();
   readonly guessOptionsLimit = input.required<WritableSignal<number>>();
-  readonly requireBuzzToGuess = input.required<WritableSignal<boolean>>();
   readonly lockoutSeconds = input.required<WritableSignal<number>>();
   readonly responseSeconds = input.required<WritableSignal<number>>();
   readonly isPublicLobby = input.required<WritableSignal<boolean>>();
@@ -110,13 +108,14 @@ export class LobbySetupComponent {
       ? `Actualizar (${this.refreshCooldownRemainingSec()}s)`
       : 'Actualizar',
   );
+  readonly availableModes = GAME_MODES;
+  readonly selectedMode = computed(() => resolveBaseMode(this.mode()()));
+  readonly selectedModeInfo = computed(
+    () => this.availableModes.find((mode) => mode.id === this.selectedMode()) ?? null,
+  );
+  readonly isMidClipMode = computed(() => this.selectedMode() === 'MID_CLIP');
   readonly isCustomPreset = computed(() => this.selectedPreset() === 'custom');
   readonly presetSummary = computed(() => [
-    {
-      label: 'Requiere PULSA',
-      tooltip: TOOLTIP_TEXTS.requireBuzz,
-      value: this.requireBuzzToGuess()() ? 'Si' : 'No',
-    },
     {
       label: 'Rondas',
       tooltip: TOOLTIP_TEXTS.rounds,
@@ -201,7 +200,6 @@ export class LobbySetupComponent {
     this.totalRounds().set(values.totalRounds);
     this.maxGuessesPerRound().set(values.maxGuessesPerRound);
     this.guessOptionsLimit().set(resolvedGuessOptionsLimit);
-    this.requireBuzzToGuess().set(values.requireBuzzToGuess);
     this.lockoutSeconds().set(values.lockoutSeconds);
     this.responseSeconds().set(values.responseSeconds);
     this.penalty().set(values.penalty);
@@ -228,7 +226,6 @@ export class LobbySetupComponent {
     const totalRounds = this.totalRounds()();
     const maxGuessesPerRound = this.maxGuessesPerRound()();
     const guessOptionsLimit = this.guessOptionsLimit()();
-    const requireBuzzToGuess = this.requireBuzzToGuess()();
     const lockoutSeconds = this.lockoutSeconds()();
     const responseSeconds = this.responseSeconds()();
     const penalty = this.penalty()();
@@ -246,7 +243,6 @@ export class LobbySetupComponent {
         values.totalRounds === totalRounds &&
         values.maxGuessesPerRound === maxGuessesPerRound &&
         resolvedGuessOptionsLimit === guessOptionsLimit &&
-        values.requireBuzzToGuess === requireBuzzToGuess &&
         values.lockoutSeconds === lockoutSeconds &&
         values.responseSeconds === responseSeconds &&
         values.penalty === penalty
@@ -336,5 +332,12 @@ export class LobbySetupComponent {
       }
       this.refreshCooldownTimeoutId = undefined;
     }, remainingMs);
+  }
+
+  selectMode(mode: BaseMode) {
+    this.mode().set(mode as LobbyMode);
+    if (mode === 'MID_CLIP' && this.clipSeconds()() <= 0) {
+      this.clipSeconds().set(2);
+    }
   }
 }

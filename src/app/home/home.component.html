@@ -54,13 +54,14 @@
                 [lobbyName]="lobbyName"
                 [joinLobbyId]="joinLobbyId"
                 [library]="library"
+                [mode]="mode"
                 [roundDuration]="roundDuration"
+                [clipSeconds]="clipSeconds"
                 [penalty]="penalty"
                 [maxPlayers]="maxPlayers"
                 [totalRounds]="totalRoundsInput"
                 [maxGuessesPerRound]="maxGuessesPerRound"
                 [guessOptionsLimit]="guessOptionsLimit"
-                [requireBuzzToGuess]="requireBuzzToGuess"
                 [lockoutSeconds]="lockoutSeconds"
                 [responseSeconds]="responseSeconds"
                 [isPublicLobby]="isPublicLobby"
@@ -221,13 +222,14 @@
             [lobbyName]="lobbyName"
             [joinLobbyId]="joinLobbyId"
             [library]="library"
+            [mode]="mode"
             [roundDuration]="roundDuration"
+            [clipSeconds]="clipSeconds"
             [penalty]="penalty"
             [maxPlayers]="maxPlayers"
             [totalRounds]="totalRoundsInput"
             [maxGuessesPerRound]="maxGuessesPerRound"
             [guessOptionsLimit]="guessOptionsLimit"
-            [requireBuzzToGuess]="requireBuzzToGuess"
             [lockoutSeconds]="lockoutSeconds"
             [responseSeconds]="responseSeconds"
             [isPublicLobby]="isPublicLobby"
@@ -250,12 +252,12 @@
               <strong>{{ selectedLibraryInfo()?.name ?? lobby()?.settings?.library }}</strong>
             </div>
             <div class="config-item">
-              <span>Max. jugadores</span>
-              <strong>{{ maxPlayers() }}</strong>
+              <span>Modo de juego</span>
+              <strong>{{ formatModeLabel(lobby()?.settings?.mode) }}</strong>
             </div>
             <div class="config-item">
-              <span>Requiere PULSA</span>
-              <strong>{{ requireBuzzToGuess() ? 'Si' : 'No' }}</strong>
+              <span>Max. jugadores</span>
+              <strong>{{ maxPlayers() }}</strong>
             </div>
             <div class="config-item">
               <span>Rondas</span>
@@ -265,6 +267,12 @@
               <span>Duración de ronda</span>
               <strong>{{ roundDuration() }}s</strong>
             </div>
+            @if (isMidClipModeActive()) {
+              <div class="config-item">
+                <span>Duración del clip</span>
+                <strong>{{ clipSeconds() }}s</strong>
+              </div>
+            }
             <div class="config-item">
               <span>Intentos por ronda</span>
               <strong>{{ maxGuessesPerRound() === 0 ? 'Infinito' : maxGuessesPerRound() }}</strong>
@@ -318,16 +326,21 @@
           [remainingGuesses]="remainingGuesses()"
           [maxGuessesPerRound]="maxGuessesPerRound()"
           [guessTracks]="roundGuessTracks()"
+          [mode]="effectiveMode()"
+          [libraryId]="activeLibraryId()"
           [winnerName]="roundWinnerName()"
           [buzzCountdownSec]="buzzCountdownSec()"
           [buzzOwnerName]="activeBuzzPlayerName()"
           [isBuzzOwner]="activeBuzzPlayerId() === playerId()"
           [requireBuzzToGuess]="requireBuzzToGuess()"
+          [canReplayClip]="canReplayClip()"
+          [clipDuration]="clipDuration()"
           [roundResult]="roundResult()"
           [isWinner]="isRoundWinner()"
           [notifications]="notifications()"
           [audioUnavailable]="audioUnavailable()"
           (buzzRequest)="sendBuzz()"
+          (replayClipRequest)="replayClip()"
           (guessRequest)="sendGuess($event)"
         ></app-game-panel>
       </div>
@@ -344,6 +357,9 @@
         >
           <h3>Resultado</h3>
           <p>{{ result.revealedTrackMeta.artist }} - {{ result.revealedTrackMeta.title }}</p>
+          @if (result.revealedTrackMeta.origin) {
+            <p>Origen: {{ result.revealedTrackMeta.origin }}</p>
+          }
           @if (roundWinnerName()) {
             <div class="winner-row">
               @if (roundWinnerPlayer(); as winner) {

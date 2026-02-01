@@ -1,5 +1,5 @@
 import { Component, input, output } from '@angular/core';
-import { LibraryTrack, RoundEndPayload } from '../../../models';
+import { LibraryId, LibraryTrack, LobbyMode, RoundEndPayload } from '../../../models';
 import { GuessInputComponent } from '../guess-input/guess-input.component';
 
 type RoundStatus = 'IDLE' | 'PLAYING' | 'PAUSED' | 'ENDED';
@@ -23,10 +23,14 @@ export class GamePanelComponent {
   readonly remainingGuesses = input<number | null>(null);
   readonly maxGuessesPerRound = input<number>(0);
   readonly guessTracks = input.required<LibraryTrack[]>();
+  readonly mode = input.required<LobbyMode>();
+  readonly libraryId = input<LibraryId | ''>('');
   readonly buzzCountdownSec = input.required<number | null>();
   readonly buzzOwnerName = input<string | null>(null);
   readonly isBuzzOwner = input<boolean>(false);
   readonly requireBuzzToGuess = input<boolean>(true);
+  readonly canReplayClip = input<boolean>(false);
+  readonly clipDuration = input<number>(0);
   readonly roundResult = input.required<RoundEndPayload | null>();
   readonly winnerName = input<string | null>(null);
   readonly isWinner = input<boolean>(false);
@@ -34,6 +38,7 @@ export class GamePanelComponent {
   readonly audioUnavailable = input.required<boolean>();
 
   readonly buzzRequest = output<void>();
+  readonly replayClipRequest = output<void>();
   readonly guessRequest = output<string>();
 
   formatTime(seconds: number) {
@@ -70,5 +75,10 @@ export class GamePanelComponent {
       return;
     }
     this.guessRequest.emit(option);
+  }
+
+  clipLabel() {
+    const duration = this.clipDuration();
+    return duration > 0 ? `Repetir clip (${duration}s)` : 'Repetir clip';
   }
 }
