@@ -1,24 +1,22 @@
 import fs from 'node:fs';
 import path from 'node:path';
+
 const frontendRoot = path.resolve(__dirname, '..');
+const backendRootCandidates = [
+  path.resolve(frontendRoot, '..', 'guessong-backend'),
+  path.resolve(frontendRoot, '..', 'backend'),
+];
+const resolveFirstExisting = (paths: string[]) =>
+  paths.find((entry) => fs.existsSync(entry)) ?? paths[0];
+const backendRoot = resolveFirstExisting(backendRootCandidates);
 const backendTrackRepo = path.resolve(
-  frontendRoot,
-  '..',
-  'backend',
+  backendRoot,
   'src',
   'game',
   'repositories',
   'track.repository.ts',
 );
-const backendTrackDataDir = path.resolve(
-  frontendRoot,
-  '..',
-  'backend',
-  'src',
-  'game',
-  'repositories',
-  'track-data',
-);
+const backendTrackDataDir = path.resolve(backendRoot, 'src', 'game', 'repositories', 'track-data');
 const publicDir = path.resolve(frontendRoot, 'public');
 const fileUrlRegex = /fileUrl:\s*['"]([^'"]+)['"]/g;
 
@@ -69,3 +67,5 @@ if (missing.length) {
   }
   process.exit(1);
 }
+
+console.log(`\x1b[32m✅ All tests passed\x1b[0m`);
