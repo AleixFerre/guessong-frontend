@@ -182,7 +182,8 @@ select {
 }
 
 .menu-actions {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 1rem;
   margin-top: 1.5rem;
 }
@@ -804,7 +805,7 @@ app-home {
   }
 
   .grid--menu {
-    grid-template-columns: minmax(0, 910px);
+    grid-template-columns: minmax(0, 1160px);
     justify-content: center;
   }
 
