@@ -163,6 +163,26 @@
   color: #1f355b;
 }
 
+.info-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: 0.8rem;
+  background: #fff7da;
+  border: 2px solid rgba(245, 177, 76, 0.5);
+  color: #5a4518;
+}
+
+.info-box span {
+  font-weight: 600;
+}
+
+.info-box small {
+  color: #8a6b2b;
+}
+
 .public-lobbies {
   margin-top: 1rem;
   margin-bottom: 1rem;

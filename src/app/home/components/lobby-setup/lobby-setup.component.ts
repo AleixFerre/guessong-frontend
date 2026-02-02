@@ -26,6 +26,7 @@ interface PresetValues {
   lockoutSeconds: number;
   responseSeconds: number;
   penalty: number;
+  clipSeconds: number;
 }
 
 const PRESETS: Record<Exclude<PresetKey, 'custom'>, PresetValues> = {
@@ -37,6 +38,7 @@ const PRESETS: Record<Exclude<PresetKey, 'custom'>, PresetValues> = {
     lockoutSeconds: 2,
     responseSeconds: 15,
     penalty: 0,
+    clipSeconds: 2.5,
   },
   intermediate: {
     roundDuration: 20,
@@ -46,6 +48,7 @@ const PRESETS: Record<Exclude<PresetKey, 'custom'>, PresetValues> = {
     lockoutSeconds: 2,
     responseSeconds: 10,
     penalty: 10,
+    clipSeconds: 2,
   },
   hard: {
     roundDuration: 12,
@@ -55,6 +58,7 @@ const PRESETS: Record<Exclude<PresetKey, 'custom'>, PresetValues> = {
     lockoutSeconds: 3,
     responseSeconds: 5,
     penalty: 20,
+    clipSeconds: 1.5,
   },
 };
 
@@ -117,6 +121,12 @@ export class LobbySetupComponent {
   );
   readonly isMidClipMode = computed(() => this.selectedMode() === 'MID_CLIP');
   readonly isCustomPreset = computed(() => this.selectedPreset() === 'custom');
+  readonly presetClipSeconds = computed(() => {
+    if (this.selectedPreset() === 'custom') {
+      return this.clipSeconds()();
+    }
+    return PRESETS[this.selectedPreset() as Exclude<PresetKey, 'custom'>].clipSeconds;
+  });
   readonly presetSummary = computed(() => [
     {
       label: 'Rondas',
@@ -175,8 +185,10 @@ export class LobbySetupComponent {
     if (this.selectedMode() !== 'MID_CLIP' || this.selectedPreset() === 'custom') {
       return;
     }
-    if (this.clipSeconds()() !== DEFAULT_CLIP_SECONDS) {
-      this.clipSeconds().set(DEFAULT_CLIP_SECONDS);
+    const presetClipSeconds =
+      PRESETS[this.selectedPreset() as Exclude<PresetKey, 'custom'>].clipSeconds;
+    if (this.clipSeconds()() !== presetClipSeconds) {
+      this.clipSeconds().set(presetClipSeconds);
     }
   });
 
@@ -215,7 +227,7 @@ export class LobbySetupComponent {
     this.responseSeconds().set(values.responseSeconds);
     this.penalty().set(values.penalty);
     if (this.selectedMode() === 'MID_CLIP') {
-      this.clipSeconds().set(DEFAULT_CLIP_SECONDS);
+      this.clipSeconds().set(values.clipSeconds);
     }
   }
 
@@ -243,6 +255,7 @@ export class LobbySetupComponent {
     const lockoutSeconds = this.lockoutSeconds()();
     const responseSeconds = this.responseSeconds()();
     const penalty = this.penalty()();
+    const clipSeconds = this.clipSeconds()();
     const trackCount = this.selectedLibraryInfo()?.trackCount ?? 0;
 
     const matchesPreset = (preset: PresetKey) => {
@@ -252,6 +265,7 @@ export class LobbySetupComponent {
       const values = PRESETS[preset];
       const resolvedGuessOptionsLimit =
         values.guessOptionsLimit > 0 ? values.guessOptionsLimit : trackCount;
+      const matchesClip = this.selectedMode() !== 'MID_CLIP' || values.clipSeconds === clipSeconds;
       return (
         values.roundDuration === roundDuration &&
         values.totalRounds === totalRounds &&
@@ -259,7 +273,8 @@ export class LobbySetupComponent {
         resolvedGuessOptionsLimit === guessOptionsLimit &&
         values.lockoutSeconds === lockoutSeconds &&
         values.responseSeconds === responseSeconds &&
-        values.penalty === penalty
+        values.penalty === penalty &&
+        matchesClip
       );
     };
 
@@ -351,7 +366,9 @@ export class LobbySetupComponent {
   selectMode(mode: BaseMode) {
     this.mode().set(mode as LobbyMode);
     if (mode === 'MID_CLIP' && !this.isCustomPreset()) {
-      this.clipSeconds().set(DEFAULT_CLIP_SECONDS);
+      this.clipSeconds().set(
+        PRESETS[this.selectedPreset() as Exclude<PresetKey, 'custom'>].clipSeconds,
+      );
     } else if (mode === 'MID_CLIP' && this.clipSeconds()() <= 0) {
       this.clipSeconds().set(DEFAULT_CLIP_SECONDS);
     }
