@@ -80,6 +80,15 @@ h2 {
   font-weight: 600;
 }
 
+.wait-banner {
+  padding: 0.65rem 0.9rem;
+  border-radius: 1rem;
+  background: #e8f8ed;
+  border: 2px solid rgba(62, 171, 101, 0.5);
+  color: #1f6b3d;
+  font-weight: 600;
+}
+
 .controls {
   display: flex;
   gap: 0.8rem;

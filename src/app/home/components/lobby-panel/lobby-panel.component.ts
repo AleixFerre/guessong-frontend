@@ -20,6 +20,7 @@ export class LobbyPanelComponent {
   readonly activeBuzzPlayerId = input<string | null>(null);
   readonly maxGuessesPerRound = input<number | null>(null);
   readonly guessCounts = input<Record<string, number>>({});
+  readonly correctPlayers = input<Record<string, boolean>>({});
   readonly showScore = input<boolean>(true);
   readonly showLockout = input<boolean>(true);
   readonly showTries = input<boolean>(true);

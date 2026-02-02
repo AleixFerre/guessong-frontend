@@ -38,6 +38,9 @@
       }
     </div>
   }
+  @if (allowMultipleAnswers() && isPlayerCorrect()) {
+    <div class="wait-banner">Ya acertaste. Espera a que el resto responda para pasar de ronda.</div>
+  }
   <div class="guess">
     <app-guess-input
       [tracks]="guessTracks()"

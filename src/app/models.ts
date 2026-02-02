@@ -32,6 +32,7 @@ export interface LobbySnapshot {
     maxGuessesPerRound: number;
     guessOptionsLimit: number;
     requireBuzzToGuess: boolean;
+    allowMultipleAnswers: boolean;
     lockoutSeconds: number;
     responseSeconds: number;
   };
@@ -50,6 +51,7 @@ export interface PublicLobbyInfo {
   name: string;
   hostId: string;
   library: LibraryId;
+  mode: LobbyMode;
   state: 'WAITING' | 'IN_GAME' | 'FINISHED';
   playersCount: number;
   maxPlayers: number;
@@ -94,6 +96,7 @@ export interface RoundEndPayload {
   reason: 'WIN' | 'TIMEOUT' | 'SKIP';
   winnerId: string | null;
   pointsAwarded: number;
+  correctResponders: string[];
   revealedTrackMeta: { title: string; artist: string; origin?: string };
   leaderboard: Player[];
 }
@@ -102,6 +105,7 @@ export interface GuessResultPayload {
   playerId: string;
   correct: boolean;
   guessText: string;
+  pointsAwarded?: number;
 }
 
 export interface BuzzAcceptedPayload {

@@ -106,6 +106,18 @@
     background-color 0.2s ease;
 }
 
+.toggle span {
+  cursor: pointer;
+}
+
+.toggle input[type='checkbox']:disabled {
+  cursor: not-allowed;
+}
+
+.toggle input[type='checkbox']:disabled + span {
+  cursor: not-allowed;
+}
+
 .toggle input[type='checkbox']:checked {
   background: linear-gradient(135deg, #ffeaa0, var(--accent));
   border-color: transparent;
@@ -229,6 +241,10 @@
 
 .public-library {
   text-transform: capitalize;
+}
+
+.public-mode {
+  text-transform: none;
 }
 
 .public-code {

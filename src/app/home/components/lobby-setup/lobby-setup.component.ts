@@ -16,6 +16,7 @@ const TOOLTIP_TEXTS = {
   lockout: 'Tiempo que un jugador queda bloqueado tras fallar o pulsar antes de tiempo.',
   responseTime: 'Tiempo que tiene el jugador para responder tras pulsar el timbre.',
   penalty: 'Porcentaje de puntos que se resta al fallar.',
+  multiAnswers: 'Permite que todos respondan y sumen puntos en la misma ronda.',
 } as const;
 
 interface PresetValues {
@@ -85,6 +86,7 @@ export class LobbySetupComponent {
   readonly totalRounds = input.required<WritableSignal<number>>();
   readonly maxGuessesPerRound = input.required<WritableSignal<number>>();
   readonly guessOptionsLimit = input.required<WritableSignal<number>>();
+  readonly allowMultipleAnswers = input.required<WritableSignal<boolean>>();
   readonly lockoutSeconds = input.required<WritableSignal<number>>();
   readonly responseSeconds = input.required<WritableSignal<number>>();
   readonly isPublicLobby = input.required<WritableSignal<boolean>>();
@@ -115,11 +117,18 @@ export class LobbySetupComponent {
       : 'Actualizar',
   );
   readonly availableModes = GAME_MODES;
+  readonly modeLabelMap = computed(() =>
+    this.availableModes.reduce<Record<string, string>>((acc, mode) => {
+      acc[mode.id] = mode.label;
+      return acc;
+    }, {}),
+  );
   readonly selectedMode = computed(() => resolveBaseMode(this.mode()()));
   readonly selectedModeInfo = computed(
     () => this.availableModes.find((mode) => mode.id === this.selectedMode()) ?? null,
   );
   readonly isMidClipMode = computed(() => this.selectedMode() === 'MID_CLIP');
+  readonly isBuzzMode = computed(() => this.selectedMode() === 'BUZZ');
   readonly isCustomPreset = computed(() => this.selectedPreset() === 'custom');
   readonly presetClipSeconds = computed(() => {
     if (this.selectedPreset() === 'custom') {
@@ -127,43 +136,47 @@ export class LobbySetupComponent {
     }
     return PRESETS[this.selectedPreset() as Exclude<PresetKey, 'custom'>].clipSeconds;
   });
-  readonly presetSummary = computed(() => [
-    {
-      label: 'Rondas',
-      tooltip: TOOLTIP_TEXTS.rounds,
-      value: String(this.totalRounds()()),
-    },
-    {
-      label: 'Duración de ronda',
-      tooltip: TOOLTIP_TEXTS.roundDuration,
-      value: `${this.roundDuration()()}s`,
-    },
-    {
-      label: 'Intentos por ronda',
-      tooltip: TOOLTIP_TEXTS.maxGuesses,
-      value: this.maxGuessesPerRound()() === 0 ? 'Infinito' : String(this.maxGuessesPerRound()()),
-    },
-    {
-      label: 'Opciones por ronda',
-      tooltip: TOOLTIP_TEXTS.guessOptions,
-      value: String(this.guessOptionsLimit()()),
-    },
-    {
-      label: 'Tiempo de bloqueo',
-      tooltip: TOOLTIP_TEXTS.lockout,
-      value: this.lockoutSeconds()() === 0 ? 'Sin bloqueo' : `${this.lockoutSeconds()()}s`,
-    },
-    {
-      label: 'Tiempo para responder',
-      tooltip: TOOLTIP_TEXTS.responseTime,
-      value: this.responseSeconds()() === 0 ? 'Sin límite' : `${this.responseSeconds()()}s`,
-    },
-    {
-      label: 'Penalización por fallo',
-      tooltip: TOOLTIP_TEXTS.penalty,
-      value: `${this.penalty()()}%`,
-    },
-  ]);
+  readonly presetSummary = computed(() => {
+    const items: Array<{ label: string; tooltip: string; value: string }> = [
+      {
+        label: 'Rondas',
+        tooltip: TOOLTIP_TEXTS.rounds,
+        value: String(this.totalRounds()()),
+      },
+      {
+        label: 'Duración de ronda',
+        tooltip: TOOLTIP_TEXTS.roundDuration,
+        value: `${this.roundDuration()()}s`,
+      },
+      {
+        label: 'Intentos por ronda',
+        tooltip: TOOLTIP_TEXTS.maxGuesses,
+        value: this.maxGuessesPerRound()() === 0 ? 'Infinito' : String(this.maxGuessesPerRound()()),
+      },
+      {
+        label: 'Opciones por ronda',
+        tooltip: TOOLTIP_TEXTS.guessOptions,
+        value: String(this.guessOptionsLimit()()),
+      },
+      {
+        label: 'Tiempo de bloqueo',
+        tooltip: TOOLTIP_TEXTS.lockout,
+        value: this.lockoutSeconds()() === 0 ? 'Sin bloqueo' : `${this.lockoutSeconds()()}s`,
+      },
+      {
+        label: 'Tiempo para responder',
+        tooltip: TOOLTIP_TEXTS.responseTime,
+        value: this.responseSeconds()() === 0 ? 'Sin límite' : `${this.responseSeconds()()}s`,
+      },
+      {
+        label: 'Penalización por fallo',
+        tooltip: TOOLTIP_TEXTS.penalty,
+        value: `${this.penalty()()}%`,
+      },
+    ];
+
+    return items;
+  });
 
   private lobbyNameGenerator: LobbyNameGenerator | null = null;
 
@@ -208,6 +221,11 @@ export class LobbySetupComponent {
 
   tooltipText(key: keyof typeof TOOLTIP_TEXTS) {
     return TOOLTIP_TEXTS[key];
+  }
+
+  formatModeLabel(modeId: LobbyMode) {
+    const resolved = resolveBaseMode(modeId);
+    return this.modeLabelMap()[resolved] ?? modeId;
   }
 
   selectPreset(preset: PresetKey) {

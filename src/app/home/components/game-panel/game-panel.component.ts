@@ -29,6 +29,8 @@ export class GamePanelComponent {
   readonly buzzOwnerName = input<string | null>(null);
   readonly isBuzzOwner = input<boolean>(false);
   readonly requireBuzzToGuess = input<boolean>(true);
+  readonly allowMultipleAnswers = input<boolean>(false);
+  readonly isPlayerCorrect = input<boolean>(false);
   readonly canReplayClip = input<boolean>(false);
   readonly clipDuration = input<number>(0);
   readonly roundResult = input.required<RoundEndPayload | null>();

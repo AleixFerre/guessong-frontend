@@ -36,6 +36,7 @@ export class ApiService {
     maxGuessesPerRound: number;
     guessOptionsLimit: number;
     requireBuzzToGuess: boolean;
+    allowMultipleAnswers: boolean;
     lockoutSeconds: number;
     responseSeconds: number;
   }) {

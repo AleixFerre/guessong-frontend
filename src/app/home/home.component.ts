@@ -66,6 +66,8 @@ export class HomeComponent {
   private lastLoadedLibraryId: LibraryId | null = null;
   private avatarSpinTimeoutId?: number;
   private avatarSpinning = false;
+  private lastMode: LobbyMode | null = null;
+  private allowMultipleAnswersCache = true;
 
   readonly libraries = signal<LibraryInfo[]>([]);
   readonly username = signal('');
@@ -81,6 +83,7 @@ export class HomeComponent {
   readonly maxGuessesPerRound = signal(BEGINNER_MAX_GUESSES_PER_ROUND);
   readonly guessOptionsLimit = signal(4);
   readonly requireBuzzToGuess = signal(false);
+  readonly allowMultipleAnswers = signal(true);
   readonly lockoutSeconds = signal(BEGINNER_LOCKOUT_SECONDS);
   readonly responseSeconds = signal(BEGINNER_RESPONSE_SECONDS);
   readonly isPublicLobby = signal(true);
@@ -101,6 +104,7 @@ export class HomeComponent {
   readonly roundGuessOptions = signal<LibraryTrack[] | null>(null);
   readonly excludedGuessOptions = signal<string[]>([]);
   readonly guessCounts = signal<Record<string, number>>({});
+  readonly correctPlayers = signal<Record<string, boolean>>({});
   readonly roundStatus = signal<'IDLE' | 'PLAYING' | 'PAUSED' | 'ENDED'>('IDLE');
   readonly roundMode = signal<LobbyMode>('CLASSIC');
   readonly roundStartAt = signal<number | null>(null);
@@ -115,6 +119,10 @@ export class HomeComponent {
   readonly roundResult = signal<RoundEndPayload | null>(null);
   readonly nextRoundCountdownSec = signal<number | null>(null);
   readonly notifications = signal<string[]>([]);
+  readonly isPlayerCorrect = computed(() => {
+    const playerId = this.playerId();
+    return playerId ? !!this.correctPlayers()[playerId] : false;
+  });
   readonly nextRoundProgress = computed(() => {
     const remaining = this.nextRoundCountdownSec();
     if (remaining === null) {
@@ -140,6 +148,7 @@ export class HomeComponent {
     maxGuessesPerRound: number;
     guessOptionsLimit: number;
     requireBuzzToGuess: boolean;
+    allowMultipleAnswers: boolean;
     lockoutSeconds: number;
     responseSeconds: number;
     isPublic: boolean;
@@ -240,6 +249,16 @@ export class HomeComponent {
     }
     return this.lobby()?.players.find((player) => player.id === winnerId) ?? null;
   });
+  readonly roundCorrectResponders = computed(() => {
+    const lobby = this.lobby();
+    const ids = this.roundResult()?.correctResponders ?? [];
+    if (!lobby || !ids.length) {
+      return [];
+    }
+    return ids
+      .map((id) => lobby.players.find((player) => player.id === id))
+      .filter((player): player is NonNullable<typeof player> => !!player);
+  });
   readonly isRoundWinner = computed(() => {
     const winnerId = this.roundResult()?.winnerId;
     if (!winnerId) {
@@ -291,6 +310,10 @@ export class HomeComponent {
     const lobby = this.lobby();
     const status = this.roundStatus();
     if (!lobby || (status !== 'PLAYING' && status !== 'PAUSED')) {
+      return false;
+    }
+    const playerId = this.playerId();
+    if (playerId && this.correctPlayers()[playerId]) {
       return false;
     }
     if (this.requireBuzzToGuess()) {
@@ -423,6 +446,43 @@ export class HomeComponent {
     });
 
     effect(() => {
+      const lobby = this.lobby();
+      const isEditable = !lobby || (lobby.state === 'WAITING' && lobby.hostId === this.playerId());
+      const mode = this.mode();
+      if (!isEditable) {
+        this.lastMode = mode;
+        return;
+      }
+      if (this.lastMode === null) {
+        this.lastMode = mode;
+        this.allowMultipleAnswersCache = this.allowMultipleAnswers();
+        return;
+      }
+      if (mode === this.lastMode) {
+        return;
+      }
+      if (mode === 'BUZZ') {
+        this.allowMultipleAnswersCache = this.allowMultipleAnswers();
+        this.allowMultipleAnswers.set(false);
+      } else if (this.lastMode === 'BUZZ') {
+        this.allowMultipleAnswers.set(this.allowMultipleAnswersCache);
+      }
+      this.lastMode = mode;
+    });
+
+    effect(() => {
+      const lobby = this.lobby();
+      const isEditable = !lobby || (lobby.state === 'WAITING' && lobby.hostId === this.playerId());
+      if (!isEditable) {
+        return;
+      }
+      if (this.mode() === 'BUZZ') {
+        return;
+      }
+      this.allowMultipleAnswersCache = this.allowMultipleAnswers();
+    });
+
+    effect(() => {
       const info = this.selectedLibraryInfo();
       if (!info) {
         return;
@@ -537,6 +597,7 @@ export class HomeComponent {
           maxGuessesPerRound: this.maxGuessesPerRound(),
           guessOptionsLimit: this.guessOptionsLimit(),
           requireBuzzToGuess: this.mode() === 'BUZZ',
+          allowMultipleAnswers: this.allowMultipleAnswers(),
           lockoutSeconds: this.lockoutSeconds(),
           responseSeconds: this.responseSeconds(),
         }),
@@ -649,6 +710,7 @@ export class HomeComponent {
       maxGuessesPerRound: this.maxGuessesPerRound(),
       guessOptionsLimit: this.guessOptionsLimit(),
       requireBuzzToGuess: this.mode() === 'BUZZ',
+      allowMultipleAnswers: this.allowMultipleAnswers(),
       lockoutSeconds: this.lockoutSeconds(),
       responseSeconds: this.responseSeconds(),
     });
@@ -674,11 +736,14 @@ export class HomeComponent {
     this.libraryTracksLoading.set(false);
     this.excludedGuessOptions.set([]);
     this.guessCounts.set({});
+    this.correctPlayers.set({});
     this.clearDissolveCountdown();
     this.rematchRequested.set(false);
     this.settingsBaseline.set(null);
     this.lastRoundCelebrated = null;
     this.finalCelebrated = false;
+    this.allowMultipleAnswersCache = true;
+    this.lastMode = this.mode();
   }
 
   private startDissolveCountdown() {
@@ -819,6 +884,7 @@ export class HomeComponent {
     this.lobby.set(response.lobbyState);
     this.syncLobbySettings(response.lobbyState);
     this.guessCounts.set({});
+    this.correctPlayers.set({});
     this.playerId.set(response.playerId);
     this.joinLobbyId.set(response.lobbyId);
     this.roundStatus.set('IDLE');
@@ -892,6 +958,7 @@ export class HomeComponent {
     this.notifications.set([]);
     this.excludedGuessOptions.set([]);
     this.guessCounts.set({});
+    this.correctPlayers.set({});
     this.roundStatus.set('PLAYING');
     this.roundMode.set(payload.mode);
     this.roundStartAt.set(payload.startAtServerTs);
@@ -951,8 +1018,18 @@ export class HomeComponent {
   }
 
   private onGuessResult(payload: GuessResultPayload) {
-    if (!payload.correct) {
-      const player = this.lobby()?.players.find((p) => p.id === payload.playerId);
+    const player = this.lobby()?.players.find((p) => p.id === payload.playerId);
+    if (payload.correct) {
+      this.correctPlayers.update((players) => ({ ...players, [payload.playerId]: true }));
+      const pointsLabel =
+        typeof payload.pointsAwarded === 'number' && payload.pointsAwarded > 0
+          ? ` (+${payload.pointsAwarded})`
+          : '';
+      this.addNotice(`${player?.username ?? 'Jugador'} acertó la respuesta${pointsLabel}.`);
+      if (payload.playerId === this.playerId()) {
+        this.launchConfetti('correct');
+      }
+    } else {
       const guessText = payload.guessText?.trim();
       if (guessText) {
         const normalized = this.normalizeGuessOption(guessText);
@@ -984,7 +1061,7 @@ export class HomeComponent {
     this.roundResult.set(payload);
     this.showResultModal.set(true);
     this.showFinalOverlay.set(false);
-    if (payload.winnerId) {
+    if (payload.winnerId && !this.correctPlayers()[payload.winnerId]) {
       this.incrementGuessCount(payload.winnerId);
     }
     this.activeBuzzPlayerId.set(null);
@@ -1057,11 +1134,16 @@ export class HomeComponent {
     this.notifications.set(next);
   }
 
-  private launchConfetti(kind: 'round' | 'final') {
+  private launchConfetti(kind: 'round' | 'final' | 'correct') {
     const isFinal = kind === 'final';
     const count = isFinal ? 160 : 90;
     const size = isFinal ? 1.2 : 0.9;
     const velocity = isFinal ? 260 : 200;
+    if (kind === 'correct') {
+      const position = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+      confetti({ position, count: 60, size: 0.7, velocity: 160, fade: true });
+      return;
+    }
     const position = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
     confetti({ position, count, size, velocity, fade: true });
     if (isFinal) {
@@ -1142,6 +1224,7 @@ export class HomeComponent {
     this.maxGuessesPerRound.set(lobby.settings.maxGuessesPerRound ?? DEFAULT_GUESSES_PER_ROUND);
     this.guessOptionsLimit.set(lobby.settings.guessOptionsLimit);
     this.requireBuzzToGuess.set(lobby.settings.mode === 'BUZZ');
+    this.allowMultipleAnswers.set(lobby.settings.allowMultipleAnswers ?? false);
     this.lockoutSeconds.set(lobby.settings.lockoutSeconds ?? DEFAULT_LOCKOUT_SECONDS);
     this.responseSeconds.set(lobby.settings.responseSeconds ?? DEFAULT_RESPONSE_SECONDS);
     this.isPublicLobby.set(lobby.isPublic);
@@ -1164,6 +1247,9 @@ export class HomeComponent {
     this.maxGuessesPerRound.set(BEGINNER_MAX_GUESSES_PER_ROUND);
     this.guessOptionsLimit.set(4);
     this.requireBuzzToGuess.set(false);
+    this.allowMultipleAnswers.set(true);
+    this.allowMultipleAnswersCache = true;
+    this.lastMode = 'CLASSIC';
     this.lockoutSeconds.set(BEGINNER_LOCKOUT_SECONDS);
     this.responseSeconds.set(BEGINNER_RESPONSE_SECONDS);
     this.isPublicLobby.set(true);
@@ -1186,6 +1272,7 @@ export class HomeComponent {
     this.clipStartSeconds.set(0);
     this.roundEndAtServerTs = null;
     this.audio.stop();
+    this.correctPlayers.set({});
   }
 
   selectRandomAvatar() {
@@ -1328,6 +1415,7 @@ export class HomeComponent {
       maxGuessesPerRound: lobby.settings.maxGuessesPerRound ?? DEFAULT_GUESSES_PER_ROUND,
       guessOptionsLimit: lobby.settings.guessOptionsLimit,
       requireBuzzToGuess: lobby.settings.mode === 'BUZZ',
+      allowMultipleAnswers: lobby.settings.allowMultipleAnswers ?? false,
       lockoutSeconds: lobby.settings.lockoutSeconds ?? DEFAULT_LOCKOUT_SECONDS,
       responseSeconds: lobby.settings.responseSeconds ?? DEFAULT_RESPONSE_SECONDS,
       isPublic: lobby.isPublic,
@@ -1347,6 +1435,7 @@ export class HomeComponent {
       maxGuessesPerRound: this.maxGuessesPerRound(),
       guessOptionsLimit: this.guessOptionsLimit(),
       requireBuzzToGuess: this.mode() === 'BUZZ',
+      allowMultipleAnswers: this.allowMultipleAnswers(),
       lockoutSeconds: this.lockoutSeconds(),
       responseSeconds: this.responseSeconds(),
       isPublic: this.isPublicLobby(),
@@ -1369,6 +1458,7 @@ export class HomeComponent {
       left.maxGuessesPerRound === right.maxGuessesPerRound &&
       left.guessOptionsLimit === right.guessOptionsLimit &&
       left.requireBuzzToGuess === right.requireBuzzToGuess &&
+      left.allowMultipleAnswers === right.allowMultipleAnswers &&
       left.lockoutSeconds === right.lockoutSeconds &&
       left.responseSeconds === right.responseSeconds &&
       left.isPublic === right.isPublic

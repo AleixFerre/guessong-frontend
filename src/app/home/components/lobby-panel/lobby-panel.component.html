@@ -35,6 +35,9 @@
             @if (player.id === activeLobby.hostId) {
               <span class="tag">Anfitrion</span>
             }
+            @if (correctPlayers()[player.id]) {
+              <span class="tag success">Acertó</span>
+            }
             @if (player.lockedForRound) {
               @if (showLockout()) {
                 <span class="tag warn" [style.--lockout-duration]="lockoutDuration(player)">

@@ -62,6 +62,7 @@
                 [totalRounds]="totalRoundsInput"
                 [maxGuessesPerRound]="maxGuessesPerRound"
                 [guessOptionsLimit]="guessOptionsLimit"
+                [allowMultipleAnswers]="allowMultipleAnswers"
                 [lockoutSeconds]="lockoutSeconds"
                 [responseSeconds]="responseSeconds"
                 [isPublicLobby]="isPublicLobby"
@@ -201,6 +202,7 @@
           [activeBuzzPlayerId]="activeBuzzPlayerId()"
           [maxGuessesPerRound]="maxGuessesPerRound()"
           [guessCounts]="guessCounts()"
+          [correctPlayers]="correctPlayers()"
           [showScore]="false"
           [showLockout]="false"
           [showTries]="false"
@@ -230,6 +232,7 @@
             [totalRounds]="totalRoundsInput"
             [maxGuessesPerRound]="maxGuessesPerRound"
             [guessOptionsLimit]="guessOptionsLimit"
+            [allowMultipleAnswers]="allowMultipleAnswers"
             [lockoutSeconds]="lockoutSeconds"
             [responseSeconds]="responseSeconds"
             [isPublicLobby]="isPublicLobby"
@@ -256,9 +259,25 @@
               <strong>{{ formatModeLabel(lobby()?.settings?.mode) }}</strong>
             </div>
             <div class="config-item">
+              <span>Visibilidad de la sala</span>
+              <strong>{{ isPublicLobby() ? 'Pública' : 'Privada' }}</strong>
+            </div>
+            <div class="config-item">
               <span>Max. jugadores</span>
               <strong>{{ maxPlayers() }}</strong>
             </div>
+            <div class="config-item">
+              <span>Respuestas múltiples</span>
+              <strong>{{
+                allowMultipleAnswers() ? 'Todos pueden responder' : 'Solo el primero'
+              }}</strong>
+            </div>
+            @if (isMidClipModeActive()) {
+              <div class="config-item">
+                <span>Duración del clip</span>
+                <strong>{{ clipSeconds() }}s</strong>
+              </div>
+            }
             <div class="config-item">
               <span>Rondas</span>
               <strong>{{ totalRoundsInput() }}</strong>
@@ -267,12 +286,6 @@
               <span>Duración de ronda</span>
               <strong>{{ roundDuration() }}s</strong>
             </div>
-            @if (isMidClipModeActive()) {
-              <div class="config-item">
-                <span>Duración del clip</span>
-                <strong>{{ clipSeconds() }}s</strong>
-              </div>
-            }
             <div class="config-item">
               <span>Intentos por ronda</span>
               <strong>{{ maxGuessesPerRound() === 0 ? 'Infinito' : maxGuessesPerRound() }}</strong>
@@ -310,6 +323,7 @@
           [activeBuzzPlayerId]="activeBuzzPlayerId()"
           [maxGuessesPerRound]="maxGuessesPerRound()"
           [guessCounts]="guessCounts()"
+          [correctPlayers]="correctPlayers()"
         ></app-lobby-panel>
       </div>
 
@@ -333,6 +347,8 @@
           [buzzOwnerName]="activeBuzzPlayerName()"
           [isBuzzOwner]="activeBuzzPlayerId() === playerId()"
           [requireBuzzToGuess]="requireBuzzToGuess()"
+          [allowMultipleAnswers]="allowMultipleAnswers()"
+          [isPlayerCorrect]="isPlayerCorrect()"
           [canReplayClip]="canReplayClip()"
           [clipDuration]="clipDuration()"
           [roundResult]="roundResult()"
@@ -360,24 +376,21 @@
           @if (result.revealedTrackMeta.origin) {
             <p>Origen: {{ result.revealedTrackMeta.origin }}</p>
           }
-          @if (roundWinnerName()) {
+          @if (roundCorrectResponders().length) {
             <div class="winner-row">
-              @if (roundWinnerPlayer(); as winner) {
+              @for (player of roundCorrectResponders(); track player.id) {
                 <span
                   class="winner-avatar"
                   [style.backgroundImage]="
-                    winner.avatar ? 'url(avatars/' + winner.avatar + ')' : null
+                    player.avatar ? 'url(avatars/' + player.avatar + ')' : null
                   "
                   aria-hidden="true"
                 ></span>
+                <p>{{ player.username }}</p>
               }
-              <p>Ganador: {{ roundWinnerName() }}</p>
             </div>
           } @else {
             <p class="no-winner">No ha habido ganador</p>
-          }
-          @if (result.winnerId) {
-            <p>Puntos: {{ result.pointsAwarded }}</p>
           }
           @if (nextRoundCountdownSec() !== null) {
             <div class="next-round">

@@ -24,7 +24,6 @@ DOPAMINA MODE
 
 FEEDBACK ULA
 
-- Que no només soni el principi, que soni alguna part aleatoria de dins de la cançó
 - Botó de reportar cançó?
 - Fer que el host pugui expulsar a gent de la partida
 
@@ -33,8 +32,7 @@ FEEDBACK ULA
 PLATAFORMA AMB MULTIPLES JOCS
 
 - Joc on es dona 2 lletres aleatòries (possibles) i el jugador ha de dir una paraula que començi i acabi per aquestes lletres. El primer que ho aconsegueixi guanya punts de manera inversament proporcional al temps que ha passat. Hi ha un limit de temps per a passar a la seguent ronda, i es pot configurar pel host.
-- In the anime and ost mode, add a checker that makes you guess the anime or the movie instead of the song name/artist
-- Review the list of songs and make them start at second 1,
+- Review the list of songs and make them start at second 1
 
 ---
 
