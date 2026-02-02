@@ -167,7 +167,7 @@
         </button>
       </div>
     </div>
-    @if (isMidClipMode()) {
+    @if (isMidClipMode() && isCustomPreset()) {
       <div class="field">
         <label class="label-with-tip">
           Duración del clip (s): {{ clipSeconds()() }}s

@@ -5,6 +5,8 @@ import { LobbyNameGenerator, createLobbyNameGenerator } from '../../../nicknames
 
 type PresetKey = 'beginner' | 'intermediate' | 'hard' | 'custom';
 
+const DEFAULT_CLIP_SECONDS = 2;
+
 const TOOLTIP_TEXTS = {
   rounds: 'Número total de rondas de la partida.',
   roundDuration: 'Tiempo total que dura cada ronda.',
@@ -169,6 +171,15 @@ export class LobbySetupComponent {
     }
   });
 
+  private readonly clipPresetSync = effect(() => {
+    if (this.selectedMode() !== 'MID_CLIP' || this.selectedPreset() === 'custom') {
+      return;
+    }
+    if (this.clipSeconds()() !== DEFAULT_CLIP_SECONDS) {
+      this.clipSeconds().set(DEFAULT_CLIP_SECONDS);
+    }
+  });
+
   private readonly lobbyNameInit = effect(() => {
     const mode = this.entryMode();
     if (mode !== 'create') {
@@ -203,6 +214,9 @@ export class LobbySetupComponent {
     this.lockoutSeconds().set(values.lockoutSeconds);
     this.responseSeconds().set(values.responseSeconds);
     this.penalty().set(values.penalty);
+    if (this.selectedMode() === 'MID_CLIP') {
+      this.clipSeconds().set(DEFAULT_CLIP_SECONDS);
+    }
   }
 
   setRandomLobbyName() {
@@ -336,8 +350,10 @@ export class LobbySetupComponent {
 
   selectMode(mode: BaseMode) {
     this.mode().set(mode as LobbyMode);
-    if (mode === 'MID_CLIP' && this.clipSeconds()() <= 0) {
-      this.clipSeconds().set(2);
+    if (mode === 'MID_CLIP' && !this.isCustomPreset()) {
+      this.clipSeconds().set(DEFAULT_CLIP_SECONDS);
+    } else if (mode === 'MID_CLIP' && this.clipSeconds()() <= 0) {
+      this.clipSeconds().set(DEFAULT_CLIP_SECONDS);
     }
   }
 }
